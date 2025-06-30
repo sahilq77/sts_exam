@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "919983361967",
+    "project_id": "stsexam-a5988",
+    "storage_bucket": "stsexam-a5988.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919983361967:android:afdc364490ad44f95c295a",
+        "android_client_info": {
+          "package_name": "com.quick.stsexam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCSGNGSAx_ojeOu-SXB9DZBjUaMnyrsPQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
