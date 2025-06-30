@@ -26,7 +26,7 @@ class StartExamController extends GetxController {
   var errorMessages = ''.obs;
   RxBool isLoading = true.obs;
   RxBool isLoadings = true.obs;
-  Timer? _timer;
+  Timer? timer;
   String testID = '';
   RxString attempt = "".obs;
 
@@ -38,13 +38,13 @@ class StartExamController extends GetxController {
 
   @override
   void onClose() {
-    _timer?.cancel();
+    timer?.cancel();
     super.onClose();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
@@ -81,7 +81,7 @@ class StartExamController extends GetxController {
           response[0].status == "true") {
         questionDetail.clear();
         selectedAnswers.clear();
-        _timer?.cancel();
+        timer?.cancel();
         for (var que in response[0].data) {
           questionDetail.add(
             QuestionDetail(
@@ -137,11 +137,11 @@ class StartExamController extends GetxController {
   }
 
   void startTimer() {
-    _timer?.cancel();
+    timer?.cancel();
     if (remainingSeconds.value <= 0) {
       remainingSeconds.value = 60 * 60;
     }
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingSeconds.value > 0) {
         remainingSeconds.value--;
       } else {

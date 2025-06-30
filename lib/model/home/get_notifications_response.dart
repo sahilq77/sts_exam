@@ -1,57 +1,86 @@
 // To parse this JSON data, do
 //
-//     final getNotificationsResponse = getNotificationsResponseFromJson(jsonString);
+//     final getAllNotificationsResponse = getAllNotificationsResponseFromJson(jsonString);
 
 import 'dart:convert';
 
-List<GetNotificationsResponse> getNotificationsResponseFromJson(String str) => List<GetNotificationsResponse>.from(json.decode(str).map((x) => GetNotificationsResponse.fromJson(x)));
+List<GetAllNotificationsResponse> getAllNotificationsResponseFromJson(
+  String str,
+) => List<GetAllNotificationsResponse>.from(
+  json.decode(str).map((x) => GetAllNotificationsResponse.fromJson(x)),
+);
 
-String getNotificationsResponseToJson(List<GetNotificationsResponse> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String getAllNotificationsResponseToJson(
+  List<GetAllNotificationsResponse> data,
+) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-class GetNotificationsResponse {
-    bool status;
-    String message;
-    List<Datum> data;
+class GetAllNotificationsResponse {
+  String status;
+  String message;
+  List<AppNotification> data;
 
-    GetNotificationsResponse({
-        required this.status,
-        required this.message,
-        required this.data,
-    });
+  GetAllNotificationsResponse({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
 
-    factory GetNotificationsResponse.fromJson(Map<String, dynamic> json) => GetNotificationsResponse(
+  factory GetAllNotificationsResponse.fromJson(Map<String, dynamic> json) =>
+      GetAllNotificationsResponse(
         status: json["status"],
         message: json["message"],
-        data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
-    );
+        data: List<AppNotification>.from(
+          json["data"].map((x) => AppNotification.fromJson(x)),
+        ),
+      );
 
-    Map<String, dynamic> toJson() => {
-        "status": status,
-        "message": message,
-        "data": List<dynamic>.from(data.map((x) => x.toJson())),
-    };
+  Map<String, dynamic> toJson() => {
+    "status": status,
+    "message": message,
+    "data": List<dynamic>.from(data.map((x) => x.toJson())),
+  };
 }
 
-class Datum {
-    int id;
-    int time;
-    String notificationDesc;
+class AppNotification {
+  String id;
+  String userId;
+  String attemptedTestId;
+  String notificationTitle;
+  String notification;
 
-    Datum({
-        required this.id,
-        required this.time,
-        required this.notificationDesc,
-    });
+  DateTime createdOn;
 
-    factory Datum.fromJson(Map<String, dynamic> json) => Datum(
+
+  AppNotification({
+    required this.id,
+    required this.userId,
+    required this.attemptedTestId,
+    required this.notificationTitle,
+    required this.notification,
+  
+    required this.createdOn,
+   
+  });
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) =>
+      AppNotification(
         id: json["id"],
-        time: json["time"],
-        notificationDesc: json["notification_desc"],
-    );
+        userId: json["user_id"],
+        attemptedTestId: json["attempted_test_id"],
+        notificationTitle: json["notification_title"],
+        notification: json["notification"],
+      
+        createdOn: DateTime.parse(json["created_on"]),
+      
+      );
 
-    Map<String, dynamic> toJson() => {
-        "id": id,
-        "time": time,
-        "notification_desc": notificationDesc,
-    };
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "user_id": userId,
+    "attempted_test_id": attemptedTestId,
+    "notification_title": notificationTitle,
+    "notification": notification,
+    "created_on": createdOn.toIso8601String(),
+    
+  };
 }

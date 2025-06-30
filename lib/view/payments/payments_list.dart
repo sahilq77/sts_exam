@@ -28,7 +28,14 @@ class PaymentReceiptScreen extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           automaticallyImplyLeading: true,
+          elevation: 0,
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(1.0),
+            child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+          ),
         ),
+        backgroundColor: AppColors.backgroundColor,
+
         body: RefreshIndicator(
           onRefresh: () => controller.refreshPaymentList(context: context),
           child: Obx(

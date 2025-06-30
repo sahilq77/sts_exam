@@ -37,25 +37,34 @@ class _ExamInstructionState extends State<ExamInstruction> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              Get.back();
-              controller.clearSelectedExamid();
-              controller.examDetailList.clear();
-            }),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+            controller.clearSelectedExamid();
+            controller.examDetailList.clear();
+          },
+        ),
         title: const Text(
           'Exam Instruction',
           style: TextStyle(
-              color: AppColors.textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w600),
+            color: AppColors.textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+        ),
       ),
+      backgroundColor: AppColors.backgroundColor,
+
       body: RefreshIndicator(
-        onRefresh: () => controller.refreshResultList(
-            context: context), // Called when the user pulls down to refresh
+        onRefresh:
+            () => controller.refreshResultList(
+              context: context,
+            ), // Called when the user pulls down to refresh
         color: AppColors.primaryColor, // Color of the refresh indicator
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -80,48 +89,53 @@ class _ExamInstructionState extends State<ExamInstruction> {
                       imageUrl:
                           "${controller.imageLink.value}${controller.examDetailList[0].testImage.toString()}",
                       fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) =>
-                          Icon(Icons.error, size: 50),
+                      placeholder:
+                          (context, url) =>
+                              Center(child: CircularProgressIndicator()),
+                      errorWidget:
+                          (context, url, error) => Icon(Icons.error, size: 50),
                     ),
                   ),
                 ),
 
                 ///const SizedBox(height: 10),
                 const SizedBox(height: 15),
-                // Title
 
+                // Title
                 Text(
                   ins[0].testName,
                   style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
                 ),
                 const SizedBox(height: 5),
                 // Duration and Questions
                 Text(
                   '${ins[0].duration} min | ${ins[0].questionCount} Question',
                   style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.primaryColor),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.primaryColor,
+                  ),
                 ),
                 const SizedBox(height: 15),
                 // Description
                 const Text(
                   'Please read the text below carefully so you can understand it',
                   style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textColor),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textColor,
+                  ),
                 ),
                 // const SizedBox(height: 20),
                 Html(
-                  data: (ins[0]
-                      .instructionDescription
-                      .replaceAll(r'\r\n', '<br>')),
+                  data: (ins[0].instructionDescription.replaceAll(
+                    r'\r\n',
+                    '<br>',
+                  )),
                   style: TextDesign.commonStyles,
                 ),
                 // Row(
@@ -197,10 +211,13 @@ class _ExamInstructionState extends State<ExamInstruction> {
             final ins = controller.examDetailList;
             print("EX ID ${ins[0].id}");
             starttestController.setTestid(ins[0].id);
-            Get.offNamed(AppRoutes.startexam, arguments: {
-              "test_id": ins[0].id,
-              "attempted_count": ins[0].attemptCount
-            });
+            Get.offNamed(
+              AppRoutes.startexam,
+              arguments: {
+                "test_id": ins[0].id,
+                "attempted_count": ins[0].attemptCount,
+              },
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
@@ -211,7 +228,10 @@ class _ExamInstructionState extends State<ExamInstruction> {
           child: const Text(
             'Start Your Exam',
             style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

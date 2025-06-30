@@ -115,16 +115,18 @@ class _UpdateProfileState extends State<UpdateProfile> {
           stateController.fetchStates(context: context).then((_) {
             stateController.getStateNameById(profile!.state);
             print(
-                "State name for stateId $stateId: ${stateController.getStateNameById(stateId)}");
+              "State name for stateId $stateId: ${stateController.getStateNameById(stateId)}",
+            );
           });
           cityController
               .fetchCities(context: context, forceFetch: true, stateID: stateId)
               .then((_) {
-            final cityName = cityController.getCityNameById(cityId);
-            print("City name for cityId $cityId: $cityName");
-            print(
-                "City list: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}");
-          });
+                final cityName = cityController.getCityNameById(cityId);
+                print("City name for cityId $cityId: $cityName");
+                print(
+                  "City list: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}",
+                );
+              });
         });
       } else {
         print('No Maintenance data found in MaintenanceController');
@@ -161,10 +163,14 @@ class _UpdateProfileState extends State<UpdateProfile> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          backgroundColor: Colors.white,
           elevation: 0,
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(1.0),
+            child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+          ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundColor,
+
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           child: Column(
@@ -179,26 +185,27 @@ class _UpdateProfileState extends State<UpdateProfile> {
                       () => CircleAvatar(
                         radius: 45,
                         backgroundColor: Colors.grey[200],
-                        child: controller.imagePath.value != null
-                            ? ClipOval(
-                                child: Image.file(
-                                  File("${controller.imagePath.value}"),
-                                ),
-                              )
-                            : ClipOval(
-                                child: CachedNetworkImage(
-                                  imageUrl:
-                                      "${profileController.imageLink.value}${profileImage ?? ''}",
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Center(
-                                    child: CircularProgressIndicator(),
+                        child:
+                            controller.imagePath.value != null
+                                ? ClipOval(
+                                  child: Image.file(
+                                    File("${controller.imagePath.value}"),
                                   ),
-                                  errorWidget: (context, url, error) => Icon(
-                                    Icons.error,
-                                    size: 50,
+                                )
+                                : ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        "${profileController.imageLink.value}${profileImage ?? ''}",
+                                    fit: BoxFit.cover,
+                                    placeholder:
+                                        (context, url) => Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget:
+                                        (context, url, error) =>
+                                            Icon(Icons.error, size: 50),
                                   ),
                                 ),
-                              ),
                       ),
                     ),
                     // Obx(
@@ -216,10 +223,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFE5E7EB),
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2,
-                          ),
+                          border: Border.all(color: Colors.white, width: 2),
                         ),
                         padding: const EdgeInsets.all(5),
                         child: ClipOval(
@@ -306,8 +310,8 @@ class _UpdateProfileState extends State<UpdateProfile> {
                 popupProps: const PopupProps.menu(
                   showSearchBox: false, // Disable search since it's read-only
                 ),
-                // items: stateController.getStateNames(),
 
+                // items: stateController.getStateNames(),
                 onChanged: null, // Set to null to disable interaction
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
@@ -392,9 +396,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(
-                      color: Colors.grey.shade200,
-                    ),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -412,9 +414,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                 keyboardType: TextInputType.emailAddress,
                 validator: _validateEmail,
               ),
-              SizedBox(
-                height: 16,
-              ),
+              SizedBox(height: 16),
               // State Dropdown (Read-Only)
               Obx(() {
                 if (stateController.isLoading.value) {
@@ -427,14 +427,19 @@ class _UpdateProfileState extends State<UpdateProfile> {
                       children: [
                         Text(
                           stateController.errorMessage.value,
-                          style:
-                              const TextStyle(color: Colors.red, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => stateController.fetchStates(
-                              context: context, forceFetch: true),
+                          onPressed:
+                              () => stateController.fetchStates(
+                                context: context,
+                                forceFetch: true,
+                              ),
                           child: const Text('Retry'),
                         ),
                       ],
@@ -449,42 +454,42 @@ class _UpdateProfileState extends State<UpdateProfile> {
 
                   onChanged: null, // Set to null to disable interaction
                   dropdownDecoratorProps: DropDownDecoratorProps(
-                      dropdownSearchDecoration: InputDecoration(
-                        labelText: 'State*',
-                        labelStyle: TextStyle(color: AppColors.textColor),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide:
-                              const BorderSide(color: Color(0xFFD0D0D0)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide:
-                              const BorderSide(color: Color(0xFFD0D0D0)),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: const BorderSide(color: Colors.red),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
-                          borderSide: const BorderSide(color: Colors.red),
-                        ),
-
-                        // filled: true,
-                        // fillColor:
-                        //     Colors.grey[200], // Indicate disabled state
-                        // errorText: formFieldState.errorText,
+                    dropdownSearchDecoration: InputDecoration(
+                      labelText: 'State*',
+                      labelStyle: TextStyle(color: AppColors.textColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: const BorderSide(color: Color(0xFFD0D0D0)),
                       ),
-                      baseStyle: TextStyle(color: Colors.grey)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: const BorderSide(color: Color(0xFFD0D0D0)),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
 
-                  selectedItem:
-                      stateController.getStateNameById(profile!.state),
+                      // filled: true,
+                      // fillColor:
+                      //     Colors.grey[200], // Indicate disabled state
+                      // errorText: formFieldState.errorText,
+                    ),
+                    baseStyle: TextStyle(color: Colors.grey),
+                  ),
+
+                  selectedItem: stateController.getStateNameById(
+                    profile!.state,
+                  ),
                   enabled: false, // Explicitly disable the dropdown
                 );
               }),
               const SizedBox(height: 16),
-// City Dropdown (Read-Only)
+              // City Dropdown (Read-Only)
               Obx(() {
                 if (cityController.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
@@ -496,8 +501,10 @@ class _UpdateProfileState extends State<UpdateProfile> {
                       children: [
                         Text(
                           cityController.errorMessage.value,
-                          style:
-                              const TextStyle(color: Colors.red, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
@@ -546,33 +553,37 @@ class _UpdateProfileState extends State<UpdateProfile> {
                       items: cityController.getCityNames(),
                       onChanged: null, // Set to null to disable interaction
                       dropdownDecoratorProps: DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                            labelText: 'City*',
-                            labelStyle: TextStyle(color: AppColors.textColor),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFD0D0D0)),
+                        dropdownSearchDecoration: InputDecoration(
+                          labelText: 'City*',
+                          labelStyle: TextStyle(color: AppColors.textColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD0D0D0),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFFD0D0D0)),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide: const BorderSide(color: Colors.red),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide: const BorderSide(color: Colors.red),
-                            ),
-                            errorText: formFieldState.errorText,
                           ),
-                          baseStyle: TextStyle(color: Colors.grey)),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFD0D0D0),
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide: const BorderSide(color: Colors.red),
+                          ),
+                          errorText: formFieldState.errorText,
+                        ),
+                        baseStyle: TextStyle(color: Colors.grey),
+                      ),
 
-                      selectedItem:
-                          cityController.getCityNameById(profile!.city),
+                      selectedItem: cityController.getCityNameById(
+                        profile!.city,
+                      ),
                       enabled: false, // Explicitly disable the dropdown
                     );
                   },
@@ -585,7 +596,8 @@ class _UpdateProfileState extends State<UpdateProfile> {
                 onPressed: () {
                   // Form is valid, proceed with submission
                   controller.updateProfile(
-                      fullName: fullNameController.text.toString());
+                    fullName: fullNameController.text.toString(),
+                  );
                   // ScaffoldMessenger.of(context).showSnackBar(
                   //   const SnackBar(
                   //       content: Text('Profile updated successfully!')),

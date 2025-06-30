@@ -194,9 +194,13 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+        ),
       ),
+
       body: RefreshIndicator(
         onRefresh: _refresh,
         color: AppColors.primaryColor,
@@ -216,8 +220,10 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 10.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -227,16 +233,20 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                       height: 200,
                       width: double.infinity,
                       child: CachedNetworkImage(
-                        imageUrl: exam.testImage != null
-                            ? "${controller.imageLink.value}${exam.testImage}"
-                            : '',
+                        imageUrl:
+                            exam.testImage != null
+                                ? "${controller.imageLink.value}${exam.testImage}"
+                                : '',
                         fit: BoxFit.cover,
-                        placeholder: (context, url) =>
-                            const Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) => Image.asset(
-                          'assets/placeholder.png',
-                          fit: BoxFit.cover,
-                        ),
+                        placeholder:
+                            (context, url) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                        errorWidget:
+                            (context, url, error) => Image.asset(
+                              'assets/placeholder.png',
+                              fit: BoxFit.cover,
+                            ),
                       ),
                     ),
                   ),
@@ -299,10 +309,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                           const SizedBox(height: 5),
                           const Text(
                             'Name of the ACID used in lead acid cells?',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
+                            style: TextStyle(fontSize: 16, color: Colors.black),
                           ),
                           const SizedBox(height: 10),
                           _buildOption('Phosphoric Acid'),
@@ -371,78 +378,84 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
         }
 
         return SizedBox(
-            height: 79,
-            width: double.infinity,
-            child: ElevatedButton(
-                onPressed: getbuttonTitle() == "Already Attempted"
+          height: 79,
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed:
+                getbuttonTitle() == "Already Attempted"
                     ? null
                     : () {
-                        print("Testype ${exam.testType}");
-                        print("Attempted ${exam.isAttempted}");
-                        int? testType;
-                        if (exam.testType == "0") {
-                          testType =
-                              exam.testType == "0" && exam.isAttempted == true
-                                  ? 0
-                                  : 1;
-                        }
-                        if (exam.testType == "1") {
-                          testType =
-                              exam.testType == "1" && exam.isAttempted == true
-                                  ? 2
-                                  : 3;
-                        }
+                      print("Testype ${exam.testType}");
+                      print("Attempted ${exam.isAttempted}");
+                      int? testType;
+                      if (exam.testType == "0") {
+                        testType =
+                            exam.testType == "0" && exam.isAttempted == true
+                                ? 0
+                                : 1;
+                      }
+                      if (exam.testType == "1") {
+                        testType =
+                            exam.testType == "1" && exam.isAttempted == true
+                                ? 2
+                                : 3;
+                      }
 
-                        switch (testType) {
-                          case 0:
-                            _showatemptDialog(context, exam.attemptCount);
-                            return print("attempted count");
+                      switch (testType) {
+                        case 0:
+                          _showatemptDialog(context, exam.attemptCount);
+                          return print("attempted count");
 
-                          case 1:
-                            Get.toNamed(AppRoutes.examInstruction);
-                            return print("fresher");
-                          case 2:
-                            return print("button disabled");
+                        case 1:
+                          Get.toNamed(AppRoutes.examInstruction);
+                          return print("fresher");
+                        case 2:
+                          return print("button disabled");
 
-                          case 3:
-                             buyController.buyExam(context: context,testid: exam.id);
-                            // _showPaymentSuccessDialog(context);
-                            return print("pay");
+                        case 3:
+                          buyController.buyExam(
+                            context: context,
+                            testid: exam.id,
+                          );
+                          // _showPaymentSuccessDialog(context);
+                          return print("pay");
 
-                          default:
-                            print("default");
-                        }
-                        // if (exam.testType == "0" && exam.isAttempted == true) {
-                        //   _showatemptDialog(context, exam.attemptCount);
-                        // } else {
-                        //   print("fresher");
-                        //   // Get.toNamed(AppRoutes.examInstruction);
-                        // }
+                        default:
+                          print("default");
+                      }
+                      // if (exam.testType == "0" && exam.isAttempted == true) {
+                      //   _showatemptDialog(context, exam.attemptCount);
+                      // } else {
+                      //   print("fresher");
+                      //   // Get.toNamed(AppRoutes.examInstruction);
+                      // }
 
-                        // if (exam.testType == "1" && exam.isAttempted == true) {
-                        //   print("Already attemted button disabled");
-                        // } else {
-                        //   _showPaymentSuccessDialog(context);
-                        // }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: getColor(),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10),
-                    ),
-                  ),
+                      // if (exam.testType == "1" && exam.isAttempted == true) {
+                      //   print("Already attemted button disabled");
+                      // } else {
+                      //   _showPaymentSuccessDialog(context);
+                      // }
+                    },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: getColor(),
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                 ),
-                child: Text(
-                  getbuttonTitle(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                )));
+              ),
+            ),
+            child: Text(
+              getbuttonTitle(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
       }),
     );
   }
@@ -465,9 +478,10 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
           color: isSelected ? Colors.red[50] : Colors.grey[100],
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected
-                ? (isCorrect ? Colors.green : Colors.red)
-                : const Color(0xFFBCBCBC),
+            color:
+                isSelected
+                    ? (isCorrect ? Colors.green : Colors.red)
+                    : const Color(0xFFBCBCBC),
             width: 1,
           ),
         ),
@@ -508,23 +522,11 @@ class ExamDetailShimmer extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Container(
-              height: 15,
-              width: 200,
-              color: Colors.grey[300],
-            ),
+            Container(height: 15, width: 200, color: Colors.grey[300]),
             const SizedBox(height: 5),
-            Container(
-              height: 13,
-              width: 150,
-              color: Colors.grey[300],
-            ),
+            Container(height: 13, width: 150, color: Colors.grey[300]),
             const SizedBox(height: 15),
-            Container(
-              height: 13,
-              width: 100,
-              color: Colors.grey[300],
-            ),
+            Container(height: 13, width: 100, color: Colors.grey[300]),
             const SizedBox(height: 5),
             Column(
               children: List.generate(
@@ -542,11 +544,7 @@ class ExamDetailShimmer extends StatelessWidget {
             const SizedBox(height: 20),
             Column(
               children: [
-                Container(
-                  height: 16,
-                  width: 100,
-                  color: Colors.grey[300],
-                ),
+                Container(height: 16, width: 100, color: Colors.grey[300]),
                 const SizedBox(height: 5),
                 Container(
                   height: 16,
@@ -561,7 +559,9 @@ class ExamDetailShimmer extends StatelessWidget {
                       width: double.infinity,
                       margin: const EdgeInsets.symmetric(vertical: 5),
                       padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 15),
+                        vertical: 15,
+                        horizontal: 15,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
                         borderRadius: BorderRadius.circular(10),

@@ -37,76 +37,90 @@ class ResultListPage extends StatelessWidget {
           backgroundColor: AppColors.backgroundColor,
           automaticallyImplyLeading: true,
           title: const Text('Result List'),
+          elevation: 0,
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(1.0),
+            child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+          ),
         ),
+        backgroundColor: AppColors.backgroundColor,
+
         body: RefreshIndicator(
           onRefresh: () => controller.refreshResultList(context: context),
-          child: Obx(
-            () {
-              if (controller.isLoading.value) {
-                return const CutsomShimmer();
-              }
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const CutsomShimmer();
+            }
 
-              return ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                controller: scrollController,
-                itemCount: controller.resultList.isEmpty
-                    ? 1
-                    : controller.resultList.length +
-                        (controller.hasMoreData.value ||
-                                controller.isLoadingMore.value
-                            ? 1
-                            : 0),
-                itemBuilder: (context, int index) {
-                  if (controller.resultList.isEmpty) {
-                    return Center(
-                        child: Image.asset(
-                      AppImages.empty,
-                    ));
-                  }
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: scrollController,
+              itemCount:
+                  controller.resultList.isEmpty
+                      ? 1
+                      : controller.resultList.length +
+                          (controller.hasMoreData.value ||
+                                  controller.isLoadingMore.value
+                              ? 1
+                              : 0),
+              itemBuilder: (context, int index) {
+                if (controller.resultList.isEmpty) {
+                  return Center(child: Image.asset(AppImages.empty));
+                }
 
-                  if (index == controller.resultList.length) {
-                    return controller.isLoadingMore.value
-                        ? const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: CircularProgressIndicator()),
-                          )
-                        : const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(
-                              child: Text(
-                                'No more data',
-                                style: TextStyle(
-                                    fontSize: 16, color: AppColors.textColor),
-                              ),
+                if (index == controller.resultList.length) {
+                  return controller.isLoadingMore.value
+                      ? const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                      : const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            'No more data',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textColor,
                             ),
-                          );
-                  }
-
-                  var result = controller.resultList[index];
-                  return ResultCard(
-                    examName: result.testName,
-                    totalScore: result.scoreOutoff,
-                    totalQuestions: result.totalQuestions,
-                    correct: result.correct.toString(),
-                    incorrect: result.incorrect.toString(),
-                    status: result.examStatus,
-                    statusColor: result.examStatus == "Passed"
-                        ? AppColors.successColor
-                        : AppColors.errorColor,
-                    onOverviewPressed: () {
-                      final ResultOverviewContoller overvewController = Get.put(
-                        ResultOverviewContoller(),
+                          ),
+                        ),
                       );
+                }
 
-                      overvewController.setTestid(
-                          result.testId, result.attemptedTestId);
-                      Get.toNamed(AppRoutes.overview);
-                    },
-                  );
-                },
-              );
-            },
-          ),
+                var result = controller.resultList[index];
+                return ResultCard(
+                  resultView: () {
+                    Get.toNamed(
+                      AppRoutes.viewResult,
+                      arguments: {"test_id": result.testId},
+                    );
+                  },
+                  examName: result.testName,
+                  totalScore: result.scoreOutoff,
+                  totalQuestions: result.totalQuestions,
+                  correct: result.correct.toString(),
+                  incorrect: result.incorrect.toString(),
+                  status: result.examStatus,
+                  statusColor:
+                      result.examStatus == "Passed"
+                          ? AppColors.successColor
+                          : AppColors.errorColor,
+                  onOverviewPressed: () {
+                    final ResultOverviewContoller overvewController = Get.put(
+                      ResultOverviewContoller(),
+                    );
+
+                    overvewController.setTestid(
+                      result.testId,
+                      result.attemptedTestId,
+                    );
+                    Get.toNamed(AppRoutes.overview);
+                  },
+                );
+              },
+            );
+          }),
         ),
         bottomNavigationBar: const CustomBottomBar(),
       ),
@@ -123,7 +137,7 @@ class ResultCard extends StatelessWidget {
   final String status;
   final Color statusColor;
   final VoidCallback onOverviewPressed;
-
+  final VoidCallback resultView;
   const ResultCard({
     super.key,
     required this.examName,
@@ -134,6 +148,7 @@ class ResultCard extends StatelessWidget {
     required this.status,
     required this.statusColor,
     required this.onOverviewPressed,
+    required this.resultView,
   });
 
   @override
@@ -152,10 +167,7 @@ class ResultCard extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 10),
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                  color: Color(0xFFE5E7EB),
-                  width: 1,
-                ),
+                bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
               ),
             ),
             child: Padding(
@@ -180,7 +192,9 @@ class ResultCard extends StatelessWidget {
                     onTap: onOverviewPressed,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(4),
@@ -192,9 +206,10 @@ class ResultCard extends StatelessWidget {
                           Text(
                             'Overview',
                             style: GoogleFonts.blinker(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textColor),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textColor,
+                            ),
                           ),
                           SizedBox(width: 4),
                           Icon(
@@ -370,6 +385,11 @@ class ResultCard extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                     color: statusColor,
                   ),
+                ),
+                const Spacer(),
+                InkWell(
+                  onTap: resultView,
+                  child: Icon(Icons.download, color: Colors.black87, size: 25),
                 ),
               ],
             ),

@@ -44,16 +44,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         stateController.fetchStates(context: context).then((_) {
           stateController.getStateNameById(stateId);
           print(
-              "State name for stateId $stateId: ${stateController.getStateNameById(stateId)}");
+            "State name for stateId $stateId: ${stateController.getStateNameById(stateId)}",
+          );
         }),
         cityController
             .fetchCities(context: context, forceFetch: true, stateID: stateId)
             .then((_) {
-          final cityName = cityController.getCityNameById(cityId);
-          print("City name for cityId $cityId: $cityName");
-          print(
-              "City list: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}");
-        }),
+              final cityName = cityController.getCityNameById(cityId);
+              print("City name for cityId $cityId: $cityName");
+              print(
+                "City list: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}",
+              );
+            }),
       ]);
     }
   }
@@ -70,11 +72,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final cityId = controller.userProfileList[0].city;
         print("Refreshing with stateId: $stateId, cityId: $cityId");
         await cityController.fetchCities(
-            context: context, forceFetch: true, stateID: stateId);
+          context: context,
+          forceFetch: true,
+          stateID: stateId,
+        );
         final cityName = cityController.getCityNameById(cityId);
         print("City name after refresh: $cityName");
         print(
-            "City list after refresh: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}");
+          "City list after refresh: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}",
+        );
       }
     });
   }
@@ -90,12 +96,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: const Text(
             "Profile",
             style: TextStyle(
-                color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
+              color: Colors.black,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          backgroundColor: Colors.white,
           elevation: 0,
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(1.0),
+            child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+          ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundColor,
+
         body: RefreshIndicator(
           onRefresh: () async {
             await controller.onRefresh(context);
@@ -104,16 +117,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final cityId = controller.userProfileList[0].city;
               print("Refreshing with stateId: $stateId, cityId: $cityId");
               await cityController.fetchCities(
-                  context: context, forceFetch: true, stateID: stateId);
+                context: context,
+                forceFetch: true,
+                stateID: stateId,
+              );
               final cityName = cityController.getCityNameById(cityId);
               print("City name after refresh: $cityName");
               print(
-                  "City list after refresh: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}");
+                "City list after refresh: ${cityController.cityList.map((c) => '${c.id}: ${c.name}').toList()}",
+              );
             }
           },
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 10.0,
+            ),
             child: Obx(() {
               if (controller.isLoading.value &&
                   controller.userProfileList.isEmpty) {
@@ -138,22 +157,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CircleAvatar(
                           radius: 45,
                           backgroundColor: Colors.grey[200],
-                          child: user.profileImage == null
-                              ? ClipOval(
-                                  child: Image.asset("assets/image.jpg",
-                                      height: 90, width: 90, fit: BoxFit.cover),
-                                )
-                              : ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl:
-                                        "${controller.imageLink.value}${user.profileImage}",
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => const Center(
-                                        child: CircularProgressIndicator()),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error, size: 50),
+                          child:
+                              user.profileImage == null
+                                  ? ClipOval(
+                                    child: Image.asset(
+                                      "assets/image.jpg",
+                                      height: 90,
+                                      width: 90,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                  : ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl:
+                                          "${controller.imageLink.value}${user.profileImage}",
+                                      fit: BoxFit.cover,
+                                      placeholder:
+                                          (context, url) => const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                      errorWidget:
+                                          (context, url, error) =>
+                                              const Icon(Icons.error, size: 50),
+                                    ),
                                   ),
-                                ),
                         ),
                         // GestureDetector(
                         //   onTap: () {
@@ -203,28 +230,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 25),
                   CutsomTile(title: "Student Name", value: user.fullName),
                   CutsomTile(
-                      title: "Gender",
-                      value: user.gender == "1" ? "Male" : "Female"),
+                    title: "Gender",
+                    value: user.gender == "1" ? "Male" : "Female",
+                  ),
                   CutsomTile(title: "Mobile Number", value: user.mobileNumber),
                   CutsomTile(title: "Email ID", value: user.email),
                   // State Display
-                  Obx(() => CutsomTile(
-                        title: "State",
-                        value: stateController.isLoading.value
-                            ? const SizedBox(
+                  Obx(
+                    () => CutsomTile(
+                      title: "State",
+                      value:
+                          stateController.isLoading.value
+                              ? const SizedBox(
                                 height: 15,
                                 width: 15,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
-                            : stateController.getStateNameById(user.state) ??
-                                'N/A',
-                      )),
+                              : stateController.getStateNameById(user.state) ??
+                                  'N/A',
+                    ),
+                  ),
                   // City Display
-                  Obx(() => CutsomTile(
+                  Obx(
+                    () => CutsomTile(
                       title: "City",
-                      value:
-                          cityController.getCityNameById(user.city) ?? "N/A")),
+                      value: cityController.getCityNameById(user.city) ?? "N/A",
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
@@ -235,14 +269,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundColor: AppColors.primaryColor,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5)),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                     ),
                     child: const Text(
                       "Edit Profile",
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600),
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -265,33 +301,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           // Avatar placeholder
           Center(
-            child: CircleAvatar(
-              radius: 45,
-              backgroundColor: Colors.grey[300],
-            ),
+            child: CircleAvatar(radius: 45, backgroundColor: Colors.grey[300]),
           ),
           const SizedBox(height: 10),
           // Name placeholder
           Center(
-            child: Container(
-              width: 150,
-              height: 20,
-              color: Colors.grey[300],
-            ),
+            child: Container(width: 150, height: 20, color: Colors.grey[300]),
           ),
           const SizedBox(height: 4),
           // Greeting placeholder
           Center(
-            child: Container(
-              width: 100,
-              height: 16,
-              color: Colors.grey[300],
-            ),
+            child: Container(width: 100, height: 16, color: Colors.grey[300]),
           ),
           const SizedBox(height: 25),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(9, (_) => _buildShimmerTile(screenWidth)) +
+            children:
+                List.generate(9, (_) => _buildShimmerTile(screenWidth)) +
                 [
                   const SizedBox(height: 20),
                   Container(
@@ -339,17 +365,21 @@ class CutsomTile extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w400, color: Colors.grey),
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 3),
           value is String
               ? Text(
-                  value,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.black),
-                )
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black,
+                ),
+              )
               : value,
           const Divider(color: Colors.grey, thickness: 0.2),
         ],

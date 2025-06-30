@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
-
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:stsexam/controller/notification/notification_controller.dart';
+import 'package:stsexam/utility/app_images.dart';
 
 import '../../app_colors.dart';
 import '../../controller/home/home_controller.dart';
@@ -12,25 +15,46 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  final controller = Get.put(HomeController());
+  final controller = Get.put(NotificationController());
   // Sample notification data
-  final List<Map<String, String>> notifications = List.generate(
-    30,
-    (index) => {
-      'message':
-          'Lorem ipsum is simply dummy text of the printing and typesetting industry.',
-      'time': '3 min ago',
-    },
-  );
+  String _getTimeAgo(DateTime createdOn) {
+    final now = DateTime.now();
+    final difference = now.difference(createdOn);
+
+    if (difference.inMinutes < 1) {
+      return "Just now";
+    } else if (difference.inMinutes == 1) {
+      return "1 min ago";
+    } else if (difference.inMinutes < 60) {
+      return "${difference.inMinutes} min ago";
+    } else if (difference.inHours == 1) {
+      return "1 hr ago";
+    } else if (difference.inHours < 24) {
+      return "${difference.inHours} hrs ago";
+    } else if (difference.inDays == 1) {
+      return "1 day ago";
+    } else {
+      return "${difference.inDays} days ago";
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    controller.fetchNotification(context: context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final ScrollController scrollController = ScrollController();
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+              scrollController.position.maxScrollExtent - 200 &&
+          !controller.isLoadingMore.value &&
+          controller.hasMoreData.value) {
+        controller.loadMoreResults(context: context);
+      }
+    });
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
@@ -38,87 +62,147 @@ class _NotificationPageState extends State<NotificationPage> {
           'Notification',
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
         ),
-        backgroundColor: AppColors.Appbar,
         elevation: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+        ),
       ),
-      body: Obx(
-        () => controller.isLoadingNoti.value
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                itemCount: controller.notificationsList.length,
-                itemBuilder: (context, index) {
-                  var noti = controller.notificationsList[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFFD9D9D9),
-                            width: 0.8,
+      backgroundColor: AppColors.backgroundColor,
+
+      body: RefreshIndicator(
+        onRefresh: () => controller.refreshleadsList(context: context),
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return Center(child: _buildShimmerItem());
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: scrollController,
+            itemCount:
+                controller.notiList.isEmpty
+                    ? 1
+                    : controller.notiList.length +
+                        (controller.hasMoreData.value ||
+                                controller.isLoadingMore.value
+                            ? 1
+                            : 0),
+            itemBuilder: (context, int index) {
+              if (controller.notiList.isEmpty) {
+                return Image.asset(AppImages.empty);
+              }
+
+              if (index == controller.notiList.length) {
+                return controller.isLoadingMore.value
+                    ? const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                    : Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(
+                        child: Text(
+                          'No more data',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppColors.textColor,
                           ),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 15.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Bell icon in a circle
-                            Container(
-                              padding: EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryColor.withOpacity(0.1),
-                                shape: BoxShape.circle, // Circular shape
-                              ),
-                              child: Image.asset(
-                                'assets/bell.png', // Path to your asset image
-                                width: 24.0, // Adjust size as needed
-                                height: 24.0,
-                                color: AppColors
-                                    .primaryColor, // Optional: Tint the image
-                              ),
-                            ),
-                            SizedBox(width: 16.0),
-                            // Notification message and time
-                            Expanded(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      noti.notificationDesc.toString(),
-                                      style: TextStyle(
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.textColor),
-                                      maxLines: 3,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  SizedBox(width: 8.0),
-                                  Text(
-                                    "${noti.time.toString()}min ago",
-                                    style: TextStyle(
-                                      fontSize: 8.0,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                    );
+              }
+
+              var noti = controller.notiList[index];
+              return Column(
+                children: [
+                  ListTile(
+                    leading: Container(
+                      height: 40,
+                      width: 40,
+                      padding: EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor.withOpacity(
+                          0.1,
+                        ), // AppColors.primaryTeal
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          'assets/bell.png', // Path to your asset image
+                          width: 24.0, // Adjust size as needed
+                          height: 24.0,
+                          color:
+                              AppColors
+                                  .primaryColor, // Optional: Tint the image
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
+                    title: Text(
+                      noti.notification,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF3B4453),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: Text(
+                      _getTimeAgo(noti.createdOn),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                  const Divider(thickness: 0.5, color: Color(0xFFD9D9D9)),
+                ],
+              );
+            },
+          );
+        }),
       ),
-      backgroundColor: AppColors.backgroundColor,
+
+    
+    );
+  }
+
+  Widget _buildShimmerItem() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: 5,
+      itemBuilder: (ctx, index) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Column(
+            children: [
+              ListTile(
+                leading: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                title: Container(
+                  height: 16,
+                  width: double.infinity,
+                  color: Colors.white,
+                ),
+                subtitle: Container(
+                  height: 12,
+                  width: 100,
+                  color: Colors.white,
+                  margin: const EdgeInsets.only(top: 8),
+                ),
+                trailing: Container(height: 12, width: 50, color: Colors.white),
+              ),
+              const Divider(thickness: 0.5),
+            ],
+          ),
+        );
+      },
     );
   }
 }

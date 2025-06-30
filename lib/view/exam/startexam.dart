@@ -22,10 +22,10 @@ class _StartExamPageState extends State<StartExamPage>
   final _noScreenshot = NoScreenshot.instance;
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
-  Timer? _appSwitchTimer;
   int _switchAttemptCount = 0;
   final int _maxAllowedAttempts = 3;
   bool _leftApp = false;
+  DateTime? _pauseStartTime; // Track when the app was paused
 
   void disableScreenshot() async {
     bool result = await _noScreenshot.screenshotOff();
@@ -77,18 +77,8 @@ class _StartExamPageState extends State<StartExamPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    //disableScreenshot(); // Disable screenshots when the screen is initialized
-    // initializeCamera();
-    _appSwitchTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_leftApp && _isCameraInitialized) {
-        _switchAttemptCount++;
-        if (_switchAttemptCount >= _maxAllowedAttempts) {
-          _autoSubmitExam();
-        } else {
-          _showWarningDialogWithCount();
-        }
-      }
-    });
+    disableScreenshot(); // Disable screenshots when the screen is initialized
+    initializeCamera();
     final args = Get.arguments;
     final testId = args['test_id'];
     final attemptCount = args['attempted_count'];
@@ -100,35 +90,47 @@ class _StartExamPageState extends State<StartExamPage>
 
   @override
   void dispose() {
-    _appSwitchTimer?.cancel();
-    _appSwitchTimer = null; // Clear reference to prevent accidental use
-    debugPrint('App switch timer disposed.');
-    // _cameraController?.dispose().then((_) {
-    //   debugPrint('Camera controller disposed.');
-    //   _cameraController = null;
-    // });
-    //enableScreenshot(); // Re-enable screenshots when the screen is disposed
+    _cameraController?.dispose().then((_) {
+      debugPrint('Camera controller disposed.');
+      _cameraController = null;
+    });
+    enableScreenshot(); // Re-enable screenshots when the screen is disposed
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    debugPrint('Lifecycle state changed: $state');
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _leftApp = true;
+      _pauseStartTime = DateTime.now(); // Record when the app was paused
       _cameraController?.pausePreview();
+      debugPrint('App paused or inactive, pauseStartTime: $_pauseStartTime');
     } else if (state == AppLifecycleState.resumed && _leftApp) {
       _leftApp = false;
       if (_isCameraInitialized) {
         _cameraController?.resumePreview();
       }
-      _switchAttemptCount++;
-      if (_switchAttemptCount >= _maxAllowedAttempts) {
-        _autoSubmitExam();
-      } else {
-        _showWarningDialogWithCount();
+
+      // Only increment if the app was paused for a significant duration (>500ms)
+      if (_pauseStartTime != null) {
+        final pauseDuration = DateTime.now().difference(_pauseStartTime!).inMilliseconds;
+        debugPrint('App resumed, pause duration: $pauseDuration ms');
+        if (pauseDuration > 500) { // Adjust threshold as needed
+          _switchAttemptCount++;
+          debugPrint('Switch attempt count incremented: $_switchAttemptCount');
+          if (_switchAttemptCount >= _maxAllowedAttempts) {
+            _autoSubmitExam();
+          } else {
+            _showWarningDialogWithCount();
+          }
+        } else {
+          debugPrint('Pause duration too short, not counting as app switch');
+        }
       }
+      _pauseStartTime = null; // Reset pause start time
     }
   }
 
@@ -137,20 +139,19 @@ class _StartExamPageState extends State<StartExamPage>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => AlertDialog(
-            title: const Text("Warning"),
-            content: Text(
-              "You switched away from the app ($_switchAttemptCount/$_maxAllowedAttempts).\n"
-              "After 3 attempts, the exam will be auto-submitted.",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text("Warning"),
+        content: Text(
+          "You switched away from the app ($_switchAttemptCount/$_maxAllowedAttempts).\n"
+          "After 3 attempts, the exam will be auto-submitted.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
           ),
+        ],
+      ),
     );
   }
 
@@ -199,7 +200,9 @@ class _StartExamPageState extends State<StartExamPage>
                 onPressed: () {
                   controller.selectedAnswers.clear();
                   controller.selectedOption.value = null;
+                  controller.timer!.cancel();
                   controller.currentQuestionIndex.value = 0;
+
                   Get.offAllNamed(AppRoutes.home);
                 },
                 child: const Text('Exit'),
@@ -214,27 +217,26 @@ class _StartExamPageState extends State<StartExamPage>
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed:
-                () => Get.dialog(
-                  AlertDialog(
-                    title: const Text('Exit Exam'),
-                    content: const Text(
-                      'Are you sure you want to exit the exam?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Get.back(),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Get.offAllNamed(AppRoutes.home);
-                        },
-                        child: const Text('Exit'),
-                      ),
-                    ],
-                  ),
+            onPressed: () => Get.dialog(
+              AlertDialog(
+                title: const Text('Exit Exam'),
+                content: const Text(
+                  'Are you sure you want to exit the exam?',
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.offAllNamed(AppRoutes.home);
+                    },
+                    child: const Text('Exit'),
+                  ),
+                ],
+              ),
+            ),
           ),
           title: Obx(
             () => Text(
@@ -295,9 +297,7 @@ class _StartExamPageState extends State<StartExamPage>
             );
           }
           final currentQuestion =
-              controller.filteredQuestions[controller
-                  .currentQuestionIndex
-                  .value];
+              controller.filteredQuestions[controller.currentQuestionIndex.value];
           final Map<String, String>? options = currentQuestion.options;
           final String questionText =
               currentQuestion.question ?? 'Question not available';
@@ -340,13 +340,12 @@ class _StartExamPageState extends State<StartExamPage>
                     border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child:
-                      _isCameraInitialized && _cameraController != null
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CameraPreview(_cameraController!),
-                          )
-                          : const Center(child: CircularProgressIndicator()),
+                  child: _isCameraInitialized && _cameraController != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: CameraPreview(_cameraController!),
+                        )
+                      : const Center(child: CircularProgressIndicator()),
                 ),
               ),
               Padding(
@@ -396,27 +395,26 @@ class _StartExamPageState extends State<StartExamPage>
                 () => Row(
                   children: [
                     Expanded(
-                      child:
-                          controller.currentQuestionIndex.value > 0 &&
-                                  controller.currentQuestionIndex.value != -1
-                              ? OutlinedButton(
-                                onPressed: controller.previousQuestion,
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.grey),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
+                      child: controller.currentQuestionIndex.value > 0 &&
+                              controller.currentQuestionIndex.value != -1
+                          ? OutlinedButton(
+                              onPressed: controller.previousQuestion,
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.grey),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 16,
                                 ),
-                                child: const Text(
-                                  'Previous',
-                                  style: TextStyle(color: Colors.black),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
-                              )
-                              : const SizedBox.shrink(),
+                              ),
+                              child: const Text(
+                                'Previous',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -470,10 +468,9 @@ class _StartExamPageState extends State<StartExamPage>
     return GestureDetector(
       onTap: () {
         controller.selectedOption.value = optionKey;
-        controller.selectedAnswers[controller
-                .filteredQuestions[controller.currentQuestionIndex.value]
-                .questionId] =
-            optionKey;
+        controller.selectedAnswers[
+            controller.filteredQuestions[controller.currentQuestionIndex.value]
+                .questionId] = optionKey;
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
@@ -492,15 +489,13 @@ class _StartExamPageState extends State<StartExamPage>
               '$optionKey. $optionText',
               style: const TextStyle(fontSize: 16, color: Colors.black),
             ),
-            if (option.value.isEmpty &&
-                controller.imageLink.value.isNotEmpty) ...[
+            if (option.value.isEmpty && controller.imageLink.value.isNotEmpty) ...[
               const SizedBox(height: 8),
               Image.network(
                 controller.imageLink.value,
                 height: 100,
-                errorBuilder:
-                    (context, error, stackTrace) =>
-                        const Text('Image not available'),
+                errorBuilder: (context, error, stackTrace) =>
+                    const Text('Image not available'),
               ),
             ],
           ],
@@ -525,7 +520,7 @@ class _StartExamPageState extends State<StartExamPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(width: 100, height: 14, color: Colors.grey[300]),
+                Container(width:100, height: 14, color: Colors.grey[300]),
                 Container(width: 80, height: 14, color: Colors.grey[300]),
               ],
             ),

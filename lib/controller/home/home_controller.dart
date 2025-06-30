@@ -4,8 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
-
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
@@ -17,7 +15,7 @@ import '../../model/home/get_available_exam_response.dart';
 import '../../model/home/get_notifications_response.dart';
 import '../../model/home/latest_exam_model.dart';
 import '../../model/home/latest_exam_response.dart';
-import '../../model/home/notification_model.dart';
+
 import '../../model/result_list/get_result_list_response.dart';
 import '../../utility/app_routes.dart';
 import '../../utility/app_utility.dart';
@@ -30,6 +28,7 @@ class HomeController extends GetxController {
   //var availableExamList = <AvailableExam>[].obs;
   var notificationsList = <AppNotification>[].obs;
   var errorMessage = ''.obs;
+  var errorMessageNoti = ''.obs;
   var errorMessagel = ''.obs;
   RxBool isLoading = true.obs;
   RxBool isLoadingl = true.obs;
@@ -39,10 +38,11 @@ class HomeController extends GetxController {
 
   void onInit() {
     super.onInit();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    fetchBannerImages(context: Get.context!);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchBannerImages(context: Get.context!);
+      fetchNotification(context: Get.context!);
     });
-    
+
     //  // fetchAvailableExam(context: Get.context!);
     //   fetchNotification(context: Get.context!);
   }
@@ -71,28 +71,32 @@ class HomeController extends GetxController {
         "test_id": "",
         "attempted_test_id": "",
         "limit": "",
-        "offset": ""
+        "offset": "",
       };
       List<GetExamResultListResponse>? response =
           (await Networkcall().postMethod(
-        Networkutility.latestexamApi,
-        Networkutility.latestexam,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<GetExamResultListResponse>?;
+                Networkutility.latestexamApi,
+                Networkutility.latestexam,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<GetExamResultListResponse>?;
 
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
           final exam = response[0].data;
           print("exam");
           for (var ex in exam) {
-            examList.add(LatestExam(
+            examList.add(
+              LatestExam(
                 testName: ex.testName,
                 totalQuestion: int.parse(ex.totalQuestions),
                 correct: ex.correct,
                 incorrect: ex.incorrect,
                 testid: ex.testId,
-                attemptid: ex.attemptedTestId));
+                attemptid: ex.attemptedTestId,
+              ),
+            );
           }
         }
       } else {
@@ -132,26 +136,30 @@ class HomeController extends GetxController {
       //   filterPackagingTypeId.value,
       // );
       final jsonBody = {};
-      List<GetBannerImagesResponse>? response = (await Networkcall().postMethod(
-        Networkutility.bannerImagesApi,
-        Networkutility.bannerImages,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<GetBannerImagesResponse>?;
+      List<GetBannerImagesResponse>? response =
+          (await Networkcall().postMethod(
+                Networkutility.bannerImagesApi,
+                Networkutility.bannerImages,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<GetBannerImagesResponse>?;
 
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
           final images = response[0].data;
           log("Dtaa=============>${images.first.bannerImage}");
-          imageLink.value = response[0]
-              .imageLink
+          imageLink.value = response[0].imageLink
               .replaceAll(r'\/', '/')
               .replaceAll(r'\:', ':');
           for (var img in images) {
-            bannerImagesList.add(BannerImages(
+            bannerImagesList.add(
+              BannerImages(
                 bannerName: img.bannerName,
                 bannerImage: img.bannerImage,
-                id: img.id));
+                id: img.id,
+              ),
+            );
           }
         }
       } else {
@@ -233,7 +241,7 @@ class HomeController extends GetxController {
   }) async {
     try {
       isLoadingNoti.value = true;
-      errorMessage.value = '';
+      errorMessageNoti.value = '';
 
       // final jsonBody = Createjson().createJsonForGetProduct(
       //   "10",
@@ -243,38 +251,54 @@ class HomeController extends GetxController {
       //   filterCompanyId.value,
       //   filterPackagingTypeId.value,
       // );
-      final jsonBody = {};
-      List<GetNotificationsResponse>? response =
+      final jsonBody = {
+        {
+          "user_id": AppUtility.userID,
+          "user_type": AppUtility.userType,
+          "test_id": "",
+          "single_id": "",
+          "limit": "",
+          "offset": "",
+        },
+      };
+      List<GetAllNotificationsResponse>? response =
           (await Networkcall().postMethod(
-        Networkutility.notificationsApi,
-        Networkutility.notifications,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<GetNotificationsResponse>?;
-
+                Networkutility.notificationsApi,
+                Networkutility.notifications,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<GetAllNotificationsResponse>?;
+      log("call");
       if (response != null && response.isNotEmpty) {
-        if (response[0].status == true || response[0].status == false) {
+        if (response[0].status == "true") {
           final notification = response[0].data;
           for (var noti in notification) {
-            notificationsList.add(AppNotification(
+            notificationsList.add(
+              AppNotification(
                 id: noti.id,
-                time: noti.time,
-                notificationDesc: noti.notificationDesc));
+                userId: noti.userId,
+                attemptedTestId: noti.attemptedTestId,
+                notificationTitle: noti.notificationTitle,
+                notification: noti.notification,
+                createdOn: noti.createdOn,
+              ),
+            );
           }
         }
       } else {
-        errorMessage.value = 'No response from server';
+        errorMessageNoti.value = 'No response from server';
       }
     } on NoInternetException catch (e) {
-      errorMessage.value = e.message;
+      errorMessageNoti.value = e.message;
     } on TimeoutException catch (e) {
-      errorMessage.value = e.message;
+      errorMessageNoti.value = e.message;
     } on HttpException catch (e) {
-      errorMessage.value = '${e.message} (Code: ${e.statusCode})';
+      errorMessageNoti.value = '${e.message} (Code: ${e.statusCode})';
     } on ParseException catch (e) {
       errorMessage.value = e.message;
     } catch (e) {
-      errorMessage.value = 'Unexpected error: $e';
+      errorMessageNoti.value = 'Unexpected error: $e';
     } finally {
       isLoadingNoti.value = false;
     }
@@ -303,7 +327,10 @@ class HomeController extends GetxController {
         fetchLatestexam(context: context, reset: true, forceFetch: true),
         fetchBannerImages(context: context, reset: true, forceFetch: true),
         examListController.fetchallExam(
-            context: context, reset: true, forceFetch: true),
+          context: context,
+          reset: true,
+          forceFetch: true,
+        ),
         // fetchNotification(context: context, reset: true, forceFetch: true),
       ];
 

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:stsexam/utility/customdesign/nointernetconnectionpage.dart';
+import 'package:stsexam/view/results/view_result_screen.dart';
 import '../view/exam/exam_details.dart';
 import '../view/exam/exam_instruction.dart';
 import '../view/exam/exam_list_screen.dart';
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String overview = '/overview';
   static const String testresult = '/testresult';
   static const String noInternet = '/nointernet';
+  static const String viewResult = '/view_result';
 
   static final routes = [
     GetPage(
@@ -121,6 +123,11 @@ class AppRoutes {
     GetPage(
       name: testresult,
       page: () => NoInternetPage(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: viewResult,
+      page: () => ViewResultScreen(),
       transition: Transition.fadeIn,
     ),
   ];
