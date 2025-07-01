@@ -166,13 +166,14 @@ class _OverviewPageState extends State<OverviewPage> {
               }),
             ),
             if (!isCorrect) ...[
-              const SizedBox(height: 8),
+              // const SizedBox(height: 10),
+              Divider(color: Colors.grey, thickness: 0.5),
               Text(
                 "Correct Answer: ",
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.label,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.lightText,
                 ),
               ),
               Container(
@@ -199,7 +200,7 @@ class _OverviewPageState extends State<OverviewPage> {
                             "$correctAnswer. ${options[int.parse(correctAnswer.trim()) - 1].text}",
                             style: TextStyle(
                               fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                               color: Colors.green,
                             ),
                           ),

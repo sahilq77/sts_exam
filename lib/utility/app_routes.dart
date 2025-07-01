@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:stsexam/utility/customdesign/nointernetconnectionpage.dart';
 import 'package:stsexam/view/results/view_result_screen.dart';
+import '../binding/start_exam_binding.dart';
 import '../view/exam/exam_details.dart';
 import '../view/exam/exam_instruction.dart';
 import '../view/exam/exam_list_screen.dart';
@@ -109,6 +110,7 @@ class AppRoutes {
       name: startexam,
       page: () => StartExamPage(),
       transition: Transition.fadeIn,
+        binding: StartExamBinding(),
     ),
     GetPage(
       name: overview,
