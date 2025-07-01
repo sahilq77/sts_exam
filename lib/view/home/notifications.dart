@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:stsexam/controller/notification/notification_controller.dart';
 import 'package:stsexam/utility/app_images.dart';
@@ -139,16 +140,21 @@ class _NotificationPageState extends State<NotificationPage> {
                         ),
                       ),
                     ),
-                    title: Text(
+                    title: ReadMoreText(
                       noti.notification,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF3B4453),
+                      trimMode: TrimMode.Line,
+                      style: GoogleFonts.poppins(fontSize: 12),
+                      trimLines: 2,
+                      colorClickableText: Colors.pink,
+                      trimCollapsedText: 'Read more',
+                      trimExpandedText: 'Show less',
+                      moreStyle: GoogleFonts.poppins(
+                        // color: Colors.blue,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+
                     trailing: Text(
                       _getTimeAgo(noti.createdOn),
                       style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -161,8 +167,6 @@ class _NotificationPageState extends State<NotificationPage> {
           );
         }),
       ),
-
-    
     );
   }
 

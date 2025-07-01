@@ -16,6 +16,7 @@ import '../../controller/global_controller.dart/state_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../controller/profile/update_profile_controller.dart';
 import '../../model/profile/get_profile_response.dart';
+import '../../utility/app_images.dart';
 import '../bottomnavigation/custom_bottom_bar.dart';
 
 class UpdateProfile extends StatefulWidget {
@@ -183,40 +184,40 @@ class _UpdateProfileState extends State<UpdateProfile> {
                   children: [
                     Obx(
                       () => CircleAvatar(
-                        radius: 45,
+                        radius: 50,
                         backgroundColor: Colors.grey[200],
                         child:
-                            controller.imagePath.value != null
+                            controller.imagePath.value != null &&
+                                    controller.imagePath.value!.isNotEmpty
                                 ? ClipOval(
                                   child: Image.file(
-                                    File("${controller.imagePath.value}"),
+                                    File(controller.imagePath.value!),
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                                : (profile == null ||
+                                    profile!.profileImage.isEmpty)
+                                ? ClipOval(
+                                  child: Image.asset(
+                                    AppImages.profile,
+                                    fit: BoxFit.cover,
                                   ),
                                 )
                                 : ClipOval(
                                   child: CachedNetworkImage(
-                                    imageUrl:
-                                        "${profileController.imageLink.value}${profileImage ?? ''}",
+                                    imageUrl: profile!.profileImage,
                                     fit: BoxFit.cover,
                                     placeholder:
-                                        (context, url) => Center(
+                                        (context, url) => const Center(
                                           child: CircularProgressIndicator(),
                                         ),
                                     errorWidget:
                                         (context, url, error) =>
-                                            Icon(Icons.error, size: 50),
+                                            const Icon(Icons.error, size: 50),
                                   ),
                                 ),
                       ),
                     ),
-                    // Obx(
-                    //   () => CircleAvatar(
-                    //     radius: 45,
-                    //     backgroundColor: Colors.grey[200],
-                    //     backgroundImage: controller.imagePath.value == null
-                    //         ? AssetImage("assets/image.jpg")
-                    //         : FileImage(File(controller.imagePath.value!)),
-                    //   ),
-                    // ),
                     GestureDetector(
                       onTap: () => controller.pickImage(ImageSource.gallery),
                       child: Container(
@@ -228,7 +229,7 @@ class _UpdateProfileState extends State<UpdateProfile> {
                         padding: const EdgeInsets.all(5),
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/edit-line.png',
+                            "assets/edit-line.png",
                             width: 15,
                             height: 15,
                             fit: BoxFit.cover,

@@ -7,6 +7,7 @@ import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 import '../../controller/global_controller.dart/city_controller.dart';
 import '../../controller/global_controller.dart/state_controller.dart';
 import '../../controller/profile/profile_controller.dart';
+import '../../utility/app_images.dart';
 import '../../utility/app_routes.dart';
 import '../bottomnavigation/custom_bottom_bar.dart';
 
@@ -150,61 +151,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Avatar and edit icon
-                  Center(
-                    child: Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 45,
-                          backgroundColor: Colors.grey[200],
-                          child:
-                              user.profileImage == null
-                                  ? ClipOval(
-                                    child: Image.asset(
-                                      "assets/image.jpg",
-                                      height: 90,
-                                      width: 90,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                  : ClipOval(
-                                    child: CachedNetworkImage(
-                                      imageUrl:
-                                          "${controller.imageLink.value}${user.profileImage}",
-                                      fit: BoxFit.cover,
-                                      placeholder:
-                                          (context, url) => const Center(
-                                            child: CircularProgressIndicator(),
-                                          ),
-                                      errorWidget:
-                                          (context, url, error) =>
-                                              const Icon(Icons.error, size: 50),
-                                    ),
-                                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Avatar and edit icon
+                      Center(
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.grey[200],
+                              child:
+                                  user.profileImage == ""
+                                      ? ClipOval(
+                                        child: Image.asset(
+                                          AppImages.profile,
+                                          // height: 90,
+                                          // width: 90,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                      : ClipOval(
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              "${controller.imageLink.value}${user.profileImage}",
+                                          fit: BoxFit.cover,
+                                          placeholder:
+                                              (context, url) => const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                          errorWidget:
+                                              (context, url, error) =>
+                                                  const Icon(
+                                                    Icons.error,
+                                                    size: 50,
+                                                  ),
+                                        ),
+                                      ),
+                            ),
+                          ],
                         ),
-                        // GestureDetector(
-                        //   onTap: () {
-                        //     // controller.pickImage(ImageSource.gallery);
-                        //   },
-                        //   child: Container(
-                        //     decoration: BoxDecoration(
-                        //       color: const Color(0xFFE5E7EB),
-                        //       shape: BoxShape.circle,
-                        //       border: Border.all(color: Colors.white, width: 2),
-                        //     ),
-                        //     padding: const EdgeInsets.all(5),
-                        //     child: ClipOval(
-                        //       child: Image.asset(
-                        //         'assets/edit-line.png',
-                        //         width: 15,
-                        //         height: 15,
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+
                   const SizedBox(height: 10),
                   Center(
                     child: Text(

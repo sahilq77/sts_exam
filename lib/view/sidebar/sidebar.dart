@@ -54,12 +54,14 @@ class _SidebarState extends State<Sidebar> {
 
                   if (profileController.userProfileList.isEmpty) {
                     return const Center(
-                        child: Text("No profile data available"));
+                      child: Text("No profile data available"),
+                    );
                   }
 
                   final user = profileController.userProfileList[0];
                   print(
-                      "Building ${controller.imageLink.value}${user.profileImage}");
+                    "Building ${controller.imageLink.value}${user.profileImage}",
+                  );
 
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -78,28 +80,53 @@ class _SidebarState extends State<Sidebar> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const SizedBox(height: 30),
-                            CircleAvatar(
-                              radius: 45,
-                              backgroundColor: Colors.grey[200],
-                              child: user.profileImage == null
-                                  ? Icon(
-                                      Icons.person,
-                                      size: 45,
-                                      color: AppColors.primaryColor,
-                                    )
-                                  : ClipOval(
-                                      child: CachedNetworkImage(
-                                        imageUrl:
-                                            "${profileController.imageLink.value}${user.profileImage}",
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) =>
-                                            const Center(
-                                                child:
-                                                    CircularProgressIndicator()),
-                                        errorWidget: (context, url, error) =>
-                                            const Icon(Icons.error, size: 50),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Avatar and edit icon
+                                Center(
+                                  child: Stack(
+                                    alignment: Alignment.bottomRight,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 50,
+                                        backgroundColor: Colors.grey[200],
+                                        child:
+                                            user.profileImage == ""
+                                                ? ClipOval(
+                                                  child: Image.asset(
+                                                    AppImages.profile,
+                                                    // height: 90,
+                                                    // width: 90,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                )
+                                                : ClipOval(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl:
+                                                        "${controller.imageLink.value}${user.profileImage}",
+                                                    fit: BoxFit.cover,
+                                                    placeholder:
+                                                        (
+                                                          context,
+                                                          url,
+                                                        ) => const Center(
+                                                          child:
+                                                              CircularProgressIndicator(),
+                                                        ),
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            const Icon(
+                                                              Icons.error,
+                                                              size: 30,
+                                                            ),
+                                                  ),
+                                                ),
                                       ),
-                                    ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 10),
                             Text(
@@ -119,7 +146,7 @@ class _SidebarState extends State<Sidebar> {
                             ),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   );
                 }),
@@ -138,10 +165,7 @@ class _SidebarState extends State<Sidebar> {
                   ),
                   title: Text(
                     'Result',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                   ),
                   onTap: () {
                     Get.toNamed(AppRoutes.result);
@@ -156,10 +180,7 @@ class _SidebarState extends State<Sidebar> {
                   ),
                   title: Text(
                     'Notifications',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                   ),
                   onTap: () {
                     Get.toNamed(AppRoutes.notification);
@@ -174,10 +195,7 @@ class _SidebarState extends State<Sidebar> {
                   ),
                   title: Text(
                     'Payments',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                   ),
                   onTap: () {
                     Get.toNamed(AppRoutes.PaymentReceipt);
@@ -237,10 +255,7 @@ class _SidebarState extends State<Sidebar> {
                   ),
                   title: Text(
                     'Update Profile',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                   ),
                   onTap: () {
                     final user = profileController.userProfileList[0];
@@ -257,15 +272,14 @@ class _SidebarState extends State<Sidebar> {
                   ),
                   title: const Text(
                     'Logout',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.red,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.red),
                   ),
                   onTap: () {
                     Navigator.pop(context); // Close the drawer
                     _showLogoutBottomSheet(
-                        context, controller); // Show the bottom sheet
+                      context,
+                      controller,
+                    ); // Show the bottom sheet
                   },
                 ),
                 Padding(
@@ -343,10 +357,7 @@ class _SidebarState extends State<Sidebar> {
                       Navigator.pop(context);
                       controller.logout(); // Use the _logout function
                     },
-                    child: const Text(
-                      'Logout',
-                      style: TextStyle(fontSize: 14),
-                    ),
+                    child: const Text('Logout', style: TextStyle(fontSize: 14)),
                   ),
                   OutlinedButton(
                     style: OutlinedButton.styleFrom(
