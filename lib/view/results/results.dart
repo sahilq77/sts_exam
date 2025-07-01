@@ -46,7 +46,7 @@ class _ResultScreenState extends State<ResultScreen> {
     return WillPopScope(
       onWillPop: () async {
         Get.offNamed(AppRoutes.home);
-        return false; // Prevent default back navigation
+        return true; // Prevent default back navigation
       },
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
@@ -129,198 +129,197 @@ class _ResultScreenState extends State<ResultScreen> {
         body: Obx(
           () => Padding(
             padding: EdgeInsets.only(top: verticalPadding),
-            child:
-                controller.isLoading.value
-                    ? _buildShimmerEffect(
-                      screenWidth: screenWidth,
-                      screenHeight: screenHeight,
-                      fontScale: fontScale,
-                      horizontalPadding: horizontalPadding,
-                      verticalPadding: verticalPadding,
-                    )
-                    : controller.errorMessage.value.isNotEmpty
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            controller.errorMessage.value,
+            child: controller.isLoading.value
+                ? _buildShimmerEffect(
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                    fontScale: fontScale,
+                    horizontalPadding: horizontalPadding,
+                    verticalPadding: verticalPadding,
+                  )
+                : controller.errorMessage.value.isNotEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          controller.errorMessage.value,
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16 * fontScale,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: verticalPadding),
+                        ElevatedButton(
+                          onPressed: () {
+                            final args = Get.arguments;
+                            final testId = args['test_id'] as String?;
+                            final attemptCount =
+                                args['attempted_test_id'] as String?;
+                            if (testId != null && attemptCount != null) {
+                              controller.fetchResult(
+                                context: context,
+                                testID: testId,
+                                attemptid: attemptCount,
+                              );
+                            }
+                          },
+                          child: Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : controller.resultList.isEmpty
+                ? Center(
+                    child: Text(
+                      'No result data available',
+                      style: TextStyle(
+                        color: AppColors.textColor,
+                        fontSize: 16 * fontScale,
+                      ),
+                    ),
+                  )
+                : controller.resultList.isNotEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Image.asset(
+                        'assets/smily.png',
+                        width: screenWidth * 0.3,
+                        height: screenHeight * 0.13,
+                      ),
+                      SizedBox(height: screenHeight * 0.025),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            vertical: verticalPadding,
+                            horizontal: horizontalPadding,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFFFFFF),
+                            border: Border.all(
+                              color: Color(0xFFE5E7EB),
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'Score  |  ${controller.resultList.first.yourScore}/${controller.resultList.first.scoreOutoff}',
                             style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 16 * fontScale,
+                              fontSize: 18 * fontScale,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textColor,
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: verticalPadding),
-                          ElevatedButton(
-                            onPressed: () {
-                              final args = Get.arguments;
-                              final testId = args['test_id'] as String?;
-                              final attemptCount =
-                                  args['attempted_test_id'] as String?;
-                              if (testId != null && attemptCount != null) {
-                                controller.fetchResult(
-                                  context: context,
-                                  testID: testId,
-                                  attemptid: attemptCount,
-                                );
-                              }
-                            },
-                            child: Text('Retry'),
-                          ),
-                        ],
-                      ),
-                    )
-                    : controller.resultList.isEmpty
-                    ? Center(
-                      child: Text(
-                        'No result data available',
-                        style: TextStyle(
-                          color: AppColors.textColor,
-                          fontSize: 16 * fontScale,
                         ),
                       ),
-                    )
-                    : controller.resultList.isNotEmpty
-                    ? Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                          'assets/smily.png',
-                          width: screenWidth * 0.3,
-                          height: screenHeight * 0.13,
-                        ),
-                        SizedBox(height: screenHeight * 0.025),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: horizontalPadding,
+                      SizedBox(height: screenHeight * 0.018),
+                      Container(
+                        padding: EdgeInsets.all(horizontalPadding),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Color(0xFFF3F3F4),
+                            width: 1.0,
                           ),
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.symmetric(
-                              vertical: verticalPadding,
-                              horizontal: horizontalPadding,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Color(0xFFFFFFFF),
-                              border: Border.all(
-                                color: Color(0xFFE5E7EB),
-                                width: 1.0,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.resultList.first.testName,
+                              style: TextStyle(
+                                fontSize: 16 * fontScale,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF353B43),
                               ),
-                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            SizedBox(height: screenHeight * 0.02),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildResultCard(
+                                  'TOTAL QUESTION',
+                                  controller.resultList.first.totalQuestions
+                                      .toString(),
+                                  Colors.yellow[100]!,
+                                  Color(0xFFCA8A04),
+                                  Color(0xFFF4C542),
+                                  fontScale,
+                                  screenWidth,
+                                  screenHeight,
+                                ),
+                                SizedBox(width: screenWidth * 0.025),
+                                _buildResultCard(
+                                  'CORRECT',
+                                  controller.resultList.first.correct
+                                      .toString(),
+                                  Colors.green[100]!,
+                                  Color(0xFF3A954E),
+                                  Color(0xFF6BC082),
+                                  fontScale,
+                                  screenWidth,
+                                  screenHeight,
+                                ),
+                                SizedBox(width: screenWidth * 0.025),
+                                _buildResultCard(
+                                  'INCORRECT',
+                                  controller.resultList.first.incorrect
+                                      .toString(),
+                                  Colors.red[100]!,
+                                  Color(0xFFDC2626),
+                                  Color(0xFFF46666),
+                                  fontScale,
+                                  screenWidth,
+                                  screenHeight,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.04),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  controller.resultList.first.examStatus ==
+                                      "Passed"
+                                  ? Colors.green[600]
+                                  : Colors.red,
+                              padding: EdgeInsets.symmetric(
+                                vertical: verticalPadding * 1.5,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                             child: Text(
-                              'Score  |  ${controller.resultList.first.yourScore}/${controller.resultList.first.scoreOutoff}',
+                              controller.resultList.first.examStatus,
                               style: TextStyle(
-                                fontSize: 18 * fontScale,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textColor,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.018),
-                        Container(
-                          padding: EdgeInsets.all(horizontalPadding),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Color(0xFFF3F3F4),
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                controller.resultList.first.testName,
-                                style: TextStyle(
-                                  fontSize: 16 * fontScale,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF353B43),
-                                ),
-                              ),
-                              SizedBox(height: screenHeight * 0.02),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildResultCard(
-                                    'TOTAL QUESTION',
-                                    controller.resultList.first.totalQuestions
-                                        .toString(),
-                                    Colors.yellow[100]!,
-                                    Color(0xFFCA8A04),
-                                    Color(0xFFF4C542),
-                                    fontScale,
-                                    screenWidth,
-                                    screenHeight,
-                                  ),
-                                  SizedBox(width: screenWidth * 0.025),
-                                  _buildResultCard(
-                                    'CORRECT',
-                                    controller.resultList.first.correct
-                                        .toString(),
-                                    Colors.green[100]!,
-                                    Color(0xFF3A954E),
-                                    Color(0xFF6BC082),
-                                    fontScale,
-                                    screenWidth,
-                                    screenHeight,
-                                  ),
-                                  SizedBox(width: screenWidth * 0.025),
-                                  _buildResultCard(
-                                    'INCORRECT',
-                                    controller.resultList.first.incorrect
-                                        .toString(),
-                                    Colors.red[100]!,
-                                    Color(0xFFDC2626),
-                                    Color(0xFFF46666),
-                                    fontScale,
-                                    screenWidth,
-                                    screenHeight,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.04),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: horizontalPadding,
-                          ),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    controller.resultList.first.examStatus ==
-                                            "Passed"
-                                        ? Colors.green[600]
-                                        : Colors.red,
-                                padding: EdgeInsets.symmetric(
-                                  vertical: verticalPadding * 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: Text(
-                                controller.resultList.first.examStatus,
-                                style: TextStyle(
-                                  fontSize: 16 * fontScale,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                                fontSize: 16 * fontScale,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    )
-                    : SizedBox.shrink(), // Fallback for unexpected state
+                      ),
+                    ],
+                  )
+                : SizedBox.shrink(), // Fallback for unexpected state
           ),
         ),
       ),

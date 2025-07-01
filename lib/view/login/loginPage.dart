@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
 
 import '../../app_colors.dart';
 import '../../controller/login/login_controller.dart';
@@ -87,8 +87,9 @@ class _LoginPageState extends State<LoginPage> {
           //   },
           // ),
           bottom: PreferredSize(
-            preferredSize:
-                Size.fromHeight(1.0), // Set height for the bottom border
+            preferredSize: Size.fromHeight(
+              1.0,
+            ), // Set height for the bottom border
             child: Container(
               color: Color(0xFFE5E7EB), // Light grey color for the border
               height: 1.0, // Thickness of the border
@@ -101,8 +102,9 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment
-                .start, // Align children to the start (left) by default
+            crossAxisAlignment:
+                CrossAxisAlignment
+                    .start, // Align children to the start (left) by default
             children: [
               // App logo (centered)
               Center(
@@ -149,9 +151,10 @@ class _LoginPageState extends State<LoginPage> {
                   color: AppColors.backgroundColor,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: _phoneError != null
-                        ? AppColors.errorColor
-                        : const Color(0xFFD0D0D0),
+                    color:
+                        _phoneError != null
+                            ? AppColors.errorColor
+                            : const Color(0xFFD0D0D0),
                     width: 0.8,
                   ),
                 ),
@@ -171,13 +174,18 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: TextField(
+                      child: TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        maxLength: 10,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(
+                            10,
+                          ), // Restrict input to 10 digits
+                        ],
                         style: TextStyle(
-                            fontSize:
-                                17), // Replace with AppFontStyle2.blinker if available
+                          fontSize: 17,
+                        ), // Replace with AppFontStyle2.blinker if available
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           counterText: "",
@@ -202,10 +210,7 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.only(top: 5, left: 12),
                   child: Text(
                     _phoneError!,
-                    style: TextStyle(
-                      color: AppColors.errorColor,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: AppColors.errorColor, fontSize: 12),
                   ),
                 ),
               SizedBox(height: 20),
@@ -233,9 +238,10 @@ class _LoginPageState extends State<LoginPage> {
                   color: AppColors.backgroundColor,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: _passwordError != null
-                        ? AppColors.errorColor
-                        : const Color(0xFFD0D0D0),
+                    color:
+                        _passwordError != null
+                            ? AppColors.errorColor
+                            : const Color(0xFFD0D0D0),
                     width: 0.8,
                   ),
                 ),
@@ -246,8 +252,8 @@ class _LoginPageState extends State<LoginPage> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         style: TextStyle(
-                            fontSize:
-                                17), // Replace with AppFontStyle2.blinker if available
+                          fontSize: 17,
+                        ), // Replace with AppFontStyle2.blinker if available
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           counterText: "",
@@ -286,10 +292,7 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.only(top: 5, left: 12),
                   child: Text(
                     _passwordError!,
-                    style: TextStyle(
-                      color: AppColors.errorColor,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: AppColors.errorColor, fontSize: 12),
                   ),
                 ),
               SizedBox(height: 15),
@@ -299,8 +302,10 @@ class _LoginPageState extends State<LoginPage> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(color: AppColors.textColor))),
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.textColor),
+                    ),
+                  ),
                   child: Text(
                     'Forgot Password?',
                     style: TextStyle(
@@ -311,6 +316,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
               // SizedBox(height: 30),
               // // Terms and Conditions Checkbox
               // Row(
@@ -339,7 +345,6 @@ class _LoginPageState extends State<LoginPage> {
               //     ),
               //   ],
               // ),
-
               SizedBox(height: 30),
               // Login Button (centered and full-width)
               Center(
@@ -348,9 +353,10 @@ class _LoginPageState extends State<LoginPage> {
                     _validateInputs();
                     if (_phoneError == null && _passwordError == null) {
                       controller.login(
-                          mobileNumber: _phoneController.text.toString(),
-                          password: _passwordController.text.toString(),
-                          token: pushtoken);
+                        mobileNumber: _phoneController.text.toString(),
+                        password: _passwordController.text.toString(),
+                        token: pushtoken,
+                      );
                       // Navigate to HomePage
                       // Get.toNamed(AppRoutes.home);
                       // Navigator.pushReplacement(
@@ -362,10 +368,13 @@ class _LoginPageState extends State<LoginPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
                         AppColors.primaryColor, // Use custom color for button
-                    minimumSize:
-                        Size(double.infinity, 50), // Full width, fixed height
+                    minimumSize: Size(
+                      double.infinity,
+                      50,
+                    ), // Full width, fixed height
                     padding: EdgeInsets.symmetric(
-                        vertical: 15), // Vertical padding only
+                      vertical: 15,
+                    ), // Vertical padding only
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -377,9 +386,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 20),
               _signup(context),
             ],
           ),
@@ -394,17 +401,20 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         const Text("Dont have an account? "),
         TextButton(
-            onPressed: () {
-              Get.toNamed(AppRoutes.signUp);
-              // Navigator.push(context,
-              //     MaterialPageRoute(builder: (context) => SignupPage()));
-              // controller.lo
-            },
-            child: const Text(
-              "Sign Up",
-              style: TextStyle(
-                  color: AppColors.primaryColor, fontWeight: FontWeight.bold),
-            ))
+          onPressed: () {
+            Get.toNamed(AppRoutes.signUp);
+            // Navigator.push(context,
+            //     MaterialPageRoute(builder: (context) => SignupPage()));
+            // controller.lo
+          },
+          child: const Text(
+            "Sign Up",
+            style: TextStyle(
+              color: AppColors.primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ],
     );
   }
