@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
           }
 
           if (profileController.userProfileList.isEmpty) {
-            return const Center(child: Text("No profile data available"));
+            return const Center(child: Text(""));
           }
 
           final user = profileController.userProfileList[0];
@@ -159,13 +159,13 @@ class _HomePageState extends State<HomePage> {
           //     color: AppColors.textColor,
           //   ),
           // ),
-          IconButton(
-            icon: Image.asset(AppImages.bellIcon, width: 24, height: 24),
-            tooltip: 'Notifications',
-            onPressed: () {
-              Get.toNamed(AppRoutes.notification);
-              // TODO: Implement notification action
-            },
+                IconButton(
+                  icon: Image.asset(AppImages.bellIcon, width: 24, height: 24),
+                  tooltip: 'Notifications',
+                  onPressed: () {
+                    Get.toNamed(AppRoutes.notification);
+                    // TODO: Implement notification action
+                  },
           ),
         ],
         elevation: 0,

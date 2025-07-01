@@ -48,6 +48,7 @@ class Overview {
   List<Option> options;
   String selectedAnswer;
   bool isCorrect;
+  String correctAnswer;
 
   Overview({
     required this.questionNumber,
@@ -56,6 +57,7 @@ class Overview {
     required this.options,
     required this.selectedAnswer,
     required this.isCorrect,
+     required this.correctAnswer,
   });
 
   factory Overview.fromJson(Map<String, dynamic> json) => Overview(
@@ -66,6 +68,7 @@ class Overview {
             List<Option>.from(json["options"].map((x) => Option.fromJson(x))),
         selectedAnswer: json["selectedAnswer"] ?? "",
         isCorrect: json["isCorrect"] ?? "",
+         correctAnswer: json["correct_answer"] ?? "",
       );
 
   Map<String, dynamic> toJson() => {
@@ -75,6 +78,7 @@ class Overview {
         "options": List<dynamic>.from(options.map((x) => x.toJson())),
         "selectedAnswer": selectedAnswer,
         "isCorrect": isCorrect,
+        "correct_answer":correctAnswer
       };
 }
 

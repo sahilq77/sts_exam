@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
@@ -65,12 +64,14 @@ class ResultOverviewContoller extends GetxController {
         "offset": ((currentPage.value - 1) * pageSize).toString(),
       };
 
-      List<GetOverviewResponse>? response = (await Networkcall().postMethod(
-        Networkutility.getTestoverviewApi,
-        Networkutility.getTestoverview,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<GetOverviewResponse>?;
+      List<GetOverviewResponse>? response =
+          (await Networkcall().postMethod(
+                Networkutility.getTestoverviewApi,
+                Networkutility.getTestoverview,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<GetOverviewResponse>?;
 
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
@@ -81,13 +82,17 @@ class ResultOverviewContoller extends GetxController {
           }
 
           for (var ov in overview) {
-            overviewList.add(Overview(
+            overviewList.add(
+              Overview(
                 questionNumber: ov.questionNumber,
                 question: ov.question,
                 questionImage: ov.questionImage,
                 options: ov.options,
                 selectedAnswer: ov.selectedAnswer,
-                isCorrect: ov.isCorrect));
+                isCorrect: ov.isCorrect,
+                correctAnswer: ov.correctAnswer,
+              ),
+            );
           }
 
           if (isPagination) {
@@ -153,9 +158,7 @@ class ResultOverviewContoller extends GetxController {
     }
   }
 
-  Future<void> loadMoreExams({
-    required BuildContext context,
-  }) async {
+  Future<void> loadMoreExams({required BuildContext context}) async {
     if (!isLoading.value && hasMore.value) {
       await fetchOverview(context: context, isPagination: true);
     }
