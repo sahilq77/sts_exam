@@ -189,10 +189,19 @@ class _UpdateProfileState extends State<UpdateProfile> {
                         child:
                             controller.imagePath.value != null &&
                                     controller.imagePath.value!.isNotEmpty
-                                ? ClipOval(
-                                  child: Image.file(
-                                    File(controller.imagePath.value!),
-                                    fit: BoxFit.cover,
+                                ? AspectRatio(
+                                  aspectRatio:
+                                      1, // Ensures a square aspect ratio for the circle
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: ClipOval(
+                                      child: Image.file(
+                                        File(controller.imagePath.value!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                                   ),
                                 )
                                 : (profile == null ||
@@ -203,23 +212,41 @@ class _UpdateProfileState extends State<UpdateProfile> {
                                     fit: BoxFit.cover,
                                   ),
                                 )
-                                : ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: profile!.profileImage,
-                                    fit: BoxFit.cover,
-                                    placeholder:
-                                        (context, url) => const Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                    errorWidget:
-                                        (context, url, error) =>
-                                            const Icon(Icons.error, size: 50),
+                                : AspectRatio(
+                                  aspectRatio:
+                                      1, // Ensures a square aspect ratio for the circle
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl:
+                                            profileController.imageLink.value +
+                                            profile!.profileImage,
+                                        fit: BoxFit.cover,
+                                        placeholder:
+                                            (context, url) => const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                        errorWidget:
+                                            (context, url, error) => const Icon(
+                                              Icons.error,
+                                              size: 50,
+                                            ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => controller.pickImage(ImageSource.gallery),
+                      onTap:
+                          () => showEditProfileImageBottomSheet(
+                            context,
+                            controller,
+                          ),
                       child: Container(
                         decoration: BoxDecoration(
                           color: const Color(0xFFE5E7EB),
@@ -645,5 +672,152 @@ class _UpdateProfileState extends State<UpdateProfile> {
     mobileNumberController.dispose();
     emailController.dispose();
     super.dispose();
+  }
+
+  void showEditProfileImageBottomSheet(
+    BuildContext context,
+    UpdateProfileController controller,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter modalSetState) {
+            return Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: 24,
+                    right: 24,
+                    top: 16,
+                  ),
+                  child: Wrap(
+                    children: [
+                      Center(
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.photo,
+                              size: 40,
+                              color: AppColors.primaryColor,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Edit Profile Photo',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF36322E),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Choose a method to update your photo',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            const SizedBox(height: 25),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Column(
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        controller.pickImage(
+                                          ImageSource.camera,
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 30,
+                                        backgroundColor: Colors.orange.shade100,
+                                        child: Icon(
+                                          Icons.camera_alt,
+                                          size: 28,
+                                          color: AppColors.primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Camera',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        controller.pickImage(
+                                          ImageSource.gallery,
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 30,
+                                        backgroundColor: Colors.orange.shade100,
+                                        child: Icon(
+                                          Icons.photo_library,
+                                          size: 28,
+                                          color: AppColors.primaryColor,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Gallery',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text(
+                                'Cancel',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // if (isUploading)
+                //   Container(
+                //     color: Colors.black.withOpacity(0.3),
+                //     child: const Center(child: CircularProgressIndicator()),
+                //   ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -91,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     return WillPopScope(
-      onWillPop: () => bottomController.onWillPop(),
+         onWillPop: () => bottomController.onWillPop(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -172,22 +172,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           fit: BoxFit.cover,
                                         ),
                                       )
-                                      : ClipOval(
-                                        child: CachedNetworkImage(
-                                          imageUrl:
-                                              "${controller.imageLink.value}${user.profileImage}",
-                                          fit: BoxFit.cover,
-                                          placeholder:
-                                              (context, url) => const Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                          errorWidget:
-                                              (context, url, error) =>
-                                                  const Icon(
-                                                    Icons.error,
-                                                    size: 50,
+                                      : AspectRatio(
+                                        aspectRatio:
+                                            1, // Ensures a square aspect ratio for the circle
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: ClipOval(
+                                            child: CachedNetworkImage(
+                                              imageUrl:
+                                                  "${controller.imageLink.value}${user.profileImage}",
+                                              fit: BoxFit.cover,
+                                              placeholder:
+                                                  (
+                                                    context,
+                                                    url,
+                                                  ) => const Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
                                                   ),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      const Icon(
+                                                        Icons.error,
+                                                        size: 50,
+                                                      ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                             ),
