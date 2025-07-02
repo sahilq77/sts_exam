@@ -19,7 +19,7 @@ import '../profile/update_profile.dart';
 import '../results/results_list.dart';
 import '../bottomnavigation/custom_bottom_bar.dart';
 import '../exam/exam_details.dart';
-import 'notifications.dart';
+import '../notification/notifications.dart';
 import '../sidebar/sidebar.dart';
 
 class HomePage extends StatefulWidget {
@@ -56,22 +56,15 @@ class _HomePageState extends State<HomePage> {
         _onRefresh();
         break;
       case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ResultListPage()),
-        );
+      
+        Get.toNamed(AppRoutes.result);
         break;
       case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => PaymentReceiptScreen()),
-        );
+      
+          Get.toNamed(AppRoutes.PaymentReceipt);
         break;
       case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const UpdateProfile()),
-        );
+         Get.toNamed(AppRoutes.updateprofile);
         break;
     }
   }
@@ -159,13 +152,13 @@ class _HomePageState extends State<HomePage> {
           //     color: AppColors.textColor,
           //   ),
           // ),
-                IconButton(
-                  icon: Image.asset(AppImages.bellIcon, width: 24, height: 24),
-                  tooltip: 'Notifications',
-                  onPressed: () {
-                    Get.toNamed(AppRoutes.notification);
-                    // TODO: Implement notification action
-                  },
+          IconButton(
+            icon: Image.asset(AppImages.bellIcon, width: 24, height: 24),
+            tooltip: 'Notifications',
+            onPressed: () {
+              Get.toNamed(AppRoutes.notification);
+              // TODO: Implement notification action
+            },
           ),
         ],
         elevation: 0,

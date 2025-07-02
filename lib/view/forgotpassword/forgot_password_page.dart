@@ -418,10 +418,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       // Assuming the loginController handles the password reset logic
                       // You may want to call a method from the controller here
                       // For now, navigate to HomePage
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomePage()),
-                      );
+                     
                     }
                   },
                   style: ElevatedButton.styleFrom(

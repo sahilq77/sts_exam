@@ -54,22 +54,22 @@ class PaymentReceiptScreen extends StatelessWidget {
                         bool isPending = index % 2 == 0;
                         return GestureDetector(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => PaymentReceiptDetailsScreen(
-                                      status: payment.paymentStatus,
-                                      isPending: isPending,
-                                      refNumber: payment.refNumber.toString(),
-                                      studentName: payment.studentName,
-                                      date: payment.date,
-                                      amount: '₹${payment.amount.toString()}',
-                                      examName:
-                                          'Special Class Railway Apprentice Examination',
-                                    ),
-                              ),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder:
+                            //         (context) => PaymentReceiptDetailsScreen(
+                            //           status: payment.paymentStatus,
+                            //           isPending: isPending,
+                            //           refNumber: payment.refNumber.toString(),
+                            //           studentName: payment.studentName,
+                            //           date: payment.date,
+                            //           amount: '₹${payment.amount.toString()}',
+                            //           examName:
+                            //               'Special Class Railway Apprentice Examination',
+                            //         ),
+                            //   ),
+                            // );
                           },
                           child: PaymentReceiptCard(
                             status: isPending ? 'Pending' : 'Completed',

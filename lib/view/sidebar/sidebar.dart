@@ -201,52 +201,7 @@ class _SidebarState extends State<Sidebar> {
                     Get.toNamed(AppRoutes.PaymentReceipt);
                   },
                 ),
-                // ListTile(
-                //   leading: Icon(
-                //     Icons.school,
-                //     color: Colors.grey[600],
-                //     size: 24,
-                //   ),
-                //   title: Text(
-                //     'Student User Details',
-                //     style: TextStyle(
-                //       fontSize: 16,
-                //       color: Colors.grey[800],
-                //     ),
-                //   ),
-                //   onTap: () {
-                //     Navigator.pop(context);
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder: (context) => const SignupPage(),
-                //       ),
-                //     );
-                //   },
-                // ),
-                // ListTile(
-                //   leading: Icon(
-                //     Icons.group,
-                //     color: Colors.grey[600],
-                //     size: 24,
-                //   ),
-                //   title: Text(
-                //     'General User Details',
-                //     style: TextStyle(
-                //       fontSize: 16,
-                //       color: Colors.grey[800],
-                //     ),
-                //   ),
-                //   onTap: () {
-                //     Navigator.pop(context);
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder: (context) => const GeneralUserDetailsPage(),
-                //       ),
-                //     );
-                //   },
-                // ),
+
                 ListTile(
                   leading: Icon(
                     Icons.person,

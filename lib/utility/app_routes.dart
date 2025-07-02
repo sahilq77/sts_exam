@@ -8,7 +8,7 @@ import '../view/exam/exam_list_screen.dart';
 import '../view/exam/startexam.dart';
 import '../view/forgotpassword/forgot_password_page.dart';
 import '../view/home/homepage.dart';
-import '../view/home/notifications.dart';
+import '../view/notification/notifications.dart';
 import '../view/login/loginPage.dart';
 import '../view/payments/payments_list.dart';
 import '../view/profile/profile_screen.dart';
