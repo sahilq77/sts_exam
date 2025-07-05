@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:stsexam/utility/app_routes.dart';
 import '../../app_colors.dart';
 import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 import '../../controller/payments/payments_list_controller.dart';
@@ -11,15 +12,40 @@ import '../../utility/widgets/custom_shimmer.dart';
 import '../bottomnavigation/custom_bottom_bar.dart';
 import 'payment_receipt_details_screen.dart';
 
-class PaymentReceiptScreen extends StatelessWidget {
+class PaymentReceiptScreen extends StatefulWidget {
+  @override
+  State<PaymentReceiptScreen> createState() => _PaymentReceiptScreenState();
+}
+
+class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    final controller = Get.put(PaymentsListController());
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          !controller.isLoadingMore.value &&
+          controller.hasMoreData.value) {
+        controller.fetchPaymentList(context: context, isPagination: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bottomController = Get.put(BottomNavigationController());
+    final bottomController = Get.find<BottomNavigationController>();
     final controller = Get.put(PaymentsListController());
     return WillPopScope(
-      onWillPop: () {
-        return bottomController.onWillPop();
-      },
+      onWillPop: () => bottomController.onWillPop(),
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.backgroundColor,
@@ -35,50 +61,69 @@ class PaymentReceiptScreen extends StatelessWidget {
           ),
         ),
         backgroundColor: AppColors.backgroundColor,
-
         body: RefreshIndicator(
           onRefresh: () => controller.refreshPaymentList(context: context),
           child: Obx(
             () =>
                 controller.isLoading.value
                     ? CutsomShimmer()
-                    : controller.paymentList.value.isEmpty
+                    : controller.paymentList.isEmpty
                     ? Center(child: Image.asset(AppImages.empty))
                     : ListView.builder(
-                      physics: AlwaysScrollableScrollPhysics(),
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(16.0),
-                      itemCount: controller.paymentList.value.length,
+                      itemCount:
+                          controller.paymentList.length +
+                          (controller.hasMoreData.value ? 1 : 0),
                       itemBuilder: (context, index) {
-                        print(controller.paymentList.toString());
-                        var payment = controller.paymentList.value[index];
-                        bool isPending = index % 2 == 0;
+                        if (index == controller.paymentList.length) {
+                          return controller.isLoadingMore.value
+                              ? const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                              : const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'No more data',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              );
+                        }
+                        var payment = controller.paymentList[index];
                         return GestureDetector(
                           onTap: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder:
-                            //         (context) => PaymentReceiptDetailsScreen(
-                            //           status: payment.paymentStatus,
-                            //           isPending: isPending,
-                            //           refNumber: payment.refNumber.toString(),
-                            //           studentName: payment.studentName,
-                            //           date: payment.date,
-                            //           amount: '₹${payment.amount.toString()}',
-                            //           examName:
-                            //               'Special Class Railway Apprentice Examination',
-                            //         ),
-                            //   ),
-                            // );
+                            Get.toNamed(
+                              AppRoutes.paymentReceiptdetail,
+                              arguments: payment,
+                            );
                           },
                           child: PaymentReceiptCard(
-                            status: isPending ? 'Pending' : 'Completed',
-                            isPending: isPending,
-                            refNumber: payment.refNumber,
-                            studentName: payment.studentName,
-                            date: payment.date,
-                            amount: payment.amount,
-                            paymentStatus: payment.paymentStatus,
+                            txnNumber: payment.transactionNo,
+                            testname: payment.testName,
+                            status:
+                                payment.paymentStatus == "1"
+                                    ? 'Completed'
+                                    : 'Pending',
+                            isPending:
+                                payment.paymentStatus == "1" ? false : true,
+                            refNumber: payment.receiptNo,
+                            studentName: payment.userName,
+                            date: payment.paymentDate.toString(),
+                            amount: payment.paymentAmount,
+                            paymentStatus:
+                                payment.paymentStatus == "1"
+                                    ? 'Completed'
+                                    : 'Pending',
                           ),
                         );
                       },
@@ -92,14 +137,19 @@ class PaymentReceiptScreen extends StatelessWidget {
 }
 
 class PaymentReceiptCard extends StatelessWidget {
+  final String testname;
   final String status;
   final bool isPending;
-  final int refNumber;
+  final String refNumber;
+  final String txnNumber;
   final String studentName;
   final String date;
   final String paymentStatus;
-  final int amount;
-  PaymentReceiptCard({
+  final String amount;
+
+  const PaymentReceiptCard({
+    required this.txnNumber,
+    required this.testname,
     required this.status,
     required this.isPending,
     required this.refNumber,
@@ -137,10 +187,10 @@ class PaymentReceiptCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Special Class Railway Apprentice Examination',
-                      style: TextStyle(
+                      testname,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -178,8 +228,8 @@ class PaymentReceiptCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Ref number',
+                const Text(
+                  'Ref Number',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
@@ -203,7 +253,32 @@ class PaymentReceiptCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const Text(
+                  'Txn Number',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF707070),
+                  ),
+                ),
                 Text(
+                  txnNumber.toString(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 5),
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
                   'Student name',
                   style: TextStyle(
                     fontSize: 13,
@@ -228,7 +303,7 @@ class PaymentReceiptCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Date',
                   style: TextStyle(
                     fontSize: 13,
@@ -253,7 +328,7 @@ class PaymentReceiptCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Amount',
                   style: TextStyle(
                     fontSize: 13,

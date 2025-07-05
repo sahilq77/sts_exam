@@ -17,7 +17,7 @@ class Networkutility {
   static int notificationsApi = 7;
   static String resultlist = "${baseUrl + "getTestResult_overview"}";
   static int resultlistApi = 8;
-  static String paymentReciptlist = "${baseUrl + "payment_receipt" + apiKey}";
+  static String paymentReciptlist = "${baseUrl + "get_all_payment_list"}";
   static int paymentReciptlistApi = 9;
   static String examDetail = "${baseUrl + "exam_detail" + apiKey}";
   static int examDetailApi = 10;
@@ -41,4 +41,7 @@ class Networkutility {
   static int buyExamApi = 19;
   static String downloadResult = "${baseUrl + "download_result_student_wise"}";
   static int downloadResultApi = 20;
+  static String paymentReceiptDownload =
+      "${baseUrl + "download_payment_receipt_student_wise"}";
+  static int paymentReceiptDownloadApi = 21;
 }

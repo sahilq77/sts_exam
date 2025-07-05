@@ -11,8 +11,6 @@ import "dart:developer" as lg;
 
 import 'package:stsexam/utility/app_routes.dart';
 
-
-
 class NotificationServices {
   String? callId;
   FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
@@ -181,7 +179,7 @@ class NotificationServices {
           message.data['landing_page']?.toString().toLowerCase() ?? 'default';
       String batchId = message.data['batch_id']?.toString() ?? '';
       String body = message.data['body']?.toString() ?? '';
-
+      lg.log("$landingPage");
       RegExp regex = RegExp(r"result for '([^']*)'");
       Match? match = regex.firstMatch(body);
       String examName = match?.group(1) ?? '';
@@ -223,8 +221,8 @@ class NotificationServices {
           Get.to(() => AppRoutes.home);
           lg.log("Navigation to AnnouncementForStudent completed");
           break;
-        case "study_material":
-          Get.to(() => AppRoutes.home);
+        case "test_result_page":
+          Get.to(() => AppRoutes.result);
           break;
         case "payment page":
           Get.to(() => AppRoutes.home);

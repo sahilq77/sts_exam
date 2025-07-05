@@ -19,6 +19,7 @@ import '../../model/home/get_notifications_response.dart';
 import '../../model/home/latest_exam_response.dart';
 import '../../model/login/get_login_response.dart';
 import '../../model/payments/get_payments_receipt_response.dart';
+import '../../model/payments/payment_receipt_link_response.dart';
 import '../../model/profile/get_profile_response.dart';
 import '../../model/result_list/get_downloadresult_response.dart';
 import '../../model/result_list/get_result_list_response.dart';
@@ -106,7 +107,7 @@ class Networkcall {
             final resulList = getExamResultListResponseFromJson(str);
             return resulList;
           case 9:
-            final paymentReciptList = getPaymentReciptListResponseFromJson(str);
+            final paymentReciptList = getPaymentListResponseFromJson(str);
             return paymentReciptList;
           case 10:
             final examDetail = getExamDetailResponseFromJson(str);
@@ -134,6 +135,9 @@ class Networkcall {
             return buyexam;
               case 20:
             final downloadResult = getDownloadResultResoponseFromJson(str);
+            return downloadResult;
+             case 21:
+            final downloadResult = getPaymentReceiptLinkResponseFromJson(str);
             return downloadResult;
           default:
             log("Invalid request code: $requestCode");

@@ -10,6 +10,7 @@ import '../view/forgotpassword/forgot_password_page.dart';
 import '../view/home/homepage.dart';
 import '../view/notification/notifications.dart';
 import '../view/login/loginPage.dart';
+import '../view/payments/payment_receipt_details_screen.dart';
 import '../view/payments/payments_list.dart';
 import '../view/profile/profile_screen.dart';
 import '../view/profile/update_profile.dart';
@@ -39,6 +40,7 @@ class AppRoutes {
   static const String testresult = '/testresult';
   static const String noInternet = '/nointernet';
   static const String viewResult = '/view_result';
+  static const String paymentReceiptdetail = '/payment_receipt_detail';
 
   static final routes = [
     GetPage(
@@ -110,7 +112,7 @@ class AppRoutes {
       name: startexam,
       page: () => StartExamPage(),
       transition: Transition.fadeIn,
-        binding: StartExamBinding(),
+      binding: StartExamBinding(),
     ),
     GetPage(
       name: overview,
@@ -130,6 +132,11 @@ class AppRoutes {
     GetPage(
       name: viewResult,
       page: () => ViewResultScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: paymentReceiptdetail,
+      page: () => PaymentReceiptDetailsScreen(),
       transition: Transition.fadeIn,
     ),
   ];
