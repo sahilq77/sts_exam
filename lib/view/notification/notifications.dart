@@ -6,6 +6,7 @@ import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:stsexam/controller/notification/notification_controller.dart';
 import 'package:stsexam/utility/app_images.dart';
+import 'package:stsexam/utility/app_routes.dart';
 
 import '../../app_colors.dart';
 import '../../controller/home/home_controller.dart';
@@ -118,46 +119,58 @@ class _NotificationPageState extends State<NotificationPage> {
               var noti = controller.notiList[index];
               return Column(
                 children: [
-                  ListTile(
-                    leading: Container(
-                      height: 40,
-                      width: 40,
-                      padding: EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor.withOpacity(
-                          0.1,
-                        ), // AppColors.primaryTeal
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          'assets/bell.png', // Path to your asset image
-                          width: 24.0, // Adjust size as needed
-                          height: 24.0,
-                          color:
-                              AppColors
-                                  .primaryColor, // Optional: Tint the image
+                  GestureDetector(
+                    onTap:
+                        noti.landingPage == ""
+                            ? null
+                            : () {
+                              if (noti.landingPage == "test_result_page") {
+                                Get.toNamed(AppRoutes.result);
+                              } else {
+                                Get.toNamed(AppRoutes.examlist);
+                              }
+                            },
+                    child: ListTile(
+                      leading: Container(
+                        height: 40,
+                        width: 40,
+                        padding: EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor.withOpacity(
+                            0.1,
+                          ), // AppColors.primaryTeal
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/bell.png', // Path to your asset image
+                            width: 24.0, // Adjust size as needed
+                            height: 24.0,
+                            color:
+                                AppColors
+                                    .primaryColor, // Optional: Tint the image
+                          ),
                         ),
                       ),
-                    ),
-                    title: ReadMoreText(
-                      noti.notification,
-                      trimMode: TrimMode.Line,
-                      style: GoogleFonts.poppins(fontSize: 12),
-                      trimLines: 2,
-                      colorClickableText: Colors.pink,
-                      trimCollapsedText: 'Read more',
-                      trimExpandedText: 'Show less',
-                      moreStyle: GoogleFonts.poppins(
-                        // color: Colors.blue,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                      title: ReadMoreText(
+                        noti.notification,
+                        trimMode: TrimMode.Line,
+                        style: GoogleFonts.poppins(fontSize: 12),
+                        trimLines: 2,
+                        colorClickableText: Colors.pink,
+                        trimCollapsedText: 'Read more',
+                        trimExpandedText: 'Show less',
+                        moreStyle: GoogleFonts.poppins(
+                          // color: Colors.blue,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
 
-                    trailing: Text(
-                      _getTimeAgo(noti.createdOn),
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      trailing: Text(
+                        _getTimeAgo(noti.createdOn),
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
                     ),
                   ),
                   const Divider(thickness: 0.5, color: Color(0xFFD9D9D9)),
