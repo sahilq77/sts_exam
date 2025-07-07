@@ -185,23 +185,19 @@ class NotificationServices {
       String examName = match?.group(1) ?? '';
 
       lg.log("${message.data}");
-      lg.log(landingPage);
-
       lg.log("Current route: ${Get.currentRoute}");
       lg.log("Context available: ${context != null}");
-      lg.log(
-        "Expected route: ${AppRoutes.home}",
-      ); // Updated to homeContainer1Screen
+      lg.log("Expected route: ${AppRoutes.home}");
 
+      // Navigate to home if not already there
       if (Get.currentRoute != AppRoutes.home) {
-        // Updated to homeContainer1Screen
         lg.log("Navigating to HomeContainer1Screen");
         if (context == null) {
           lg.log("Context is null, cannot navigate");
           return;
         }
         try {
-          Get.offAllNamed(AppRoutes.home); // Updated to homeContainer1Screen
+          Get.offAllNamed(AppRoutes.home);
           lg.log("Navigation to HomeContainer1Screen completed");
         } catch (navError) {
           lg.log("Navigation error: $navError");
@@ -213,27 +209,23 @@ class NotificationServices {
 
       lg.log("Processing landing page: $landingPage");
       switch (landingPage) {
-        case "upcoming test":
-          controller1.goToHome();
+        case "exam_list_page":
+          lg.log("Navigating to ExamListScreen");
+          Get.toNamed(AppRoutes.examlist); // Use Get.toNamed for named routes
+          lg.log("Navigation to ExamListScreen completed");
           break;
         case "announcement":
           lg.log("Navigating to AnnouncementForStudent");
-          Get.to(() => AppRoutes.home);
+          Get.toNamed(AppRoutes.home);
           lg.log("Navigation to AnnouncementForStudent completed");
           break;
         case "test_result_page":
-          Get.to(() => AppRoutes.result);
-          break;
-        case "payment page":
-          Get.to(() => AppRoutes.home);
-          break;
-        case "test result":
-          Get.to(() => AppRoutes.home);
-          break;
-        case "my_attendance":
-          controller1.goToHome();
+          lg.log("Navigating to ResultScreen");
+          Get.toNamed(AppRoutes.result);
+          lg.log("Navigation to ResultScreen completed");
           break;
         default:
+          lg.log("DEFAULT NAVIGATION====> home");
           controller1.goToHome();
           break;
       }
