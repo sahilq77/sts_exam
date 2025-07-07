@@ -125,7 +125,7 @@ class AppRoutes {
       transition: Transition.fadeIn,
     ),
     GetPage(
-      name: testresult,
+      name: noInternet,
       page: () => NoInternetPage(),
       transition: Transition.fadeIn,
     ),
