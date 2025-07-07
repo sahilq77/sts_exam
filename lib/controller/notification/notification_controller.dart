@@ -87,6 +87,7 @@ class NotificationController extends GetxController {
               attemptedTestId: lead.attemptedTestId, 
               notificationTitle: lead.notificationTitle, 
               notification: lead.notification, 
+               landingPage: lead.landingPage,
               createdOn: lead.createdOn)
               );
             }

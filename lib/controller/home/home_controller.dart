@@ -281,6 +281,7 @@ class HomeController extends GetxController {
                 attemptedTestId: noti.attemptedTestId,
                 notificationTitle: noti.notificationTitle,
                 notification: noti.notification,
+                landingPage: noti.landingPage,
                 createdOn: noti.createdOn,
               ),
             );

@@ -48,8 +48,8 @@ class AppNotification {
   String notificationTitle;
   String notification;
 
+  String landingPage;
   DateTime createdOn;
-
 
   AppNotification({
     required this.id,
@@ -57,21 +57,21 @@ class AppNotification {
     required this.attemptedTestId,
     required this.notificationTitle,
     required this.notification,
-  
+    required this.landingPage,
     required this.createdOn,
-   
   });
 
   factory AppNotification.fromJson(Map<String, dynamic> json) =>
       AppNotification(
-        id: json["id"],
-        userId: json["user_id"],
-        attemptedTestId: json["attempted_test_id"],
-        notificationTitle: json["notification_title"],
-        notification: json["notification"],
-      
+        id: json["id"]??"",
+        userId: json["user_id"]??"",
+        attemptedTestId: json["attempted_test_id"]??"",
+        notificationTitle: json["notification_title"]??"",
+        notification: json["notification"]??"",
+
+        landingPage: json["landing_page"]??"",
+
         createdOn: DateTime.parse(json["created_on"]),
-      
       );
 
   Map<String, dynamic> toJson() => {
@@ -81,6 +81,5 @@ class AppNotification {
     "notification_title": notificationTitle,
     "notification": notification,
     "created_on": createdOn.toIso8601String(),
-    
   };
 }
