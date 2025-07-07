@@ -256,7 +256,7 @@ class _HomePageState extends State<HomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children:
-              _bannerImages.asMap().entries.map((entry) {
+              controller.bannerImagesList.asMap().entries.map((entry) {
                 final int index = entry.key;
                 return Container(
                   width: _currentBannerIndex == index ? 10.0 : 8.0,
