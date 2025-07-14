@@ -45,8 +45,6 @@ dependencies:
   get: ^4.7.2
   connectivity_plus: ^6.1.2
   fluttertoast: ^8.2.10
-  pdf: ^3.11.2
-  printing: ^5.14.0
   share_plus: ^10.1.4
   permission_handler: ^11.3.1
   path_provider: ^2.1.5
