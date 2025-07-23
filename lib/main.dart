@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'STS Exam',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
         textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
