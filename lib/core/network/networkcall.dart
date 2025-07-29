@@ -20,6 +20,7 @@ import '../../model/home/latest_exam_response.dart';
 import '../../model/login/get_login_response.dart';
 import '../../model/payments/get_payments_receipt_response.dart';
 import '../../model/payments/payment_receipt_link_response.dart';
+import '../../model/profile/get_delete_user_response.dart';
 import '../../model/profile/get_profile_response.dart';
 import '../../model/result_list/get_downloadresult_response.dart';
 import '../../model/result_list/get_result_list_response.dart';
@@ -133,12 +134,16 @@ class Networkcall {
           case 19:
             final buyexam = getBuyResponseFromJson(str);
             return buyexam;
-              case 20:
+          case 20:
             final downloadResult = getDownloadResultResoponseFromJson(str);
             return downloadResult;
-             case 21:
+          case 21:
             final downloadResult = getPaymentReceiptLinkResponseFromJson(str);
             return downloadResult;
+          case 22:
+            final downloadResult = getDeleteUserResponseFromJson(str);
+            return downloadResult;
+
           default:
             log("Invalid request code: $requestCode");
             throw ParseException('Unhandled request code: $requestCode');

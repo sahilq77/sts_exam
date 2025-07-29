@@ -6,9 +6,11 @@ import '../../app_colors.dart';
 import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 import '../../controller/global_controller.dart/city_controller.dart';
 import '../../controller/global_controller.dart/state_controller.dart';
+import '../../controller/profile/delete_user_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../utility/app_images.dart';
 import '../../utility/app_routes.dart';
+import '../../utility/app_utility.dart';
 import '../bottomnavigation/custom_bottom_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -40,7 +42,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final cityId = controller.userProfileList[0].city;
       print("Initializing with stateId: $stateId, cityId: $cityId");
 
-      // Fetch states and cities concurrently
       await Future.wait([
         stateController.fetchStates(context: context).then((_) {
           stateController.getStateNameById(stateId);
@@ -64,9 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Defer execution to ensure controllers are ready
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      //fetchData();
       await controller.onRefresh(context);
       if (controller.userProfileList.isNotEmpty) {
         final stateId = controller.userProfileList[0].state;
@@ -86,12 +85,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  // Method to show confirmation dialog for account deletion
+  Future<void> _showDeleteConfirmationDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // Prevents closing dialog by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Account'),
+          content: const Text(
+            'Are you sure you want to delete your account? This action cannot be undone.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              onPressed: () {
+                Get.back(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: AppColors.errorColor),
+              ),
+              onPressed: () async {
+                Get.back();
+                final deleteController = Get.put(DeleteUserController());
+                deleteController
+                    .delteUser(context: context)
+                    .then((value) {
+                      AppUtility.clearUserInfo().then((_) {
+                        Get.offAllNamed(AppRoutes.login);
+                      });
+                    })
+                    .catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error deleting user: $error')),
+                      );
+                    });
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     return WillPopScope(
-         onWillPop: () => bottomController.onWillPop(),
+      onWillPop: () => bottomController.onWillPop(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -109,7 +154,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         backgroundColor: AppColors.backgroundColor,
-
         body: RefreshIndicator(
           onRefresh: () async {
             await controller.onRefresh(context);
@@ -150,65 +194,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar and edit icon
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Avatar and edit icon
-                      Center(
-                        child: Stack(
-                          alignment: Alignment.bottomRight,
-                          children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.grey[200],
-                              child:
-                                  user.profileImage == ""
-                                      ? ClipOval(
-                                        child: Image.asset(
-                                          AppImages.profile,
-                                          // height: 90,
-                                          // width: 90,
+                  Center(
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey[200],
+                          child:
+                              user.profileImage == ""
+                                  ? ClipOval(
+                                    child: Image.asset(
+                                      AppImages.profile,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                  : AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: ClipOval(
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              "${controller.imageLink.value}${user.profileImage}",
                                           fit: BoxFit.cover,
-                                        ),
-                                      )
-                                      : AspectRatio(
-                                        aspectRatio:
-                                            1, // Ensures a square aspect ratio for the circle
-                                        child: Container(
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: ClipOval(
-                                            child: CachedNetworkImage(
-                                              imageUrl:
-                                                  "${controller.imageLink.value}${user.profileImage}",
-                                              fit: BoxFit.cover,
-                                              placeholder:
-                                                  (
-                                                    context,
-                                                    url,
-                                                  ) => const Center(
-                                                    child:
-                                                        CircularProgressIndicator(),
+                                          placeholder:
+                                              (context, url) => const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                          errorWidget:
+                                              (context, url, error) =>
+                                                  const Icon(
+                                                    Icons.error,
+                                                    size: 50,
                                                   ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      const Icon(
-                                                        Icons.error,
-                                                        size: 50,
-                                                      ),
-                                            ),
-                                          ),
                                         ),
                                       ),
-                            ),
-                          ],
+                                    ),
+                                  ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-
                   const SizedBox(height: 10),
                   Center(
                     child: Text(
@@ -239,7 +269,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   CutsomTile(title: "Mobile Number", value: user.mobileNumber),
                   CutsomTile(title: "Email ID", value: user.email),
-                  // State Display
                   Obx(
                     () => CutsomTile(
                       title: "State",
@@ -256,7 +285,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   'N/A',
                     ),
                   ),
-                  // City Display
                   Obx(
                     () => CutsomTile(
                       title: "City",
@@ -285,6 +313,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  OutlinedButton(
+                    onPressed: _showDeleteConfirmationDialog,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.errorColor,
+                      side: const BorderSide(
+                        color: AppColors.errorColor,
+                        width: 2,
+                      ),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.delete_outlined),
+                        SizedBox(width: 5),
+                        const Text(
+                          "Delete Account",
+                          style: TextStyle(
+                            color: AppColors.errorColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               );
             }),
@@ -303,17 +361,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       highlightColor: Colors.grey[100]!,
       child: Column(
         children: [
-          // Avatar placeholder
           Center(
             child: CircleAvatar(radius: 45, backgroundColor: Colors.grey[300]),
           ),
           const SizedBox(height: 10),
-          // Name placeholder
           Center(
             child: Container(width: 150, height: 20, color: Colors.grey[300]),
           ),
           const SizedBox(height: 4),
-          // Greeting placeholder
           Center(
             child: Container(width: 100, height: 16, color: Colors.grey[300]),
           ),
@@ -324,6 +379,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 List.generate(9, (_) => _buildShimmerTile(screenWidth)) +
                 [
                   const SizedBox(height: 20),
+                  Container(
+                    height: 50,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Container(
                     height: 50,
                     width: double.infinity,
@@ -356,7 +420,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 class CutsomTile extends StatelessWidget {
   final String title;
-  final dynamic value; // Allow String or Widget
+  final dynamic value;
   const CutsomTile({super.key, required this.title, required this.value});
 
   @override

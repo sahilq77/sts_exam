@@ -38,8 +38,8 @@ class SplashController extends GetxController {
       permissionsToRequest.add(Permission.photos);
     }
 
-    Map<Permission, PermissionStatus> statuses =
-        await permissionsToRequest.request();
+    Map<Permission, PermissionStatus> statuses = await permissionsToRequest
+        .request();
 
     // Check permission statuses
     bool cameraDenied = statuses[Permission.camera]!.isDenied;

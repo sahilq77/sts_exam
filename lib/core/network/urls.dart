@@ -44,4 +44,7 @@ class Networkutility {
   static String paymentReceiptDownload =
       "${baseUrl + "download_payment_receipt_student_wise"}";
   static int paymentReceiptDownloadApi = 21;
+  static String deleteUserAccount =
+      "${baseUrl + "delete_user"}";
+  static int deleteUserAccountApi = 22;
 }
