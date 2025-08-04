@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
@@ -61,11 +60,12 @@ class TestResult extends GetxController {
 
       List<GetExamResultListResponse>? response =
           (await Networkcall().postMethod(
-        Networkutility.resultlistApi,
-        Networkutility.resultlist,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<GetExamResultListResponse>?;
+                Networkutility.resultlistApi,
+                Networkutility.resultlist,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<GetExamResultListResponse>?;
 
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
@@ -75,7 +75,8 @@ class TestResult extends GetxController {
                 false; // No more data if fewer results than limit
           }
           for (var result in results) {
-            resultList.add(ResultList(
+            resultList.add(
+              ResultList(
                 testId: result.testId,
                 testName: result.testName,
                 attemptedTestId: result.attemptedTestId,
@@ -88,7 +89,10 @@ class TestResult extends GetxController {
                 incorrect: result.incorrect,
                 unattempted: result.unattempted,
                 totalQuestions: result.totalQuestions,
-                examStatus: result.examStatus));
+                resultDate: result.resultDate,
+                examStatus: result.examStatus,
+              ),
+            );
           }
           offset.value += limit; // Increment offset for next page
         } else {
@@ -115,17 +119,20 @@ class TestResult extends GetxController {
     }
   }
 
-  Future<void> loadMoreResults(
-      {required BuildContext context, required testid}) async {
+  Future<void> loadMoreResults({
+    required BuildContext context,
+    required testid,
+  }) async {
     if (!isLoadingMore.value && hasMoreData.value) {
       //  await fetchResult(context: context, isPagination: true, testID: testid);
     }
   }
 
-  Future<void> refreshResultList(
-      {required BuildContext context,
-      bool showLoading = true,
-      required testid}) async {
+  Future<void> refreshResultList({
+    required BuildContext context,
+    bool showLoading = true,
+    required testid,
+  }) async {
     try {
       // Reset the result list
       resultList.clear();

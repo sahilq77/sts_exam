@@ -6,7 +6,8 @@ import 'dart:convert';
 
 List<GetExamResultListResponse> getExamResultListResponseFromJson(String str) =>
     List<GetExamResultListResponse>.from(
-        json.decode(str).map((x) => GetExamResultListResponse.fromJson(x)));
+      json.decode(str).map((x) => GetExamResultListResponse.fromJson(x)),
+    );
 
 String getExamResultListResponseToJson(List<GetExamResultListResponse> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
@@ -27,14 +28,15 @@ class GetExamResultListResponse {
         status: json["status"],
         message: json["message"],
         data: List<ResultList>.from(
-            json["data"].map((x) => ResultList.fromJson(x))),
+          json["data"].map((x) => ResultList.fromJson(x)),
+        ),
       );
 
   Map<String, dynamic> toJson() => {
-        "status": status,
-        "message": message,
-        "data": List<dynamic>.from(data.map((x) => x.toJson())),
-      };
+    "status": status,
+    "message": message,
+    "data": List<dynamic>.from(data.map((x) => x.toJson())),
+  };
 }
 
 class ResultList {
@@ -51,6 +53,7 @@ class ResultList {
   int unattempted;
   String totalQuestions;
   String examStatus;
+  String resultDate;
 
   ResultList({
     required this.testId,
@@ -66,37 +69,39 @@ class ResultList {
     required this.unattempted,
     required this.totalQuestions,
     required this.examStatus,
+    required this.resultDate,
   });
 
   factory ResultList.fromJson(Map<String, dynamic> json) => ResultList(
-        testId: json["test_id"],
-        testName: json["test_name"],
-        attemptedTestId: json["attempted_test_id"],
-        attemptDate: json["attempt_date"],
-        yourScore: json["your_score"],
-        scoreOutoff: json["score_outoff"],
-        rank: json["rank"],
-        rankOutoff: json["rank_outoff"],
-        correct: json["correct"],
-        incorrect: json["incorrect"],
-        unattempted: json["unattempted"],
-        totalQuestions: json["total_questions"],
-        examStatus: json["exam_status"],
-      );
+    resultDate: json["result_date"] ?? "",
+    testId: json["test_id"] ?? "",
+    testName: json["test_name"] ?? "",
+    attemptedTestId: json["attempted_test_id"] ?? "",
+    attemptDate: json["attempt_date"] ?? "",
+    yourScore: json["your_score"] ?? "",
+    scoreOutoff: json["score_outoff"] ?? "",
+    rank: json["rank"] ?? "",
+    rankOutoff: json["rank_outoff"] ?? "",
+    correct: json["correct"] ?? "",
+    incorrect: json["incorrect"] ?? "",
+    unattempted: json["unattempted"] ?? "",
+    totalQuestions: json["total_questions"] ?? "",
+    examStatus: json["exam_status"] ?? "",
+  );
 
   Map<String, dynamic> toJson() => {
-        "test_id": testId,
-        "test_name": testName,
-        "attempted_test_id": attemptedTestId,
-        "attempt_date": attemptDate,
-        "your_score": yourScore,
-        "score_outoff": scoreOutoff,
-        "rank": rank,
-        "rank_outoff": rankOutoff,
-        "correct": correct,
-        "incorrect": incorrect,
-        "unattempted": unattempted,
-        "total_questions": totalQuestions,
-        "exam_status": examStatus,
-      };
+    "test_id": testId,
+    "test_name": testName,
+    "attempted_test_id": attemptedTestId,
+    "attempt_date": attemptDate,
+    "your_score": yourScore,
+    "score_outoff": scoreOutoff,
+    "rank": rank,
+    "rank_outoff": rankOutoff,
+    "correct": correct,
+    "incorrect": incorrect,
+    "unattempted": unattempted,
+    "total_questions": totalQuestions,
+    "exam_status": examStatus,
+  };
 }

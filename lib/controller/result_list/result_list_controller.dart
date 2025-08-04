@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
@@ -50,7 +49,7 @@ class ResultListController extends GetxController {
 
       final jsonBody = {
         "user_id": AppUtility.userID,
-        
+
         "user_type": AppUtility.userType,
         "limit": limit.toString(),
         "offset": offset.value.toString(),
@@ -58,11 +57,12 @@ class ResultListController extends GetxController {
 
       List<GetExamResultListResponse>? response =
           (await Networkcall().postMethod(
-        Networkutility.resultlistApi,
-        Networkutility.resultlist,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<GetExamResultListResponse>?;
+                Networkutility.resultlistApi,
+                Networkutility.resultlist,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<GetExamResultListResponse>?;
 
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
@@ -72,23 +72,26 @@ class ResultListController extends GetxController {
                 false; // No more data if fewer results than limit
           }
           for (var result in results) {
-            resultList.add(ResultList(
+            resultList.add(
+              ResultList(
                 testId: result.testId,
                 testName: result.testName,
                 attemptedTestId: result.attemptedTestId,
                 attemptDate: result.attemptDate,
                 yourScore: result.yourScore,
                 scoreOutoff: result.scoreOutoff,
-               
+
                 rank: result.rank,
                 rankOutoff: result.rankOutoff,
-               
+
                 correct: result.correct,
                 incorrect: result.incorrect,
                 unattempted: result.unattempted,
                 totalQuestions: result.totalQuestions,
-               
-                examStatus: result.examStatus));
+                resultDate: result.resultDate,
+                examStatus: result.examStatus,
+              ),
+            );
           }
           offset.value += limit; // Increment offset for next page
         } else {
