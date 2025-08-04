@@ -96,6 +96,7 @@ class ResultListPage extends StatelessWidget {
                       arguments: {"test_id": result.testId},
                     );
                   },
+                  resultDate: result.resultDate,
                   examName: result.testName,
                   totalScore: result.scoreOutoff,
                   totalQuestions: result.totalQuestions,
@@ -135,12 +136,14 @@ class ResultCard extends StatelessWidget {
   final String correct;
   final String incorrect;
   final String status;
+  final String resultDate;
   final Color statusColor;
   final VoidCallback onOverviewPressed;
   final VoidCallback resultView;
   const ResultCard({
     super.key,
     required this.examName,
+    required this.resultDate,
     required this.totalScore,
     required this.totalQuestions,
     required this.correct,
@@ -357,7 +360,7 @@ class ResultCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Padding(
-            padding: const EdgeInsets.only(left: 15.0, right: 15, bottom: 15),
+            padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: Row(
               children: [
                 Text(
@@ -384,6 +387,44 @@ class ResultCard extends StatelessWidget {
                     fontSize: 15,
                     fontWeight: FontWeight.w400,
                     color: statusColor,
+                  ),
+                ),
+                // const Spacer(),
+                // InkWell(
+                //   onTap: resultView,
+                //   child: Icon(Icons.download, color: Colors.black87, size: 25),
+                // ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 15.0, right: 15, bottom: 15),
+            child: Row(
+              children: [
+                Text(
+                  'Date',
+                  style: GoogleFonts.blinker(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  ':',
+                  style: GoogleFonts.blinker(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  resultDate,
+                  style: GoogleFonts.blinker(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black87,
                   ),
                 ),
                 const Spacer(),

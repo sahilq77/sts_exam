@@ -53,7 +53,7 @@ class BottomNavigationController extends GetxController {
     Get.offAllNamed(AppRoutes.home);
   }
 
-  Future<bool> onWillPop() async {
+   Future<bool> onWillPop() async {
     if (Get.nestedKey(1)?.currentState?.canPop() ?? false) {
       Get.back(id: 1); // Pop within the current tab's stack
       return false; // Prevent app exit
@@ -65,4 +65,3 @@ class BottomNavigationController extends GetxController {
     return true; // Allow app exit if on Home tab with no stack
   }
 }
-

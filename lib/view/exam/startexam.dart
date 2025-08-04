@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -209,6 +210,9 @@ class _StartExamPageState extends State<StartExamPage>
               'Screenshot detected, attempt count: $_switchAttemptCount',
             );
             if (_switchAttemptCount >= _maxAllowedAttempts) {
+              controller.switchAttemptCount.value =
+                  _switchAttemptCount.toString();
+              controller.update();
               _autoSubmitExam();
             } else {
               _showWarningDialogWithCount();
@@ -309,6 +313,9 @@ class _StartExamPageState extends State<StartExamPage>
           _switchAttemptCount++;
           debugPrint('Switch attempt count incremented: $_switchAttemptCount');
           if (_switchAttemptCount >= _maxAllowedAttempts) {
+            controller.switchAttemptCount.value =
+                _switchAttemptCount.toString();
+            controller.update();
             _autoSubmitExam();
           } else {
             _showWarningDialogWithCount();
@@ -478,93 +485,172 @@ class _StartExamPageState extends State<StartExamPage>
             ),
           ],
         ),
-        body: Obx(() {
-          if (controller.isLoading.value) {
-            return buildShimmerEffect();
-          }
-          if (controller.errorMessage.isNotEmpty) {
-            return Center(child: Text(controller.errorMessage.value));
-          }
-          if (controller.filteredQuestions.isEmpty ||
-              controller.currentQuestionIndex.value == -1) {
-            return const Center(
-              child: Text(
-                'No questions match the selected filter.',
-                style: TextStyle(fontSize: 16, color: AppColors.textColor),
-              ),
-            );
-          }
-          final currentQuestion =
-              controller.filteredQuestions[controller
-                  .currentQuestionIndex
-                  .value];
-          final Map<String, String>? options = currentQuestion.options;
-          final String questionText =
-              currentQuestion.question ?? 'Question not available';
-
-          return Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                  borderRadius: BorderRadius.circular(0),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Question ${controller.currentQuestionIndex.value + 1}/${controller.questionDetail[0].questions.length}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    Text(
-                      controller.formatTime(controller.remainingSeconds.value),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child:
-                      _isCameraInitialized &&
-                              _cameraController != null &&
-                              _isCameraActive
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CameraPreview(_cameraController!),
-                          )
-                          : const Center(child: CircularProgressIndicator()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(18.0),
+        body: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return buildShimmerEffect();
+            }
+            if (controller.errorMessage.isNotEmpty) {
+              return Center(child: Text(controller.errorMessage.value));
+            }
+            if (controller.filteredQuestions.isEmpty ||
+                controller.currentQuestionIndex.value == -1) {
+              return const Center(
                 child: Text(
-                  '${controller.currentQuestionIndex.value + 1}. $questionText',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black,
+                  'No questions match the selected filter.',
+                  style: TextStyle(fontSize: 16, color: AppColors.textColor),
+                ),
+              );
+            }
+            final currentQuestion =
+                controller.filteredQuestions[controller
+                    .currentQuestionIndex
+                    .value];
+            final Map<String, String>? options = currentQuestion.options;
+            final String questionText =
+                currentQuestion.question.text ?? 'Question not available';
+            final String questionImage = currentQuestion.question.image ?? '';
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    borderRadius: BorderRadius.circular(0),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Question ${controller.currentQuestionIndex.value + 1}/${controller.questionDetail[0].questions.length}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        controller.formatTime(
+                          controller.remainingSeconds.value,
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              if (options != null)
-                Expanded(
-                  child: ListView.builder(
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    margin: const EdgeInsets.all(16),
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child:
+                        _isCameraInitialized &&
+                                _cameraController != null &&
+                                _isCameraActive
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CameraPreview(_cameraController!),
+                            )
+                            : const Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        '${controller.currentQuestionIndex.value + 1}. $questionText',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      if (questionImage.isNotEmpty &&
+                          questionImage.contains(
+                            RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
+                          ))
+                        SizedBox(
+                          child: SizedBox(
+                            height: 100,
+                            width: 100,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: questionImage,
+                                fit: BoxFit.cover,
+                                placeholder:
+                                    (context, url) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                errorWidget:
+                                    (context, url, error) =>
+                                        const Icon(Icons.error, size: 50),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  // questionText.contains(
+                  //       RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
+                  //     )
+                  //     ? Row(
+                  //       children: [
+                  //         Text(
+                  //           '${controller.currentQuestionIndex.value + 1}.',
+                  //           style: const TextStyle(
+                  //             fontSize: 16,
+                  //             fontWeight: FontWeight.w600,
+                  //             color: Colors.black,
+                  //           ),
+                  //         ),
+                  //         const SizedBox(width: 8),
+                  //         SizedBox(
+                  //           child: SizedBox(
+                  //             height: 100,
+                  //             width: 100,
+                  //             child: ClipRRect(
+                  //               borderRadius: BorderRadius.circular(10),
+                  //               child: CachedNetworkImage(
+                  //                 imageUrl: questionText,
+                  //                 fit: BoxFit.cover,
+                  //                 placeholder:
+                  //                     (context, url) => const Center(
+                  //                       child: CircularProgressIndicator(),
+                  //                     ),
+                  //                 errorWidget:
+                  //                     (context, url, error) =>
+                  //                         const Icon(Icons.error, size: 50),
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     )
+                  //     : Text(
+                  //       '${controller.currentQuestionIndex.value + 1}. $questionText Replacing 65 out of 65 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for the whole graph',
+                  //       style: const TextStyle(
+                  //         fontSize: 16,
+                  //         fontWeight: FontWeight.w600,
+                  //         color: Colors.black,
+                  //       ),
+                  //     ),
+                ),
+                if (options != null)
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
                     itemCount: options.length,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     itemBuilder: (context, index) {
@@ -572,10 +658,10 @@ class _StartExamPageState extends State<StartExamPage>
                       return Obx(() => _buildOption(entry, index, controller));
                     },
                   ),
-                ),
-            ],
-          );
-        }),
+              ],
+            );
+          }),
+        ),
         bottomNavigationBar: SafeArea(
           child: Container(
             height: 90,
@@ -690,9 +776,48 @@ class _StartExamPageState extends State<StartExamPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '$optionKey. $optionText',
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+            SizedBox(
+              child:
+                  optionText.contains(
+                        RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
+                      )
+                      ? Row(
+                        children: [
+                          Text(
+                            '$optionKey).',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            height: 100,
+                            width: 100,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: optionText,
+                                fit: BoxFit.cover,
+                                placeholder:
+                                    (context, url) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                errorWidget:
+                                    (context, url, error) =>
+                                        const Icon(Icons.error, size: 50),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                      : Text(
+                        '$optionKey). $optionText',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
             ),
             if (option.value.isEmpty &&
                 controller.imageLink.value.isNotEmpty) ...[

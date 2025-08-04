@@ -8,6 +8,7 @@ import '../../app_colors.dart';
 import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 import '../../controller/payments/payments_list_controller.dart';
 import '../../utility/app_images.dart';
+import '../../utility/dateformater.dart';
 import '../../utility/widgets/custom_shimmer.dart';
 import '../bottomnavigation/custom_bottom_bar.dart';
 import 'payment_receipt_details_screen.dart';
@@ -118,7 +119,9 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
                                 payment.paymentStatus == "1" ? false : true,
                             refNumber: payment.receiptNo,
                             studentName: payment.userName,
-                            date: payment.paymentDate.toString(),
+                            date: DateFormater.formatDate(
+                              payment.paymentDate.toString(),
+                            ),
                             amount: payment.paymentAmount,
                             paymentStatus:
                                 payment.paymentStatus == "1"

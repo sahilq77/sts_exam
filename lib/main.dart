@@ -2,7 +2,6 @@ import 'package:colorful_safe_area/colorful_safe_area.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stsexam/app_colors.dart';
 import 'package:stsexam/controller/bottomnavigation/bottom_navigation_controller.dart';
@@ -10,7 +9,6 @@ import 'package:stsexam/firebase_options.dart';
 import 'package:stsexam/notification_services%20.dart';
 import 'package:stsexam/utility/network_connectivity/connectivityservice.dart';
 import 'utility/app_routes.dart';
-import 'view/splash/splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

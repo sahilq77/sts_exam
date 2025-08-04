@@ -76,7 +76,9 @@ class ResultOverviewContoller extends GetxController {
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
           final overview = response[0].questions;
-
+          imageLink.value = response.first.imageBaseUrl
+              .replaceAll(r'\/', '/')
+              .replaceAll(r'\:', ':');
           if (overview.isEmpty || overview.length < pageSize) {
             hasMore.value = false;
           }

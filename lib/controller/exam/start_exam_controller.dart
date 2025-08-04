@@ -29,7 +29,7 @@ class StartExamController extends GetxController {
   Timer? timer;
   String testID = '';
   RxString attempt = "".obs;
-
+  RxString switchAttemptCount = ''.obs;
   void setTestid(String testid) {
     testID = testid;
     log("set id $testid");
@@ -153,6 +153,7 @@ class StartExamController extends GetxController {
 
   Future<void> submitTest({
     required BuildContext context,
+
     bool reset = false,
     bool isPagination = false,
     bool forceFetch = false,
@@ -168,6 +169,7 @@ class StartExamController extends GetxController {
         "attempted_test_id": attempt.value,
         "submitted_on": DateTime.now().toString(),
         "answer_list": getAnswerList(),
+        "switch_attempt_count": switchAttemptCount.value,
       };
       List<TestSubmitResponse>? response =
           (await Networkcall().postMethod(
@@ -195,6 +197,7 @@ class StartExamController extends GetxController {
           selectedOption.value = null;
           currentQuestionIndex.value = 0;
           testID = '';
+          switchAttemptCount.value = '';
         } else if (questionDetail.first.isShowResult == "1") {
           Get.offAllNamed(
             AppRoutes.testresult,
@@ -207,6 +210,7 @@ class StartExamController extends GetxController {
           selectedOption.value = null;
           currentQuestionIndex.value = 0;
           testID = '';
+          switchAttemptCount.value = '';
         } else {
           Get.offAllNamed(AppRoutes.home);
         }

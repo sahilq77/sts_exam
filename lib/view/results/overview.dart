@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
@@ -83,7 +84,7 @@ class _OverviewPageState extends State<OverviewPage> {
 
   Widget _buildQuestionCard({
     required String questionNumber,
-    required String question,
+    required QuestionQuestion question,
     required List<Option> options,
     required String selectedAnswer,
     required bool isCorrect,
@@ -99,9 +100,53 @@ class _OverviewPageState extends State<OverviewPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "$questionNumber. $question",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              '${questionNumber}. ${question.text} ',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
             ),
+            const SizedBox(height: 4),
+            Column(
+              children: [
+                SizedBox(
+                  child:
+                      question.image.isNotEmpty &&
+                              question.image.contains(
+                                RegExp(
+                                  r'\.(jpeg|jpg|png)$',
+                                  caseSensitive: false,
+                                ),
+                              )
+                          ? SizedBox(
+                            child: SizedBox(
+                              height: 100,
+                              width: 100,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: CachedNetworkImage(
+                                  imageUrl: "${question.image}",
+                                  fit: BoxFit.cover,
+                                  placeholder:
+                                      (context, url) => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                  errorWidget:
+                                      (context, url, error) =>
+                                          const Icon(Icons.error, size: 50),
+                                ),
+                              ),
+                            ),
+                          )
+                          : SizedBox.shrink(),
+                ),
+              ],
+            ),
+            // Text(
+            //   "$questionNumber. $question",
+            //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            // ),
             const SizedBox(height: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,36 +177,75 @@ class _OverviewPageState extends State<OverviewPage> {
                       width: 1,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${index + 1}. ${options[index].text}",
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                                color:
-                                    isSelected
-                                        ? (isCorrect
-                                            ? Colors.green
-                                            : Colors.red)
-                                        : Colors.black,
+                  child:
+                      options[index].text.contains(
+                            RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
+                          )
+                          ? Row(
+                            children: [
+                              Text(
+                                '${index + 1}.',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (isSelected)
-                        Icon(
-                          isCorrect ? Icons.check : Icons.close,
-                          color: isCorrect ? Colors.green : Colors.red,
-                        ),
-                    ],
-                  ),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                child: SizedBox(
+                                  height: 100,
+                                  width: 100,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: CachedNetworkImage(
+                                      imageUrl:
+                                          "${controller.imageLink}" +
+                                          "${options[index].text}",
+                                      fit: BoxFit.cover,
+                                      placeholder:
+                                          (context, url) => const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                      errorWidget:
+                                          (context, url, error) =>
+                                              const Icon(Icons.error, size: 50),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                          : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${index + 1}. ${options[index].text}",
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
+                                        color:
+                                            isSelected
+                                                ? (isCorrect
+                                                    ? Colors.green
+                                                    : Colors.red)
+                                                : Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  isCorrect ? Icons.check : Icons.close,
+                                  color: isCorrect ? Colors.green : Colors.red,
+                                ),
+                            ],
+                          ),
                 );
               }),
             ),
@@ -196,14 +280,43 @@ class _OverviewPageState extends State<OverviewPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "$correctAnswer. ${options[int.parse(correctAnswer.trim()) - 1].text}",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.green,
+                          SizedBox(
+                            child: SizedBox(
+                              height: 100,
+                              width: 100,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: CachedNetworkImage(
+                                  imageUrl:
+                                      controller.imageLink + correctAnswer,
+                                  fit: BoxFit.cover,
+                                  placeholder:
+                                      (context, url) => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                  errorWidget:
+                                      (context, url, error) =>
+                                          const Icon(Icons.error, size: 50),
+                                ),
+                              ),
                             ),
                           ),
+                          // Text(
+                          //   "$correctAnswer",
+                          //   style: TextStyle(
+                          //     fontSize: 15,
+                          //     fontWeight: FontWeight.w500,
+                          //     color: Colors.green,
+                          //   ),
+                          // ),
+                          // Text(
+                          //   "$correctAnswer. ${options[int.parse(correctAnswer.trim()) - 1].text}",
+                          //   style: TextStyle(
+                          //     fontSize: 15,
+                          //     fontWeight: FontWeight.w500,
+                          //     color: Colors.green,
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),
