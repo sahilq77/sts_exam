@@ -57,15 +57,13 @@ class _HomePageState extends State<HomePage> {
         _onRefresh();
         break;
       case 1:
-      
         Get.toNamed(AppRoutes.result);
         break;
       case 2:
-      
-          Get.toNamed(AppRoutes.PaymentReceipt);
+        Get.toNamed(AppRoutes.PaymentReceipt);
         break;
       case 3:
-         Get.toNamed(AppRoutes.updateprofile);
+        Get.toNamed(AppRoutes.updateprofile);
         break;
     }
   }
@@ -97,7 +95,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-     final bottomController = Get.find<BottomNavigationController>();
+    final bottomController = Get.put(BottomNavigationController());
+
     // controller.fetchLatestexam(context: context);
     return WillPopScope(
       onWillPop: () => bottomController.onWillPop(),
@@ -112,14 +111,14 @@ class _HomePageState extends State<HomePage> {
                 profileController.userProfileList.isEmpty) {
               return Text("");
             }
-      
+
             if (profileController.userProfileList.isEmpty) {
               return const Center(child: Text(""));
             }
-      
+
             final user = profileController.userProfileList[0];
             print("Building with cityId: ${user.city}");
-      
+
             return Text(
               'Hi! ${user.fullName} 😊',
               style: TextStyle(
@@ -129,7 +128,7 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           }),
-      
+
           // const Text(
           //   'Hi! VAISHNAVI 😊',
           //   style: TextStyle(
@@ -630,25 +629,31 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: Container(
-                color: AppColors.primaryColor.withOpacity(0.2),
-                height: 100,
-                child: CachedNetworkImage(
-                  imageUrl: image,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) =>
-                          Center(child: CircularProgressIndicator()),
-                  errorWidget:
-                      (context, url, error) => Icon(Icons.error, size: 50),
-                ),
-              ),
-            ),
+         
+
+Padding(
+  padding: const EdgeInsets.all(8.0),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(5),
+    child: Container(
+      color: AppColors.primaryColor.withOpacity(0.2),
+      height: 100,
+      child: CachedNetworkImage(
+        imageUrl: image,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            color: Colors.grey[300],
+            height: 100,
           ),
+        ),
+        errorWidget: (context, url, error) => Icon(Icons.error, size: 50),
+      ),
+    ),
+  ),
+),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: _smallPadding),
             child: Text(

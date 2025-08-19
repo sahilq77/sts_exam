@@ -93,6 +93,7 @@ class ExamListController extends GetxController {
                 isDeleted: ex.isDeleted,
                 examName: ex.examName,
                 questionCount: ex.questionCount,
+                questionSCount: ex.questionSCount,
                 attemptCount: ex.attemptCount,
                 isAttempted: ex.isAttempted,
                 testType: ex.testType,

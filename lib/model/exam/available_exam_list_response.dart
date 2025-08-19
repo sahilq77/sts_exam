@@ -63,6 +63,7 @@ class AvailableExam {
   // DateTime updatedOn;
   String examName;
   int questionCount;
+    String questionSCount;
   String testType;
   bool isAttempted;
   int attemptCount;
@@ -88,6 +89,7 @@ class AvailableExam {
       // required this.updatedOn,
       required this.examName,
       required this.questionCount,
+        required this.questionSCount,
       required this.testType,
       required this.isAttempted,
         required this.attemptCount
@@ -115,6 +117,7 @@ class AvailableExam {
       // updatedOn: DateTime.parse(json["updated_on"]),
       examName: json["exam_name"] ?? "",
       questionCount: json["question_count"] ?? "",
+      questionSCount: json["questions_count"] ?? "",
       testType: json["test_type"] ?? "",
       isAttempted: json["is_attempted"],
          attemptCount: json["attempted_count"]??""
@@ -142,6 +145,7 @@ class AvailableExam {
         // "updated_on": updatedOn.toIso8601String(),
         "exam_name": examName,
         "question_count": questionCount,
+        "questions_count":questionSCount,
         "test_type": testType,
         "is_attempted":isAttempted,
         "attempted_count":attemptCount

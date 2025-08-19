@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
+      // home: ViewResultScreen(),
       builder: (context, child) {
         return ColorfulSafeArea(
           color: AppColors.backgroundColor, // Matches AppBar background color
@@ -53,7 +54,8 @@ class MyApp extends StatelessWidget {
           child: child ?? Container(),
         );
       },
-      // home: CustomFormWidgets(),
+
+      //  home: CalendarScreen(),
     );
   }
 }

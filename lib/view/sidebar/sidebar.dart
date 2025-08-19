@@ -96,8 +96,6 @@ class _SidebarState extends State<Sidebar> {
                                                 ? ClipOval(
                                                   child: Image.asset(
                                                     AppImages.profile,
-                                                    // height: 90,
-                                                    // width: 90,
                                                     fit: BoxFit.cover,
                                                   ),
                                                 )
@@ -155,6 +153,7 @@ class _SidebarState extends State<Sidebar> {
           ),
           Expanded(
             child: ListView(
+              scrollDirection: Axis.vertical,
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               children: [
                 ListTile(
@@ -201,7 +200,6 @@ class _SidebarState extends State<Sidebar> {
                     Get.toNamed(AppRoutes.PaymentReceipt);
                   },
                 ),
-
                 ListTile(
                   leading: Icon(
                     Icons.person,
@@ -217,6 +215,44 @@ class _SidebarState extends State<Sidebar> {
                     print("Building with cityId: ${user.city}");
                     profileController.setSelectedUser(user);
                     Get.toNamed(AppRoutes.updateprofile);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.info, color: Colors.grey[600], size: 24),
+                  title: Text(
+                    'About Us',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+                  ),
+                  onTap: () {
+                     Get.toNamed(AppRoutes.aboutUs);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.contact_mail,
+                    color: Colors.grey[600],
+                    size: 24,
+                  ),
+                  title: Text(
+                    'Contact Us',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+                  ),
+                  onTap: () {
+                    Get.toNamed(AppRoutes.contactUs);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.description,
+                    color: Colors.grey[600],
+                    size: 24,
+                  ),
+                  title: Text(
+                    'Terms',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+                  ),
+                  onTap: () {
+                    Get.toNamed(AppRoutes.terms);
                   },
                 ),
                 ListTile(

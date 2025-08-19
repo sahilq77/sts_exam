@@ -90,6 +90,7 @@ class _OverviewPageState extends State<OverviewPage> {
     required bool isCorrect,
     required String correctAnswer,
   }) {
+    print("ans ${controller.imageLink + correctAnswer}");
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -104,7 +105,7 @@ class _OverviewPageState extends State<OverviewPage> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: AppColors.textColor,
               ),
             ),
             const SizedBox(height: 4),
@@ -261,6 +262,7 @@ class _OverviewPageState extends State<OverviewPage> {
                 ),
               ),
               Container(
+                width: double.infinity,
                 margin: const EdgeInsets.symmetric(vertical: 4),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -273,57 +275,67 @@ class _OverviewPageState extends State<OverviewPage> {
                   border: Border.all(width: 1, color: const Color(0xFF3A954E)),
                 ),
 
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            child: SizedBox(
-                              height: 100,
-                              width: 100,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: CachedNetworkImage(
-                                  imageUrl:
-                                      controller.imageLink + correctAnswer,
-                                  fit: BoxFit.cover,
-                                  placeholder:
-                                      (context, url) => const Center(
-                                        child: CircularProgressIndicator(),
+                child:
+                    correctAnswer.contains(
+                          RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
+                        )
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    child: SizedBox(
+                                      height: 100,
+                                      width: 100,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                              controller.imageLink +
+                                              correctAnswer,
+                                          fit: BoxFit.cover,
+                                          placeholder:
+                                              (context, url) => const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                          errorWidget:
+                                              (context, url, error) =>
+                                                  const Icon(
+                                                    Icons.error,
+                                                    size: 50,
+                                                  ),
+                                        ),
                                       ),
-                                  errorWidget:
-                                      (context, url, error) =>
-                                          const Icon(Icons.error, size: 50),
-                                ),
+                                    ),
+                                  ),
+
+                                  // Text(
+                                  //   "$correctAnswer. ${options[int.parse(correctAnswer.trim()) - 1].text}",
+                                  //   style: TextStyle(
+                                  //     fontSize: 15,
+                                  //     fontWeight: FontWeight.w500,
+                                  //     color: Colors.green,
+                                  //   ),
+                                  // ),
+                                ],
                               ),
                             ),
-                          ),
-                          // Text(
-                          //   "$correctAnswer",
-                          //   style: TextStyle(
-                          //     fontSize: 15,
-                          //     fontWeight: FontWeight.w500,
-                          //     color: Colors.green,
-                          //   ),
-                          // ),
-                          // Text(
-                          //   "$correctAnswer. ${options[int.parse(correctAnswer.trim()) - 1].text}",
-                          //   style: TextStyle(
-                          //     fontSize: 15,
-                          //     fontWeight: FontWeight.w500,
-                          //     color: Colors.green,
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                    ),
 
-                    Icon(Icons.check, color: Colors.green),
-                  ],
-                ),
+                            Icon(Icons.check, color: Colors.green),
+                          ],
+                        )
+                        : Text(
+                          "$correctAnswer. ${options[int.parse(correctAnswer.trim()) - 1].text}",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.green,
+                          ),
+                        ),
               ),
               // Text(
               //   "Correct Answer: $correctAnswer. ${options[int.parse(correctAnswer.trim()) - 1].text}",

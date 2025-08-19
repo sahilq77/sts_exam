@@ -572,7 +572,7 @@ class _StartExamPageState extends State<StartExamPage>
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: AppColors.textColor,
                         ),
                       ),
                       SizedBox(height: 10),

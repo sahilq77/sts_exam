@@ -43,7 +43,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomController = Get.find<BottomNavigationController>();
+    final bottomController = Get.put(BottomNavigationController());
     final controller = Get.put(PaymentsListController());
     return WillPopScope(
       onWillPop: () => bottomController.onWillPop(),

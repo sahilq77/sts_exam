@@ -4,9 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
-
-
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
@@ -68,29 +65,30 @@ class ExamDetailController extends GetxController {
       // );
       final jsonBody = {
         "single_id": slectedexamID.value,
-         "user_type": AppUtility.userType,
-        "user_id": AppUtility.userID
+        "user_type": AppUtility.userType,
+        "user_id": AppUtility.userID,
       };
       List<AvailableExamListResponse>? response =
           (await Networkcall().postMethod(
-        Networkutility.getallExamsListApi,
-        Networkutility.getallExamsList,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<AvailableExamListResponse>?;
+                Networkutility.getallExamsListApi,
+                Networkutility.getallExamsList,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<AvailableExamListResponse>?;
       log("examjshhgsyhg=======>$response");
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
           examDetailList.clear();
           final exam = response[0].data;
-          imageLink.value = response[0]
-              .imageLink
+          imageLink.value = response[0].imageLink
               .replaceAll(r'\/', '/')
               .replaceAll(r'\:', ':');
           log("examjshhgsyhg=======>${response[0].data.first.examName}");
 
           for (var ex in exam) {
-            examDetailList.add(AvailableExam(
+            examDetailList.add(
+              AvailableExam(
                 id: ex.id,
                 examId: ex.examId,
                 testName: ex.testName,
@@ -108,14 +106,17 @@ class ExamDetailController extends GetxController {
                 // resultTime: ex.resultTime,
                 status: ex.status,
                 isDeleted: ex.isDeleted,
-                  isAttempted: ex.isAttempted,
+                isAttempted: ex.isAttempted,
                 // createdOn: ex.createdOn,
                 // updatedOn: ex.updatedOn,
                 attemptCount: ex.attemptCount,
                 examName: ex.examName,
                 questionCount: ex.questionCount,
-                     testType: ex.testType//test_type '0' for free & test_type '1' for paid
-                ));
+                questionSCount: ex.questionSCount,
+                testType:
+                    ex.testType, //test_type '0' for free & test_type '1' for paid
+              ),
+            );
           }
         }
       } else {

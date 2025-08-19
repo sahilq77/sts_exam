@@ -89,6 +89,7 @@ class AvilableExamController extends GetxController {
                 isAttempted: ex.isAttempted,
                 examName: ex.examName,
                 questionCount: ex.questionCount,
+                questionSCount: ex.questionSCount,
                 attemptCount: ex.attemptCount,
                 testType: ex
                     .testType //test_type '0' for free & test_type '1' for paid

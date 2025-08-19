@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../app_colors.dart';
 import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 import '../../controller/result_list/result_list_controller.dart';
@@ -126,6 +127,22 @@ class ResultListPage extends StatelessWidget {
         bottomNavigationBar: const CustomBottomBar(),
       ),
     );
+  }
+}
+
+String formatToIndianDateTime(String dateString) {
+  try {
+    // Parse the string to DateTime (adjust format based on your resultDate)
+    DateTime parsedDate = DateTime.parse(
+      dateString,
+    ); // For ISO 8601 format (e.g., "2025-08-06 17:15:00")
+
+    // Format to Indian date and time (DD/MM/YYYY HH:mm:ss for 24-hour format)
+    return DateFormat('dd/MM/yyyy HH:mm a').format(parsedDate);
+    // For 12-hour format, use: DateFormat('dd/MM/yyyy hh:mm:ss a').format(parsedDate);
+  } catch (e) {
+    // Handle invalid date string
+    return "Invalid Date";
   }
 }
 
@@ -420,7 +437,7 @@ class ResultCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  resultDate,
+                  formatToIndianDateTime(resultDate),
                   style: GoogleFonts.blinker(
                     fontSize: 15,
                     fontWeight: FontWeight.w400,

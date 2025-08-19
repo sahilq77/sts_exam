@@ -263,7 +263,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                   Row(
                     children: [
                       Text(
-                        '${exam.duration ?? 'N/A'} min | ${exam.questionCount ?? 'N/A'} Question',
+                        '${exam.duration ?? 'N/A'} min | ${exam.questionSCount.isEmpty ? exam.questionCount ?? "N/A" : exam.questionSCount} Question',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,

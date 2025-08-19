@@ -138,7 +138,7 @@ class QuestionQuestion {
   QuestionQuestion({required this.image, required this.text});
 
   factory QuestionQuestion.fromJson(Map<String, dynamic> json) =>
-      QuestionQuestion(image: json["image"], text: json["text"]);
+      QuestionQuestion(image: json["image"] ?? "", text: json["text"] ?? "");
 
   Map<String, dynamic> toJson() => {"image": image, "text": text};
 }

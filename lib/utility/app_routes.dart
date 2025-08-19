@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 import 'package:stsexam/utility/customdesign/nointernetconnectionpage.dart';
+import 'package:stsexam/view/about/about_us_screen.dart';
+import 'package:stsexam/view/contact/contact_us_screen.dart';
 import 'package:stsexam/view/results/view_result_screen.dart';
+import 'package:stsexam/view/terms/terms_screen.dart';
 import '../binding/start_exam_binding.dart';
 import '../view/exam/exam_details.dart';
 import '../view/exam/exam_instruction.dart';
@@ -41,7 +44,9 @@ class AppRoutes {
   static const String noInternet = '/nointernet';
   static const String viewResult = '/view_result';
   static const String paymentReceiptdetail = '/payment_receipt_detail';
-
+  static const String contactUs = '/contact_us';
+  static const String aboutUs = '/about_us';
+  static const String terms = '/terms';
   static final routes = [
     GetPage(
       name: splash,
@@ -137,6 +142,21 @@ class AppRoutes {
     GetPage(
       name: paymentReceiptdetail,
       page: () => PaymentReceiptDetailsScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: contactUs,
+      page: () => ContactUsScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: terms,
+      page: () => TermsScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: aboutUs,
+      page: () => AboutUsPage(),
       transition: Transition.fadeIn,
     ),
   ];

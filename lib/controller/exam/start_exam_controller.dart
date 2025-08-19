@@ -30,6 +30,7 @@ class StartExamController extends GetxController {
   String testID = '';
   RxString attempt = "".obs;
   RxString switchAttemptCount = ''.obs;
+
   void setTestid(String testid) {
     testID = testid;
     log("set id $testid");
@@ -153,7 +154,6 @@ class StartExamController extends GetxController {
 
   Future<void> submitTest({
     required BuildContext context,
-
     bool reset = false,
     bool isPagination = false,
     bool forceFetch = false,
@@ -170,6 +170,8 @@ class StartExamController extends GetxController {
         "submitted_on": DateTime.now().toString(),
         "answer_list": getAnswerList(),
         "switch_attempt_count": switchAttemptCount.value,
+        "duration": formatTime(remainingSeconds.value),
+        "face_detection_warnings":""
       };
       List<TestSubmitResponse>? response =
           (await Networkcall().postMethod(
@@ -330,24 +332,6 @@ class StartExamController extends GetxController {
 
         return AlertDialog(
           actionsAlignment: MainAxisAlignment.center,
-          // actions: [
-          //   TextButton(
-          //     onPressed: () {
-          //       Get.back();
-          //       Get.toNamed(AppRoutes.examInstruction);
-          //     },
-          //     child: Text(
-          //       'START!',
-          //       style: TextStyle(
-          //           fontSize: 16, fontWeight: FontWeight.bold),
-          //     ),
-          //   ),
-          // ],
-          // icon: Icon(
-          //   Icons.error_outline,
-          //   color: AppColors.primaryColor,
-          //   size: 80.0,
-          // ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -418,17 +402,6 @@ class StartExamController extends GetxController {
       };
     }).toList();
   }
-  // List<Map<String, dynamic>> getAnswerList() {
-  //   return selectedAnswers.entries
-  //       .where((entry) => entry.value != null)
-  //       .map(
-  //         (entry) => {
-  //           "question_id": int.tryParse(entry.key) ?? 0,
-  //           "student_answer": entry.value, // Use option key as answerId
-  //         },
-  //       )
-  //       .toList();
-  // }
 
   void showSubmitDialog() {
     int attemptedQuestions =
@@ -556,16 +529,6 @@ class StartExamController extends GetxController {
                   child: ElevatedButton(
                     onPressed: () {
                       submitTest(context: Get.context!);
-                      // if (attemptedQuestions <
-                      //     questionDetail.value[0].questions.length) {
-                      //   Get.snackbar('Warning', "Please Select all questions!",
-                      //       backgroundColor: AppColors.warningColor,
-                      //       colorText: Colors.white);
-                      //   selectedFilter.value = null;
-                      //   Navigator.pop(Get.context!);
-                      // } else {
-                      //   submitTest(context: Get.context!);
-                      // }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
