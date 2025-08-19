@@ -30,6 +30,8 @@ class StartExamController extends GetxController {
   String testID = '';
   RxString attempt = "".obs;
   RxString switchAttemptCount = ''.obs;
+  RxString faceDetectionWarningCount =
+      ''.obs; // New for face detection warnings
 
   void setTestid(String testid) {
     testID = testid;
@@ -171,7 +173,8 @@ class StartExamController extends GetxController {
         "answer_list": getAnswerList(),
         "switch_attempt_count": switchAttemptCount.value,
         "duration": formatTime(remainingSeconds.value),
-        "face_detection_warnings":""
+        "face_detection_warnings":
+            faceDetectionWarningCount.value, //face warning count
       };
       List<TestSubmitResponse>? response =
           (await Networkcall().postMethod(

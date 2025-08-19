@@ -26,6 +26,7 @@ class _StartExamPageState extends State<StartExamPage>
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   int _switchAttemptCount = 0;
+  int _faceDetectionCount = 0;
   final int _maxAllowedAttempts = 3;
   bool _leftApp = false;
   DateTime? _pauseStartTime;
@@ -155,6 +156,10 @@ class _StartExamPageState extends State<StartExamPage>
         final faces = await _faceDetector!.processImage(inputImage);
         debugPrint('Face detection: ${faces.length} face(s) detected');
         if (faces.isEmpty) {
+          _faceDetectionCount++;
+          controller.faceDetectionWarningCount.value =
+              _faceDetectionCount.toString();
+          controller.update();
           Get.snackbar(
             'Warning',
             'face not detetcted',
@@ -209,10 +214,10 @@ class _StartExamPageState extends State<StartExamPage>
             debugPrint(
               'Screenshot detected, attempt count: $_switchAttemptCount',
             );
+            controller.switchAttemptCount.value =
+                _switchAttemptCount.toString();
+            controller.update();
             if (_switchAttemptCount >= _maxAllowedAttempts) {
-              controller.switchAttemptCount.value =
-                  _switchAttemptCount.toString();
-              controller.update();
               _autoSubmitExam();
             } else {
               _showWarningDialogWithCount();
@@ -313,9 +318,6 @@ class _StartExamPageState extends State<StartExamPage>
           _switchAttemptCount++;
           debugPrint('Switch attempt count incremented: $_switchAttemptCount');
           if (_switchAttemptCount >= _maxAllowedAttempts) {
-            controller.switchAttemptCount.value =
-                _switchAttemptCount.toString();
-            controller.update();
             _autoSubmitExam();
           } else {
             _showWarningDialogWithCount();
@@ -332,6 +334,8 @@ class _StartExamPageState extends State<StartExamPage>
   }
 
   void _showWarningDialogWithCount() {
+    controller.switchAttemptCount.value = _switchAttemptCount.toString();
+    controller.update();
     if (!mounted) return;
     showDialog(
       context: context,
@@ -871,8 +875,13 @@ class _StartExamPageState extends State<StartExamPage>
             ),
           ),
         ),
-        Expanded(
+        // Replace Expanded with a SizedBox or constrain the ListView
+        SizedBox(
+          height: 250, // Adjust height based on your UI needs
           child: ListView.builder(
+            physics:
+                const NeverScrollableScrollPhysics(), // Disable scrolling to avoid conflicts
+            shrinkWrap: true,
             itemCount: 4,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             itemBuilder: (context, index) {
