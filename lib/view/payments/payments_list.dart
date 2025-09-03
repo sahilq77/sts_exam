@@ -46,7 +46,20 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
     final bottomController = Get.put(BottomNavigationController());
     final controller = Get.put(PaymentsListController());
     return WillPopScope(
-      onWillPop: () => bottomController.onWillPop(),
+      onWillPop: () async {
+        print(
+          'Main: WillPopScope triggered, current route: ${Get.currentRoute}, selectedIndex: ${bottomController.selectedIndex.value}',
+        );
+        if (Get.currentRoute != AppRoutes.home &&
+            Get.currentRoute != AppRoutes.splash) {
+          print('Main: Navigating to home');
+          bottomController.selectedIndex.value = 0;
+          Get.offAllNamed(AppRoutes.home);
+          return false; // Prevent app exit
+        }
+        print('Main: On home or splash, allowing app exit');
+        return true; // Allow app exit
+      },
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.backgroundColor,

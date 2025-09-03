@@ -131,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Enter your mobile number',
+                  'Enter your mobile number*',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,

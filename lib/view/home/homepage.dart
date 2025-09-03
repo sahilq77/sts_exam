@@ -98,100 +98,97 @@ class _HomePageState extends State<HomePage> {
     final bottomController = Get.put(BottomNavigationController());
 
     // controller.fetchLatestexam(context: context);
-    return WillPopScope(
-      onWillPop: () => bottomController.onWillPop(),
-      child: Scaffold(
-        drawer: Sidebar(
-          selectedIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-        ),
-        appBar: AppBar(
-          title: Obx(() {
-            if (profileController.isLoading.value &&
-                profileController.userProfileList.isEmpty) {
-              return Text("");
-            }
+    return Scaffold(
+      drawer: Sidebar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
+      appBar: AppBar(
+        title: Obx(() {
+          if (profileController.isLoading.value &&
+              profileController.userProfileList.isEmpty) {
+            return Text("");
+          }
 
-            if (profileController.userProfileList.isEmpty) {
-              return const Center(child: Text(""));
-            }
+          if (profileController.userProfileList.isEmpty) {
+            return const Center(child: Text(""));
+          }
 
-            final user = profileController.userProfileList[0];
-            print("Building with cityId: ${user.city}");
+          final user = profileController.userProfileList[0];
+          print("Building with cityId: ${user.city}");
 
-            return Text(
-              'Hi! ${user.fullName} 😊',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textColor,
-              ),
-            );
-          }),
+          return Text(
+            'Hi! ${user.fullName} 😊',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor,
+            ),
+          );
+        }),
 
-          // const Text(
-          //   'Hi! VAISHNAVI 😊',
+        // const Text(
+        //   'Hi! VAISHNAVI 😊',
+        //   style: TextStyle(
+        //     fontSize: 18,
+        //     fontWeight: FontWeight.w600,
+        //     color: AppColors.textColor,
+        //   ),
+        // ),
+        backgroundColor: AppColors.backgroundColor,
+        actions: [
+          // Text(
+          //   '${AppUtility.userID}',
           //   style: TextStyle(
           //     fontSize: 18,
           //     fontWeight: FontWeight.w600,
           //     color: AppColors.textColor,
           //   ),
           // ),
-          backgroundColor: AppColors.backgroundColor,
-          actions: [
-            // Text(
-            //   '${AppUtility.userID}',
-            //   style: TextStyle(
-            //     fontSize: 18,
-            //     fontWeight: FontWeight.w600,
-            //     color: AppColors.textColor,
-            //   ),
-            // ),
-            // Text(
-            //   '${AppUtility.userType}',
-            //   style: TextStyle(
-            //     fontSize: 18,
-            //     fontWeight: FontWeight.w600,
-            //     color: AppColors.textColor,
-            //   ),
-            // ),
-            IconButton(
-              icon: Image.asset(AppImages.bellIcon, width: 24, height: 24),
-              tooltip: 'Notifications',
-              onPressed: () {
-                Get.toNamed(AppRoutes.notification);
-                // TODO: Implement notification action
-              },
-            ),
-          ],
-          elevation: 0,
-          bottom: const PreferredSize(
-            preferredSize: Size.fromHeight(1.0),
-            child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+          // Text(
+          //   '${AppUtility.userType}',
+          //   style: TextStyle(
+          //     fontSize: 18,
+          //     fontWeight: FontWeight.w600,
+          //     color: AppColors.textColor,
+          //   ),
+          // ),
+          IconButton(
+            icon: Image.asset(AppImages.bellIcon, width: 24, height: 24),
+            tooltip: 'Notifications',
+            onPressed: () {
+              Get.toNamed(AppRoutes.notification);
+              // TODO: Implement notification action
+            },
           ),
+        ],
+        elevation: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(height: 1, color: Color(0xFFE5E7EB)),
         ),
-        backgroundColor: AppColors.backgroundColor,
-        body: RefreshIndicator(
-          onRefresh: () => controller.refreshAllData(context: context),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.all(_standardPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildBannerCarousel(),
-                  const SizedBox(height: 10),
-                  _buildLatestExamResultSection(controller),
-                  const SizedBox(height: 20),
-                  _buildAvailableExamsSection(),
-                ],
-              ),
-            ),
-          ),
-        ),
-        bottomNavigationBar: CustomBottomBar(),
       ),
+      backgroundColor: AppColors.backgroundColor,
+      body: RefreshIndicator(
+        onRefresh: () => controller.refreshAllData(context: context),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(_standardPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildBannerCarousel(),
+                const SizedBox(height: 10),
+                _buildLatestExamResultSection(controller),
+                const SizedBox(height: 20),
+                _buildAvailableExamsSection(),
+              ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: CustomBottomBar(),
     );
   }
 
@@ -629,31 +626,28 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-         
-
-Padding(
-  padding: const EdgeInsets.all(8.0),
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(5),
-    child: Container(
-      color: AppColors.primaryColor.withOpacity(0.2),
-      height: 100,
-      child: CachedNetworkImage(
-        imageUrl: image,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: Container(
-            color: Colors.grey[300],
-            height: 100,
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Container(
+                color: AppColors.primaryColor.withOpacity(0.2),
+                height: 100,
+                child: CachedNetworkImage(
+                  imageUrl: image,
+                  fit: BoxFit.cover,
+                  placeholder:
+                      (context, url) => Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(color: Colors.grey[300], height: 100),
+                      ),
+                  errorWidget:
+                      (context, url, error) => Icon(Icons.error, size: 50),
+                ),
+              ),
+            ),
           ),
-        ),
-        errorWidget: (context, url, error) => Icon(Icons.error, size: 50),
-      ),
-    ),
-  ),
-),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: _smallPadding),
             child: Text(

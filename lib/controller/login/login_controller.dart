@@ -46,7 +46,7 @@ class LoginController extends GetxController {
         List<GetLoginResponse> response = List.from(list);
         if (response[0].status == "true") {
           final user = response[0].data;
-          log("userid${user.userid}");
+          log("userid${user!.userid}");
           await AppUtility.setUserInfo(user.userType, user.userid);
 
           Get.snackbar(
@@ -57,10 +57,10 @@ class LoginController extends GetxController {
           );
           Get.offNamed(AppRoutes.home);
           // Get.offNamed('/dashboard');
-        } else {
+        } else if (response[0].status == "false") {
           Get.snackbar(
-            'Error',
-            response[0].message,
+            'Failed',
+            "Your mobile number or password is incorrect.\nPlease try again.",
             backgroundColor: AppColors.errorColor,
             colorText: Colors.white,
           );

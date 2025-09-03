@@ -23,7 +23,6 @@ import '../view/results/results_list.dart';
 import '../view/signUp/signUp_page.dart';
 import '../view/splash/splash.dart';
 
-//created by sahil
 class AppRoutes {
   static const String splash = '/splash';
   static const String login = '/login';
@@ -31,7 +30,7 @@ class AppRoutes {
   static const String signUp = '/signUp';
   static const String home = '/home';
   static const String result = '/result';
-  static const String PaymentReceipt = '/payment_recipt';
+  static const String PaymentReceipt = '/payment_receipt'; // Fixed typo
   static const String myprofile = '/my_profile';
   static const String updateprofile = '/update_profile';
   static const String notification = '/notification';
@@ -47,6 +46,7 @@ class AppRoutes {
   static const String contactUs = '/contact_us';
   static const String aboutUs = '/about_us';
   static const String terms = '/terms';
+
   static final routes = [
     GetPage(
       name: splash,

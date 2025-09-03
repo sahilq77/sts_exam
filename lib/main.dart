@@ -7,6 +7,7 @@ import 'package:stsexam/app_colors.dart';
 import 'package:stsexam/controller/bottomnavigation/bottom_navigation_controller.dart';
 import 'package:stsexam/firebase_options.dart';
 import 'package:stsexam/notification_services%20.dart';
+
 import 'package:stsexam/utility/network_connectivity/connectivityservice.dart';
 import 'utility/app_routes.dart';
 
@@ -14,7 +15,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final NotificationServices notificationServices = NotificationServices();
-  // notificationServices.requestNotificationPermission();
   notificationServices.isTokenRefresh();
   Get.lazyPut<BottomNavigationController>(
     () => BottomNavigationController(),
@@ -28,13 +28,15 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final BottomNavigationController bottomController =
+        Get.find<BottomNavigationController>();
     return GetMaterialApp(
       title: 'STS Exam',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
         textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
-        scaffoldBackgroundColor: Color(0xFFF5F5F5), // Example background color
+        scaffoldBackgroundColor: Color(0xFFF5F5F5),
         primaryColor: AppColors.primaryColor,
         colorScheme: ColorScheme.fromSwatch().copyWith(
           primary: AppColors.primaryColor,
@@ -43,19 +45,16 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
-      // home: ViewResultScreen(),
       builder: (context, child) {
         return ColorfulSafeArea(
-          color: AppColors.backgroundColor, // Matches AppBar background color
+          color: AppColors.backgroundColor,
           top: true,
-          bottom: true, // Only apply SafeArea to top for AppBar
+          bottom: true,
           left: false,
           right: false,
           child: child ?? Container(),
         );
       },
-
-      //  home: CalendarScreen(),
     );
   }
 }

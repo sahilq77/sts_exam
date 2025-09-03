@@ -83,7 +83,6 @@ class _SidebarState extends State<Sidebar> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Avatar and edit icon
                                 Center(
                                   child: Stack(
                                     alignment: Alignment.bottomRight,
@@ -100,25 +99,38 @@ class _SidebarState extends State<Sidebar> {
                                                   ),
                                                 )
                                                 : ClipOval(
-                                                  child: CachedNetworkImage(
-                                                    imageUrl:
-                                                        "${controller.imageLink.value}${user.profileImage}",
-                                                    fit: BoxFit.cover,
-                                                    placeholder:
-                                                        (
-                                                          context,
-                                                          url,
-                                                        ) => const Center(
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ),
-                                                    errorWidget:
-                                                        (context, url, error) =>
-                                                            const Icon(
-                                                              Icons.error,
-                                                              size: 30,
-                                                            ),
-                                                  ),
+                                                  child: () {
+                                                    final imageUrl =
+                                                        "${controller.imageLink.value}${user.profileImage}";
+                                                    print(
+                                                      "Sidebar Image URL: $imageUrl",
+                                                    ); // Log the URL
+                                                    return CachedNetworkImage(
+                                                      imageUrl: imageUrl,
+                                                      fit: BoxFit.cover,
+                                                      placeholder:
+                                                          (
+                                                            context,
+                                                            url,
+                                                          ) => const Center(
+                                                            child:
+                                                                CircularProgressIndicator(),
+                                                          ),
+                                                      errorWidget: (
+                                                        context,
+                                                        url,
+                                                        error,
+                                                      ) {
+                                                        print(
+                                                          "Image Load Error: $error, URL: $url",
+                                                        ); // Log error
+                                                        return const Icon(
+                                                          Icons.error,
+                                                          size: 30,
+                                                        );
+                                                      },
+                                                    );
+                                                  }(),
                                                 ),
                                       ),
                                     ],
@@ -224,7 +236,7 @@ class _SidebarState extends State<Sidebar> {
                     style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                   ),
                   onTap: () {
-                     Get.toNamed(AppRoutes.aboutUs);
+                    Get.toNamed(AppRoutes.aboutUs);
                   },
                 ),
                 ListTile(

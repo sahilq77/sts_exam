@@ -126,7 +126,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
               ),
               const SizedBox(height: 20),
               Text(
-                'You Attempt is ${count + 1} !',
+                'Good luck on your ${count + 1} exam attempt! Do your best!',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,

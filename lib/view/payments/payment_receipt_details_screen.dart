@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -293,7 +294,10 @@ class _PaymentReceiptDetailsScreenState
                     const SizedBox(height: 12),
                     _buildDetailRow('Student Name', receipt!.userName),
                     const SizedBox(height: 12),
-                    _buildDetailRow('Date', receipt!.paymentDate.toString()),
+                    _buildDetailRow(
+                      'Date',
+                      DateFormat('dd-MM-yyyy').format(receipt!.paymentDate),
+                    ),
                     const SizedBox(height: 12),
                     _buildDetailRow(
                       'Pay Status',

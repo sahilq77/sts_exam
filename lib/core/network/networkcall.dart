@@ -11,6 +11,7 @@ import '../../model/exam/get_buy_response.dart';
 import '../../model/exam/get_exam_detail_response.dart';
 import '../../model/exam/get_exam_instruction_response.dart';
 import '../../model/exam/test_submit_response.dart';
+import '../../model/forgot_password/get_forgot_password_response.dart';
 import '../../model/globoal_model/get_city_response.dart';
 import '../../model/globoal_model/get_state_response.dart';
 import '../../model/home/banner_images_response.dart';
@@ -89,9 +90,9 @@ class Networkcall {
           case 2:
             final login = getLoginResponseFromJson(str);
             return login;
-          //     case 3:
-          //     final bannerImages = getBannerImagesResponseFromJson (str);
-          //     return [bannerImages];
+          case 3:
+            final forgotpassword = getLoginResponseFromJson(str);
+            return forgotpassword;
           case 4:
             final bannerResponse = getBannerImagesResponseFromJson(str);
             return bannerResponse;

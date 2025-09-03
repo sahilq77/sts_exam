@@ -5,7 +5,7 @@ class Networkutility {
   static int signUpApi = 1;
   static String login = "${baseUrl + "login"}";
   static int loginApi = 2;
-  static String forgotPassword = "${baseUrl}";
+  static String forgotPassword = "${baseUrl + "forgot_password"}";
   static int forgotPasswordApi = 3;
   static String bannerImages = "${baseUrl + "banner"}";
   static int bannerImagesApi = 4;
@@ -44,7 +44,6 @@ class Networkutility {
   static String paymentReceiptDownload =
       "${baseUrl + "download_payment_receipt_student_wise"}";
   static int paymentReceiptDownloadApi = 21;
-  static String deleteUserAccount =
-      "${baseUrl + "delete_user"}";
+  static String deleteUserAccount = "${baseUrl + "delete_user"}";
   static int deleteUserAccountApi = 22;
 }

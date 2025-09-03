@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stsexam/utility/app_images.dart';
-
-
 import '../../app_colors.dart';
 import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 
@@ -83,11 +81,9 @@ class CustomBottomBar extends StatelessWidget {
               height: 20.0,
               color: iconColor,
               colorBlendMode: BlendMode.srcIn,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.error,
-                size: 20.0,
-                color: Colors.red,
-              ),
+              errorBuilder:
+                  (context, error, stackTrace) =>
+                      const Icon(Icons.error, size: 20.0, color: Colors.red),
             ),
             const SizedBox(height: 4.0),
             Text(

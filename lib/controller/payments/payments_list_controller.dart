@@ -126,13 +126,13 @@ class PaymentsListController extends GetxController {
       }
       await fetchPaymentList(context: context, reset: true);
       if (errorMessage.value.isEmpty) {
-        Get.snackbar(
-          'Success',
-          'Results refreshed successfully',
-          backgroundColor: AppColors.successColor ?? Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
+        // Get.snackbar(
+        //   'Success',
+        //   'Results refreshed successfully',
+        //   backgroundColor: AppColors.successColor ?? Colors.green,
+        //   colorText: Colors.white,
+        //   duration: const Duration(seconds: 2),
+        // );
       }
     } catch (e) {
       errorMessage.value = 'Failed to refresh results: $e';

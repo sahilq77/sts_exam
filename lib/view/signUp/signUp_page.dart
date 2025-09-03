@@ -55,6 +55,7 @@ class _SignupPageState extends State<SignupPage> {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
+
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -66,11 +67,7 @@ class _SignupPageState extends State<SignupPage> {
             children: [
               const SizedBox(height: 10),
               Center(
-                child: Image.asset(
-                  AppImages.logo,
-                  height: 206,
-                  width: 244,
-                ),
+                child: Image.asset(AppImages.logo, height: 206, width: 244),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -140,6 +137,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 inputFormatters: [
                   FilteringTextInputFormatter.deny(RegExp(r'^\s')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -155,7 +153,7 @@ class _SignupPageState extends State<SignupPage> {
               // Gender Dropdown
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
-                  labelText: "Gender",
+                  labelText: "Gender*",
                   labelStyle: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
@@ -212,7 +210,8 @@ class _SignupPageState extends State<SignupPage> {
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(
-                      10), // Restrict input to 10 digits
+                    10,
+                  ), // Restrict input to 10 digits
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -252,8 +251,9 @@ class _SignupPageState extends State<SignupPage> {
                   if (value == null || value.isEmpty) {
                     return "Please enter your email";
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                      .hasMatch(value)) {
+                  if (!RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(value)) {
                     return "Please enter a valid email address";
                   }
                   return null;
@@ -282,6 +282,7 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.deny(RegExp(r'^\s')),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -314,6 +315,7 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.deny(RegExp(r'^\s')),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -336,14 +338,19 @@ class _SignupPageState extends State<SignupPage> {
                       children: [
                         Text(
                           stateController.errorMessage.value,
-                          style:
-                              const TextStyle(color: Colors.red, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => stateController.fetchStates(
-                              context: context, forceFetch: true),
+                          onPressed:
+                              () => stateController.fetchStates(
+                                context: context,
+                                forceFetch: true,
+                              ),
                           child: const Text('Retry'),
                         ),
                       ],
@@ -383,8 +390,9 @@ class _SignupPageState extends State<SignupPage> {
                           onChanged: (String? newValue) async {
                             formFieldState.didChange(newValue);
                             if (newValue != null) {
-                              final stateId =
-                                  stateController.getStateId(newValue);
+                              final stateId = stateController.getStateId(
+                                newValue,
+                              );
                               print("state id $stateId");
                               setState(() {
                                 selectedState = stateId;
@@ -411,13 +419,15 @@ class _SignupPageState extends State<SignupPage> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFD0D0D0)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD0D0D0),
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFD0D0D0)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD0D0D0),
+                                ),
                               ),
                               filled: true,
                               errorText: formFieldState.errorText,
@@ -443,8 +453,10 @@ class _SignupPageState extends State<SignupPage> {
                       children: [
                         Text(
                           cityController.errorMessage.value,
-                          style:
-                              const TextStyle(color: Colors.red, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
@@ -498,8 +510,9 @@ class _SignupPageState extends State<SignupPage> {
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(5),
-                                  borderSide:
-                                      BorderSide(color: Color(0xFFD0D0D0)),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFFD0D0D0),
+                                  ),
                                 ),
                                 prefixIcon: Icon(Icons.search),
                               ),
@@ -525,13 +538,15 @@ class _SignupPageState extends State<SignupPage> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFD0D0D0)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD0D0D0),
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFD0D0D0)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFD0D0D0),
+                                ),
                               ),
                               filled: true,
                               errorText: formFieldState.errorText,
@@ -550,7 +565,7 @@ class _SignupPageState extends State<SignupPage> {
                 controller: passwordController,
                 obscureText: obscurePassword,
                 decoration: InputDecoration(
-                  labelText: "Enter Password",
+                  labelText: "Enter Password*",
                   labelStyle: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
@@ -596,7 +611,7 @@ class _SignupPageState extends State<SignupPage> {
                 controller: confirmController,
                 obscureText: obscurePassword,
                 decoration: InputDecoration(
-                  labelText: "Confirm Password",
+                  labelText: "Confirm Password*",
                   labelStyle: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,

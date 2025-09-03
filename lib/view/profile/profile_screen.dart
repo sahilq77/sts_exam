@@ -85,11 +85,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  // Method to show confirmation dialog for account deletion
   Future<void> _showDeleteConfirmationDialog() async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // Prevents closing dialog by tapping outside
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Delete Account'),
@@ -100,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
               onPressed: () {
-                Get.back(); // Close the dialog
+                Get.back();
               },
             ),
             TextButton(
@@ -136,7 +135,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     return WillPopScope(
-      onWillPop: () => bottomController.onWillPop(),
+      onWillPop: () async {
+        print(
+          'Main: WillPopScope triggered, current route: ${Get.currentRoute}, selectedIndex: ${bottomController.selectedIndex.value}',
+        );
+        if (Get.currentRoute != AppRoutes.home &&
+            Get.currentRoute != AppRoutes.splash) {
+          print('Main: Navigating to home');
+          bottomController.selectedIndex.value = 0;
+          Get.offAllNamed(AppRoutes.home);
+          return false; // Prevent app exit
+        }
+        print('Main: On home or splash, allowing app exit');
+        return true; // Allow app exit
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -183,14 +195,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   controller.userProfileList.isEmpty) {
                 return _buildShimmerEffect(context);
               }
-
               if (controller.userProfileList.isEmpty) {
                 return const Center(child: Text("No profile data available"));
               }
-
               final user = controller.userProfileList[0];
               print("Building with cityId: ${user.city}");
-
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -355,7 +364,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildShimmerEffect(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
@@ -403,7 +411,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildShimmerTile(width) {
+  Widget _buildShimmerTile(double width) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(

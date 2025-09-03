@@ -22,7 +22,7 @@ class StartExamPage extends StatefulWidget {
 
 class _StartExamPageState extends State<StartExamPage>
     with WidgetsBindingObserver {
-  final controller = Get.put(StartExamController());
+  final controller = Get.find<StartExamController>();
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   int _switchAttemptCount = 0;
@@ -32,20 +32,47 @@ class _StartExamPageState extends State<StartExamPage>
   DateTime? _pauseStartTime;
   bool _isCameraActive = false;
   static const platform = MethodChannel('com.quick.stsexam/screenshot');
-  FaceDetector? _faceDetector; // Added for face detection
-  Timer? _faceDetectionTimer; // Timer for periodic face detection
+  FaceDetector? _faceDetector;
+  Timer? _faceDetectionTimer;
   final _noScreenshot = NoScreenshot.instance;
 
   Future<void> initializeCamera() async {
+    if (!mounted) return;
     debugPrint('Initializing camera...');
-    if (_cameraController != null && _isCameraInitialized && _isCameraActive) {
-      debugPrint('Camera already initialized and active, resuming preview...');
-      await _resumeCameraPreview();
+    if (await Permission.camera.request().isDenied) {
+      debugPrint('Camera permission denied');
+      setState(() {
+        _isCameraInitialized = false;
+        _isCameraActive = false;
+      });
+      Get.snackbar(
+        'Permission Denied',
+        'Camera permission is required to proceed with the exam.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
     try {
       final cameras = await availableCameras();
+      if (cameras.isEmpty) {
+        debugPrint('No cameras available');
+        setState(() {
+          _isCameraInitialized = false;
+          _isCameraActive = false;
+        });
+        Get.snackbar(
+          'Error',
+          'No cameras available on this device.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
       final frontCamera = cameras.firstWhere(
         (camera) => camera.lensDirection == CameraLensDirection.front,
         orElse: () => cameras.first,
@@ -53,7 +80,7 @@ class _StartExamPageState extends State<StartExamPage>
 
       _cameraController = CameraController(
         frontCamera,
-        ResolutionPreset.medium,
+        ResolutionPreset.low,
         enableAudio: false,
       );
 
@@ -71,7 +98,6 @@ class _StartExamPageState extends State<StartExamPage>
       await _cameraController!.resumePreview();
       debugPrint('Camera preview started.');
 
-      // Initialize face detector and start face detection
       _faceDetector = FaceDetector(
         options: FaceDetectorOptions(
           enableContours: false,
@@ -81,16 +107,24 @@ class _StartExamPageState extends State<StartExamPage>
         ),
       );
       _startFaceDetection();
-    } catch (e) {
-      debugPrint('Error initializing camera: $e');
+    } catch (e, stackTrace) {
+      debugPrint('Error initializing camera: $e\n$stackTrace');
       setState(() {
         _isCameraInitialized = false;
         _isCameraActive = false;
       });
+      Get.snackbar(
+        'Error',
+        'Failed to initialize camera. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
   Future<void> _resumeCameraPreview() async {
+    if (!mounted) return;
     if (_cameraController == null || !_isCameraInitialized) {
       debugPrint('Camera not initialized, reinitializing...');
       await initializeCamera();
@@ -107,40 +141,41 @@ class _StartExamPageState extends State<StartExamPage>
       setState(() {
         _isCameraActive = true;
       });
-      // Restart face detection when resuming preview
       _startFaceDetection();
-    } catch (e) {
-      debugPrint('Error resuming camera preview: $e');
+    } catch (e, stackTrace) {
+      debugPrint('Error resuming camera preview: $e\n$stackTrace');
       await _reinitializeCamera();
     }
   }
 
   Future<void> _reinitializeCamera() async {
+    if (!mounted) return;
     debugPrint('Reinitializing camera...');
     if (_cameraController != null) {
-      await _cameraController!.dispose().catchError((e) {
-        debugPrint('Error disposing camera: $e');
+      await _cameraController!.dispose().catchError((e, stackTrace) {
+        debugPrint('Error disposing camera: $e\n$stackTrace');
       });
     }
     _cameraController = null;
     _isCameraInitialized = false;
     _isCameraActive = false;
-    // Stop face detection when reinitializing
     _stopFaceDetection();
     await initializeCamera();
   }
 
-  // Start periodic face detection
   void _startFaceDetection() {
-    if (_faceDetector == null ||
+    if (!mounted ||
+        _faceDetector == null ||
         _cameraController == null ||
         !_isCameraInitialized ||
         !_isCameraActive) {
-      debugPrint('Cannot start face detection: Camera not ready');
+      debugPrint(
+        'Cannot start face detection: Camera not ready or widget unmounted',
+      );
       return;
     }
     _faceDetectionTimer?.cancel();
-    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 2), (
+    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 5), (
       timer,
     ) async {
       if (!mounted || !_isCameraActive || _cameraController == null) {
@@ -162,54 +197,38 @@ class _StartExamPageState extends State<StartExamPage>
           controller.update();
           Get.snackbar(
             'Warning',
-            'face not detetcted',
+            'Face not detected ($_faceDetectionCount/$_maxAllowedAttempts)',
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
             duration: const Duration(seconds: 3),
           );
-          // _switchAttemptCount++;
-          // debugPrint('No face detected, attempt count: $_switchAttemptCount');
-          // if (_switchAttemptCount >= _maxAllowedAttempts) {
-          //   Get.snackbar(
-          //     'Warning',
-          //     'fce not detetcted',
-          //     snackPosition: SnackPosition.TOP,
-          //     backgroundColor: Colors.red,
-          //     colorText: Colors.white,
-          //     duration: const Duration(seconds: 3),
-          //   );
-          //   // _autoSubmitExam();
-          // } else {
-          //    Get.snackbar(
-          //     'Warning',
-          //     'fce not detetcted',
-          //     snackPosition: SnackPosition.TOP,
-          //     backgroundColor: Colors.red,
-          //     colorText: Colors.white,
-          //     duration: const Duration(seconds: 3),
-          //   );
-          //   // _showWarningDialogWithCount();
-          // }
+          if (_faceDetectionCount >= _maxAllowedAttempts) {
+            _autoSubmitExam();
+          }
+        } else {
+          _faceDetectionCount = 0;
+          controller.faceDetectionWarningCount.value = '0';
+          controller.update();
         }
-      } catch (e) {
-        debugPrint('Error in face detection: $e');
+      } catch (e, stackTrace) {
+        debugPrint('Error in face detection: $e\n$stackTrace');
       }
     });
   }
 
-  // Stop face detection
   void _stopFaceDetection() {
     _faceDetectionTimer?.cancel();
     _faceDetectionTimer = null;
   }
 
   void startScreenshotListener() async {
+    if (!mounted) return;
     if (await Permission.storage.request().isGranted) {
       try {
         await platform.invokeMethod('listenForScreenshots');
         platform.setMethodCallHandler((call) async {
-          if (call.method == 'screenshotDetected') {
+          if (call.method == 'screenshotDetected' && mounted) {
             _switchAttemptCount++;
             debugPrint(
               'Screenshot detected, attempt count: $_switchAttemptCount',
@@ -224,43 +243,103 @@ class _StartExamPageState extends State<StartExamPage>
             }
           }
         });
-      } catch (e) {
-        debugPrint('Error setting up screenshot listener: $e');
+      } catch (e, stackTrace) {
+        debugPrint('Error setting up screenshot listener: $e\n$stackTrace');
       }
     } else {
       debugPrint('Storage permission denied');
     }
   }
 
-  void disableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOff();
-    debugPrint('Screenshot Off: $result');
+  Future<bool> disableScreenshot() async {
+    try {
+      bool result = await _noScreenshot.screenshotOff();
+      debugPrint('Screenshot Off: $result');
+      return result;
+    } catch (e, stackTrace) {
+      debugPrint('Error disabling screenshot: $e\n$stackTrace');
+      return false;
+    }
   }
 
-  void enableScreenshot() async {
-    bool result = await _noScreenshot.screenshotOn();
-    debugPrint('Enable Screenshot: $result');
+  Future<bool> enableScreenshot() async {
+    try {
+      bool result = await _noScreenshot.screenshotOn();
+      debugPrint('Enable screenshot: $result');
+      return result;
+    } catch (e, stackTrace) {
+      debugPrint('Error enabling screenshot: $e\n$stackTrace');
+      return false;
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    debugPrint('StartExamPage initState started');
     WidgetsBinding.instance.addObserver(this);
-    disableScreenshot();
-    initializeCamera();
-    startScreenshotListener();
-    final args = Get.arguments;
-    final testId = args['test_id'];
-    final attemptCount = args['attempted_count'];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.attempt.value = attemptCount.toString();
-      controller.fetchallQestions(context: context, testId: testId);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        debugPrint('Widget not mounted, exiting initState');
+        return;
+      }
+      debugPrint('Calling disableScreenshot');
+      bool screenshotDisabled = await disableScreenshot();
+      if (!screenshotDisabled) {
+        Get.snackbar(
+          'Error',
+          'Failed to disable screenshots.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+      debugPrint('Calling initializeCamera');
+      await initializeCamera();
+      debugPrint('Calling startScreenshotListener');
+      startScreenshotListener();
+      debugPrint('Processing arguments');
+      final args = Get.arguments ?? {};
+      final testId = args['test_id'] as String?;
+      final attemptCount = args['attempted_count'] as int?;
+      if (testId != null && attemptCount != null) {
+        debugPrint('Fetching questions for testId: $testId');
+        controller.attempt.value = attemptCount.toString();
+        try {
+          await controller.fetchallQestions(context: context, testId: testId);
+          debugPrint('Questions fetched successfully');
+        } catch (e, stackTrace) {
+          debugPrint('Error fetching questions: $e\n$stackTrace');
+          Get.snackbar(
+            'Error',
+            'Failed to load questions. Please try again.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        debugPrint(
+          'Invalid arguments: testId=$testId, attemptCount=$attemptCount',
+        );
+        Get.snackbar(
+          'Error',
+          'Invalid exam data. Please try again.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
     });
+    debugPrint('StartExamPage initState completed');
   }
 
   @override
   void dispose() {
     debugPrint('Disposing StartExamPage...');
+    _stopFaceDetection();
+    _faceDetector?.close();
+    _faceDetector = null;
     if (_cameraController != null) {
       _cameraController!
           .dispose()
@@ -270,15 +349,11 @@ class _StartExamPageState extends State<StartExamPage>
             _isCameraInitialized = false;
             _isCameraActive = false;
           })
-          .catchError((e) {
-            debugPrint('Error disposing camera: $e');
+          .catchError((e, stackTrace) {
+            debugPrint('Error disposing camera: $e\n$stackTrace');
           });
     }
     enableScreenshot();
-    // Dispose face detector
-    _stopFaceDetection();
-    _faceDetector?.close();
-    _faceDetector = null;
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -286,30 +361,25 @@ class _StartExamPageState extends State<StartExamPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     debugPrint('Lifecycle state changed: $state');
+    if (!mounted) return;
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _leftApp = true;
       _pauseStartTime = DateTime.now();
       if (_isCameraInitialized && _cameraController != null) {
         try {
-          await _cameraController!.dispose(); // Dispose camera on pause
-          debugPrint('Camera disposed on pause to prevent session issues.');
-        } catch (e) {
-          debugPrint('Error disposing camera on pause: $e');
-        }
-        setState(() {
-          _isCameraInitialized = false;
+          await _cameraController!.pausePreview();
+          debugPrint('Camera preview paused.');
           _isCameraActive = false;
-          _cameraController = null;
-        });
+        } catch (e, stackTrace) {
+          debugPrint('Error pausing camera preview: $e\n$stackTrace');
+        }
       }
-      // Stop face detection when app is paused
       _stopFaceDetection();
       debugPrint('App paused or inactive, pauseStartTime: $_pauseStartTime');
     } else if (state == AppLifecycleState.resumed && _leftApp) {
       _leftApp = false;
-      await initializeCamera(); // Reinitialize camera on resume
-
+      await _resumeCameraPreview();
       if (_pauseStartTime != null) {
         final pauseDuration =
             DateTime.now().difference(_pauseStartTime!).inMilliseconds;
@@ -317,25 +387,23 @@ class _StartExamPageState extends State<StartExamPage>
         if (pauseDuration > 500) {
           _switchAttemptCount++;
           debugPrint('Switch attempt count incremented: $_switchAttemptCount');
+          controller.switchAttemptCount.value = _switchAttemptCount.toString();
+          controller.update();
           if (_switchAttemptCount >= _maxAllowedAttempts) {
             _autoSubmitExam();
           } else {
             _showWarningDialogWithCount();
           }
-        } else {
-          debugPrint('Pause duration too short, not counting as app switch');
         }
       }
       _pauseStartTime = null;
       if (mounted) {
-        setState(() {}); // Refresh UI to ensure camera preview is displayed
+        setState(() {});
       }
     }
   }
 
   void _showWarningDialogWithCount() {
-    controller.switchAttemptCount.value = _switchAttemptCount.toString();
-    controller.update();
     if (!mounted) return;
     showDialog(
       context: context,
@@ -345,12 +413,12 @@ class _StartExamPageState extends State<StartExamPage>
             title: const Text('Warning'),
             content: Text(
               'You switched away from the app, attempted an action like a screenshot, or your face was not detected ($_switchAttemptCount/$_maxAllowedAttempts).\n'
-              'After 3 attempts, the exam will be auto-submitted.',
+              'After $_maxAllowedAttempts attempts, the exam will be auto-submitted.',
             ),
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  if (mounted) Navigator.pop(context);
                 },
                 child: const Text('OK'),
               ),
@@ -371,8 +439,19 @@ class _StartExamPageState extends State<StartExamPage>
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                controller.submitTest(context: context);
+              onPressed: () async {
+                try {
+                  await controller.submitTest(context: context);
+                } catch (e, stackTrace) {
+                  debugPrint('Error submitting test: $e\n$stackTrace');
+                  Get.snackbar(
+                    'Error',
+                    'Failed to submit exam. Please try again.',
+                    snackPosition: SnackPosition.TOP,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                  );
+                }
                 controller.selectedOption.value = null;
                 controller.currentQuestionIndex.value = 0;
                 controller.selectedAnswers.clear();
@@ -392,6 +471,7 @@ class _StartExamPageState extends State<StartExamPage>
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
+        if (!mounted) return false;
         Get.dialog(
           AlertDialog(
             title: const Text('Exit Exam'),
@@ -421,31 +501,33 @@ class _StartExamPageState extends State<StartExamPage>
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed:
-                () => Get.dialog(
-                  AlertDialog(
-                    title: const Text('Exit Exam'),
-                    content: const Text(
-                      'Are you sure you want to exit the exam?',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Get.back(),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          controller.selectedAnswers.clear();
-                          controller.selectedOption.value = null;
-                          controller.timer?.cancel();
-                          controller.currentQuestionIndex.value = 0;
-                          Get.offAllNamed(AppRoutes.home);
-                        },
-                        child: const Text('Exit'),
-                      ),
-                    ],
+            onPressed: () {
+              if (!mounted) return;
+              Get.dialog(
+                AlertDialog(
+                  title: const Text('Exit Exam'),
+                  content: const Text(
+                    'Are you sure you want to exit the exam?',
                   ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        controller.selectedAnswers.clear();
+                        controller.selectedOption.value = null;
+                        controller.timer?.cancel();
+                        controller.currentQuestionIndex.value = 0;
+                        Get.offAllNamed(AppRoutes.home);
+                      },
+                      child: const Text('Exit'),
+                    ),
+                  ],
                 ),
+              );
+            },
           ),
           title: Obx(
             () => Text(
@@ -491,101 +573,111 @@ class _StartExamPageState extends State<StartExamPage>
         ),
         body: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: Obx(() {
-            if (controller.isLoading.value) {
-              return buildShimmerEffect();
-            }
-            if (controller.errorMessage.isNotEmpty) {
-              return Center(child: Text(controller.errorMessage.value));
-            }
-            if (controller.filteredQuestions.isEmpty ||
-                controller.currentQuestionIndex.value == -1) {
-              return const Center(
-                child: Text(
-                  'No questions match the selected filter.',
-                  style: TextStyle(fontSize: 16, color: AppColors.textColor),
-                ),
-              );
-            }
-            final currentQuestion =
-                controller.filteredQuestions[controller
-                    .currentQuestionIndex
-                    .value];
-            final Map<String, String>? options = currentQuestion.options;
-            final String questionText =
-                currentQuestion.question.text ?? 'Question not available';
-            final String questionImage = currentQuestion.question.image ?? '';
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
-                    borderRadius: BorderRadius.circular(0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight:
+                  MediaQuery.of(context).size.height -
+                  kToolbarHeight -
+                  kBottomNavigationBarHeight,
+            ),
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return buildShimmerEffect();
+              }
+              if (controller.errorMessage.isNotEmpty) {
+                return Center(child: Text(controller.errorMessage.value));
+              }
+              if (controller.filteredQuestions.isEmpty ||
+                  controller.currentQuestionIndex.value == -1) {
+                return const Center(
+                  child: Text(
+                    'No questions match the selected filter.',
+                    style: TextStyle(fontSize: 16, color: AppColors.textColor),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Question ${controller.currentQuestionIndex.value + 1}/${controller.questionDetail[0].questions.length}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      Text(
-                        controller.formatTime(
-                          controller.remainingSeconds.value,
-                        ),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Container(
-                    margin: const EdgeInsets.all(16),
-                    width: 100,
-                    height: 100,
+                );
+              }
+              final currentQuestion =
+                  controller.filteredQuestions[controller
+                      .currentQuestionIndex
+                      .value];
+              final Map<String, String>? options = currentQuestion.options;
+              final String questionText =
+                  currentQuestion.question.text ?? 'Question not available';
+              final String questionImage = currentQuestion.question.image ?? '';
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                      borderRadius: BorderRadius.circular(0),
                     ),
-                    child:
-                        _isCameraInitialized &&
-                                _cameraController != null &&
-                                _isCameraActive
-                            ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CameraPreview(_cameraController!),
-                            )
-                            : const Center(child: CircularProgressIndicator()),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${controller.currentQuestionIndex.value + 1}. $questionText',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Question ${controller.currentQuestionIndex.value + 1}/${controller.questionDetail.isNotEmpty ? controller.questionDetail[0].questions.length : 0}',
+                          style: const TextStyle(fontSize: 14),
                         ),
+                        Text(
+                          controller.formatTime(
+                            controller.remainingSeconds.value,
+                          ),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                      margin: const EdgeInsets.all(16),
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      SizedBox(height: 10),
-                      if (questionImage.isNotEmpty &&
-                          questionImage.contains(
-                            RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
-                          ))
-                        SizedBox(
-                          child: SizedBox(
+                      child:
+                          _isCameraInitialized &&
+                                  _cameraController != null &&
+                                  _isCameraActive
+                              ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: CameraPreview(_cameraController!),
+                              )
+                              : const Center(child: Text('Camera unavailable')),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(18.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${controller.currentQuestionIndex.value + 1}. $questionText',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        if (questionImage.isNotEmpty &&
+                            questionImage.contains(
+                              RegExp(
+                                r'\.(jpeg|jpg|png)$',
+                                caseSensitive: false,
+                              ),
+                            ))
+                          SizedBox(
                             height: 100,
                             width: 100,
                             child: ClipRRect(
@@ -598,73 +690,33 @@ class _StartExamPageState extends State<StartExamPage>
                                       child: CircularProgressIndicator(),
                                     ),
                                 errorWidget:
-                                    (context, url, error) =>
-                                        const Icon(Icons.error, size: 50),
+                                    (context, url, error) => const Icon(
+                                      Icons.broken_image,
+                                      size: 50,
+                                    ),
                               ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                  // questionText.contains(
-                  //       RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
-                  //     )
-                  //     ? Row(
-                  //       children: [
-                  //         Text(
-                  //           '${controller.currentQuestionIndex.value + 1}.',
-                  //           style: const TextStyle(
-                  //             fontSize: 16,
-                  //             fontWeight: FontWeight.w600,
-                  //             color: Colors.black,
-                  //           ),
-                  //         ),
-                  //         const SizedBox(width: 8),
-                  //         SizedBox(
-                  //           child: SizedBox(
-                  //             height: 100,
-                  //             width: 100,
-                  //             child: ClipRRect(
-                  //               borderRadius: BorderRadius.circular(10),
-                  //               child: CachedNetworkImage(
-                  //                 imageUrl: questionText,
-                  //                 fit: BoxFit.cover,
-                  //                 placeholder:
-                  //                     (context, url) => const Center(
-                  //                       child: CircularProgressIndicator(),
-                  //                     ),
-                  //                 errorWidget:
-                  //                     (context, url, error) =>
-                  //                         const Icon(Icons.error, size: 50),
-                  //               ),
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ],
-                  //     )
-                  //     : Text(
-                  //       '${controller.currentQuestionIndex.value + 1}. $questionText Replacing 65 out of 65 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 1 partitions for the whole graph',
-                  //       style: const TextStyle(
-                  //         fontSize: 16,
-                  //         fontWeight: FontWeight.w600,
-                  //         color: Colors.black,
-                  //       ),
-                  //     ),
-                ),
-                if (options != null)
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: options.length,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemBuilder: (context, index) {
-                      final entry = options.entries.toList()[index];
-                      return Obx(() => _buildOption(entry, index, controller));
-                    },
-                  ),
-              ],
-            );
-          }),
+                  if (options != null)
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: options.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemBuilder: (context, index) {
+                        final entry = options.entries.toList()[index];
+                        return Obx(
+                          () => _buildOption(entry, index, controller),
+                        );
+                      },
+                    ),
+                ],
+              );
+            }),
+          ),
         ),
         bottomNavigationBar: SafeArea(
           child: Container(
@@ -714,7 +766,20 @@ class _StartExamPageState extends State<StartExamPage>
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          controller.nextQuestion();
+                          try {
+                            controller.nextQuestion();
+                          } catch (e, stackTrace) {
+                            debugPrint(
+                              'Error navigating to next question: $e\n$stackTrace',
+                            );
+                            Get.snackbar(
+                              'Error',
+                              'Failed to load next question.',
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
@@ -761,11 +826,16 @@ class _StartExamPageState extends State<StartExamPage>
 
     return GestureDetector(
       onTap: () {
-        controller.selectedOption.value = optionKey;
-        controller.selectedAnswers[controller
-                .filteredQuestions[controller.currentQuestionIndex.value]
-                .questionId] =
-            optionKey;
+        if (!mounted) return;
+        try {
+          controller.selectedOption.value = optionKey;
+          controller.selectedAnswers[controller
+                  .filteredQuestions[controller.currentQuestionIndex.value]
+                  .questionId] =
+              optionKey;
+        } catch (e, stackTrace) {
+          debugPrint('Error selecting option: $e\n$stackTrace');
+        }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
@@ -780,49 +850,40 @@ class _StartExamPageState extends State<StartExamPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              child:
-                  optionText.contains(
-                        RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
-                      )
-                      ? Row(
-                        children: [
-                          Text(
-                            '$optionKey).',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          SizedBox(
-                            height: 100,
-                            width: 100,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: CachedNetworkImage(
-                                imageUrl: optionText,
-                                fit: BoxFit.cover,
-                                placeholder:
-                                    (context, url) => const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                errorWidget:
-                                    (context, url, error) =>
-                                        const Icon(Icons.error, size: 50),
+            optionText.contains(
+                  RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
+                )
+                ? Row(
+                  children: [
+                    Text(
+                      '$optionKey).',
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 100,
+                      width: 100,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: optionText,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) => const Center(
+                                child: CircularProgressIndicator(),
                               ),
-                            ),
-                          ),
-                        ],
-                      )
-                      : Text(
-                        '$optionKey). $optionText',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
+                          errorWidget:
+                              (context, url, error) =>
+                                  const Icon(Icons.broken_image, size: 50),
                         ),
                       ),
-            ),
+                    ),
+                  ],
+                )
+                : Text(
+                  '$optionKey). $optionText',
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
             if (option.value.isEmpty &&
                 controller.imageLink.value.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -875,12 +936,10 @@ class _StartExamPageState extends State<StartExamPage>
             ),
           ),
         ),
-        // Replace Expanded with a SizedBox or constrain the ListView
         SizedBox(
-          height: 250, // Adjust height based on your UI needs
+          height: 250,
           child: ListView.builder(
-            physics:
-                const NeverScrollableScrollPhysics(), // Disable scrolling to avoid conflicts
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: 4,
             padding: const EdgeInsets.symmetric(horizontal: 12),

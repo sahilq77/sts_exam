@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../app_colors.dart';
+import '../../controller/forgot_password/forgot_password_controller.dart';
 import '../home/homepage.dart'; // Import the HomePage
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -43,8 +44,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         _passwordError = 'Password is required';
       } else if (_passwordController.text.length < 8) {
         _passwordError = 'Password must be at least 8 characters';
-      } else if (!RegExp(r'^(?=.*[0-9])(?=.*[!@#$%^&*])')
-          .hasMatch(_passwordController.text)) {
+      } else if (!RegExp(
+        r'^(?=.*[0-9])(?=.*[!@#$%^&*])',
+      ).hasMatch(_passwordController.text)) {
         _passwordError =
             'Password must contain a number and a special character';
       }
@@ -63,6 +65,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
   }
 
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final controller = Get.put(ForgotPasswordController());
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -86,8 +90,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             },
           ),
           bottom: PreferredSize(
-            preferredSize:
-                Size.fromHeight(1.0), // Set height for the bottom border
+            preferredSize: Size.fromHeight(
+              1.0,
+            ), // Set height for the bottom border
             child: Container(
               color: Color(0xFFE5E7EB), // Light grey color for the border
               height: 1.0, // Thickness of the border
@@ -96,350 +101,339 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         ),
       ),
       backgroundColor: AppColors.backgroundColor, // Use custom background color
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start, // Align children to the start (left)
-            children: [
-              // App logo (centered)
-              Center(
-                child: Image.asset(
-                  'assets/logo.png', // Ensure the image exists in your assets folder
-                  width: 263,
-                  height: 260,
+      body: Form(
+        key: formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start, // Align children to the start (left)
+              children: [
+                // App logo (centered)
+                Center(
+                  child: Image.asset(
+                    'assets/logo.png', // Ensure the image exists in your assets folder
+                    width: 263,
+                    height: 260,
+                  ),
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              // Title (left-aligned)
-              Text(
-                'Forgot Your Password',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textColor, // Custom text color
-                ),
-                textAlign: TextAlign.left, // Align text to the start (left)
-              ),
-              SizedBox(height: screenHeight * 0.04),
-              // Phone Number Label
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Enter your mobile number',
+                SizedBox(height: screenHeight * 0.02),
+                // Title (left-aligned)
+                Text(
+                  'Forgot Your Password',
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF595959),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textColor, // Custom text color
+                  ),
+                  textAlign: TextAlign.left, // Align text to the start (left)
+                ),
+                SizedBox(height: screenHeight * 0.04),
+                // Phone Number Label
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Enter your mobile number',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF595959),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: screenHeight * 0.01),
-              // Custom Phone Number Field
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundColor,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: _phoneError != null
-                        ? AppColors.errorColor
-                        : const Color(0xFFD0D0D0),
-                    width: 0.8,
+                SizedBox(height: screenHeight * 0.01),
+                // Custom Phone Number Field
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/Call.png', // Replace with AppImages.call or appropriate icon
-                      height: 20,
-                      width: 20,
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundColor,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color:
+                          _phoneError != null
+                              ? AppColors.errorColor
+                              : const Color(0xFFD0D0D0),
+                      width: 0.8,
                     ),
-                    SizedBox(width: screenWidth * 0.01),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: const Color(0xFFD0D0D0),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-                        style: TextStyle(fontSize: 17),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          counterText: "",
-                          contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/Call.png', // Replace with AppImages.call or appropriate icon
+                        height: 20,
+                        width: 20,
+                      ),
+                      SizedBox(width: screenWidth * 0.01),
+                      Container(
+                        width: 1,
+                        height: 40,
+                        color: const Color(0xFFD0D0D0),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          maxLength: 10,
+                          style: TextStyle(fontSize: 17),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            counterText: "",
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Phone number is required';
+                            } else if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                              return 'Enter a valid 10-digit phone number';
+                            }
+                            return null;
+                          },
                         ),
-                        onChanged: (value) {
-                          // Clear error when user starts typing
-                          if (_phoneError != null) {
-                            setState(() {
-                              _phoneError = null;
-                            });
-                          }
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Phone Error Message
+                SizedBox(height: screenHeight * 0.02),
+                // Password Label
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Enter your password*',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF595959),
+                    ),
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.01),
+                // Custom Password Field
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundColor,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color:
+                          _confirmPasswordError != null
+                              ? AppColors.errorColor
+                              : const Color(0xFFD0D0D0),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          style: TextStyle(fontSize: 17),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            counterText: "",
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Password is required';
+                            } else if (value.length < 3) {
+                              return 'Password must be at least 8 characters';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: AppColors.textColor,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
                         },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Phone Error Message
-              if (_phoneError != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 5, left: 12),
+                // Password Error Message
+                if (_passwordError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, left: 12),
+                    child: Text(
+                      _passwordError!,
+                      style: TextStyle(
+                        color: AppColors.errorColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                SizedBox(height: screenHeight * 0.02),
+                // Confirm Password Label
+                Align(
+                  alignment: Alignment.centerLeft,
                   child: Text(
-                    _phoneError!,
+                    'Confirm password*',
                     style: TextStyle(
-                      color: AppColors.errorColor,
-                      fontSize: 12,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF595959),
                     ),
                   ),
                 ),
-              SizedBox(height: screenHeight * 0.02),
-              // Password Label
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Enter your password*',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF595959),
+                SizedBox(height: screenHeight * 0.01),
+                // Custom Confirm Password Field
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
                   ),
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.01),
-              // Custom Password Field
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundColor,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: _passwordError != null
-                        ? AppColors.errorColor
-                        : const Color(0xFFD0D0D0),
-                    width: 0.8,
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundColor,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color:
+                          _confirmPasswordError != null
+                              ? AppColors.errorColor
+                              : const Color(0xFFD0D0D0),
+                      width: 0.8,
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        style: TextStyle(fontSize: 17),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          counterText: "",
-                          contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _confirmPasswordController,
+                          obscureText: _obscureConfirmPassword,
+                          style: TextStyle(fontSize: 17),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            counterText: "",
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Confirm password is required';
+                            } else if (value != _passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                            return null;
+                          },
                         ),
-                        onChanged: (value) {
-                          // Clear error when user starts typing
-                          if (_passwordError != null) {
-                            setState(() {
-                              _passwordError = null;
-                            });
-                          }
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: AppColors.textColor,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
                         },
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: AppColors.textColor,
-                        size: 20,
+                    ],
+                  ),
+                ),
+                // Confirm Password Error Message
+
+                // SizedBox(height: screenHeight * 0.02),
+                // // Terms and Conditions Checkbox
+                // Row(
+                //   children: [
+                //     Checkbox(
+                //       value: _isTermsAccepted,
+                //       onChanged: (value) {
+                //         setState(() {
+                //           _isTermsAccepted = value ?? false;
+                //           if (_isTermsAccepted) {
+                //             _termsError = null; // Clear error when checked
+                //           }
+                //         });
+                //       },
+                //     ),
+                //     Expanded(
+                //       child: Text(
+                //         'I accept the terms and conditions',
+                //         style: TextStyle(
+                //           fontSize: 14,
+                //           color: AppColors.textColor,
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                // // Terms Error Message
+                // if (_termsError != null)
+                //   Padding(
+                //     padding: const EdgeInsets.only(top: 5, left: 12),
+                //     child: Text(
+                //       _termsError!,
+                //       style: TextStyle(
+                //         color: AppColors.errorColor,
+                //         fontSize: 12,
+                //       ),
+                //     ),
+                //   ),
+                SizedBox(height: screenHeight * 0.04),
+                // Submit Button (centered and full-width)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        // If the form is valid, proceed with password reset
+                        controller.changePassword(
+                          mobile: _phoneController.text,
+                          password: _passwordController.text,
+                          context: context,
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          AppColors.primaryColor, // Use custom color for button
+                      minimumSize: Size(
+                        double.infinity,
+                        50,
+                      ), // Full width, fixed height
+                      padding: EdgeInsets.symmetric(
+                        vertical: 15,
+                      ), // Vertical padding only
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                      alignment:
+                          Alignment.center, // Center the button's content
                     ),
-                  ],
-                ),
-              ),
-              // Password Error Message
-              if (_passwordError != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 5, left: 12),
-                  child: Text(
-                    _passwordError!,
-                    style: TextStyle(
-                      color: AppColors.errorColor,
-                      fontSize: 12,
+                    child: Text(
+                      'Reset Password',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                 ),
-              SizedBox(height: screenHeight * 0.02),
-              // Confirm Password Label
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Confirm password*',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF595959),
-                  ),
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.01),
-              // Custom Confirm Password Field
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundColor,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: _confirmPasswordError != null
-                        ? AppColors.errorColor
-                        : const Color(0xFFD0D0D0),
-                    width: 0.8,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _confirmPasswordController,
-                        obscureText: _obscureConfirmPassword,
-                        style: TextStyle(fontSize: 17),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          counterText: "",
-                          contentPadding: EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        onChanged: (value) {
-                          // Clear error when user starts typing
-                          if (_confirmPasswordError != null) {
-                            setState(() {
-                              _confirmPasswordError = null;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: AppColors.textColor,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              // Confirm Password Error Message
-              if (_confirmPasswordError != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 5, left: 12),
-                  child: Text(
-                    _confirmPasswordError!,
-                    style: TextStyle(
-                      color: AppColors.errorColor,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              // SizedBox(height: screenHeight * 0.02),
-              // // Terms and Conditions Checkbox
-              // Row(
-              //   children: [
-              //     Checkbox(
-              //       value: _isTermsAccepted,
-              //       onChanged: (value) {
-              //         setState(() {
-              //           _isTermsAccepted = value ?? false;
-              //           if (_isTermsAccepted) {
-              //             _termsError = null; // Clear error when checked
-              //           }
-              //         });
-              //       },
-              //     ),
-              //     Expanded(
-              //       child: Text(
-              //         'I accept the terms and conditions',
-              //         style: TextStyle(
-              //           fontSize: 14,
-              //           color: AppColors.textColor,
-              //         ),
-              //       ),
-              //     ),
-              //   ],
-              // ),
-              // // Terms Error Message
-              // if (_termsError != null)
-              //   Padding(
-              //     padding: const EdgeInsets.only(top: 5, left: 12),
-              //     child: Text(
-              //       _termsError!,
-              //       style: TextStyle(
-              //         color: AppColors.errorColor,
-              //         fontSize: 12,
-              //       ),
-              //     ),
-              //   ),
-              SizedBox(height: screenHeight * 0.04),
-              // Submit Button (centered and full-width)
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _validateInputs();
-                    if (_phoneError == null &&
-                        _passwordError == null &&
-                        _confirmPasswordError == null &&
-                        _isTermsAccepted) {
-                      // Assuming the loginController handles the password reset logic
-                      // You may want to call a method from the controller here
-                      // For now, navigate to HomePage
-                     
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        AppColors.primaryColor, // Use custom color for button
-                    minimumSize:
-                        Size(double.infinity, 50), // Full width, fixed height
-                    padding: EdgeInsets.symmetric(
-                        vertical: 15), // Vertical padding only
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center, // Center the button's content
-                  ),
-                  child: Text(
-                    'Reset Password',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

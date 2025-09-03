@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../app_colors.dart';
+import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 import '../../controller/result_list/result_overview_contoller.dart';
 import '../../controller/result_list/test_result_controller.dart';
 import '../../utility/app_routes.dart';
@@ -15,22 +16,29 @@ class _ResultScreenState extends State<ResultScreen> {
   final controller = Get.put(TestResult());
 
   @override
-  @override
   void initState() {
     super.initState();
     controller.isLoading.value = true; // Set loading state initially
     final args = Get.arguments;
-    final testId = args['test_id'] as String?;
-    final attemptCount = args['attempted_test_id'] as String?;
-    if (testId != null && attemptCount != null) {
-      controller.fetchResult(
-        context: context,
-        testID: testId,
-        attemptid: attemptCount,
-      );
+    if (args != null &&
+        args is Map &&
+        args.containsKey('test_id') &&
+        args.containsKey('attempted_test_id')) {
+      final testId = args['test_id'] as String?;
+      final attemptCount = args['attempted_test_id'] as String?;
+      if (testId != null && attemptCount != null) {
+        controller.fetchResult(
+          context: context,
+          testID: testId,
+          attemptid: attemptCount,
+        );
+      } else {
+        controller.errorMessage.value = 'Invalid test or attempt ID';
+        controller.isLoading.value = false; // Stop loading if invalid args
+      }
     } else {
-      controller.errorMessage.value = 'Invalid test or attempt ID';
-      controller.isLoading.value = false; // Stop loading if invalid args
+      controller.errorMessage.value = 'No test or attempt ID provided';
+      controller.isLoading.value = false; // Stop loading if no args
     }
   }
 
@@ -42,103 +50,99 @@ class _ResultScreenState extends State<ResultScreen> {
     final double fontScale = screenWidth / 375;
     final double horizontalPadding = screenWidth * 0.05;
     final double verticalPadding = screenHeight * 0.02;
-
-    return WillPopScope(
-      onWillPop: () async {
-        Get.offNamed(AppRoutes.home);
-        return true; // Prevent default back navigation
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundColor,
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              Get.offAllNamed(AppRoutes.home);
-            },
-          ),
-          title: Text(
-            'Result',
-            style: TextStyle(color: Colors.black, fontSize: 20 * fontScale),
-          ),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          toolbarHeight: screenHeight * 0.06,
-          shape: Border(
-            bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1.0),
-          ),
-          actions: [
-            Padding(
-              padding: EdgeInsets.only(right: horizontalPadding),
-              child: GestureDetector(
-                onTap: () {
-                  if (controller.resultList.isNotEmpty) {
-                    final ResultOverviewContoller overvewController = Get.put(
-                      ResultOverviewContoller(),
-                    );
-                    overvewController.setTestid(
-                      controller.resultList.first.testId,
-                      controller.resultList.first.attemptedTestId,
-                    );
-                    Get.toNamed(AppRoutes.overview);
-                  } else {
-                    // Optionally show a snackbar or message to inform the user
-                    Get.snackbar(
-                      'Error',
-                      'No result data available to view overview',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.red,
-                      colorText: Colors.white,
-                    );
-                  }
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: verticalPadding * 0.5,
-                    horizontal: horizontalPadding * 0.75,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFFFFFFF),
-                    border: Border.all(color: Color(0xFFE5E7EB), width: 1.0),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Overview',
-                        style: TextStyle(
-                          fontSize: 14 * fontScale,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                      ),
-                      SizedBox(width: screenWidth * 0.015),
-                      Icon(
-                        Icons.visibility,
+    final bottomController = Get.put(BottomNavigationController());
+    return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.offAllNamed(AppRoutes.home);
+          },
+        ),
+        title: Text(
+          'Result',
+          style: TextStyle(color: Colors.black, fontSize: 20 * fontScale),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: screenHeight * 0.06,
+        shape: Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1.0),
+        ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: horizontalPadding),
+            child: GestureDetector(
+              onTap: () {
+                if (controller.resultList.isNotEmpty) {
+                  final ResultOverviewContoller overvewController = Get.put(
+                    ResultOverviewContoller(),
+                  );
+                  overvewController.setTestid(
+                    controller.resultList.first.testId,
+                    controller.resultList.first.attemptedTestId,
+                  );
+                  Get.toNamed(AppRoutes.overview);
+                } else {
+                  // Optionally show a snackbar or message to inform the user
+                  Get.snackbar(
+                    'Error',
+                    'No result data available to view overview',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red,
+                    colorText: Colors.white,
+                  );
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: verticalPadding * 0.5,
+                  horizontal: horizontalPadding * 0.75,
+                ),
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFFFFF),
+                  border: Border.all(color: Color(0xFFE5E7EB), width: 1.0),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Overview',
+                      style: TextStyle(
+                        fontSize: 14 * fontScale,
+                        fontWeight: FontWeight.w500,
                         color: Colors.black,
-                        size: 20 * fontScale,
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(width: screenWidth * 0.015),
+                    Icon(
+                      Icons.visibility,
+                      color: Colors.black,
+                      size: 20 * fontScale,
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
-        body: Obx(
-          () => Padding(
-            padding: EdgeInsets.only(top: verticalPadding),
-            child: controller.isLoading.value
-                ? _buildShimmerEffect(
+          ),
+        ],
+      ),
+      body: Obx(
+        () => Padding(
+          padding: EdgeInsets.only(top: verticalPadding),
+          child:
+              controller.isLoading.value
+                  ? _buildShimmerEffect(
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                     fontScale: fontScale,
                     horizontalPadding: horizontalPadding,
                     verticalPadding: verticalPadding,
                   )
-                : controller.errorMessage.value.isNotEmpty
-                ? Center(
+                  : controller.errorMessage.value.isNotEmpty
+                  ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -170,8 +174,8 @@ class _ResultScreenState extends State<ResultScreen> {
                       ],
                     ),
                   )
-                : controller.resultList.isEmpty
-                ? Center(
+                  : controller.resultList.isEmpty
+                  ? Center(
                     child: Text(
                       'No result data available',
                       style: TextStyle(
@@ -180,8 +184,8 @@ class _ResultScreenState extends State<ResultScreen> {
                       ),
                     ),
                   )
-                : controller.resultList.isNotEmpty
-                ? Column(
+                  : controller.resultList.isNotEmpty
+                  ? Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Image.asset(
@@ -296,9 +300,9 @@ class _ResultScreenState extends State<ResultScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   controller.resultList.first.examStatus ==
-                                      "Passed"
-                                  ? Colors.green[600]
-                                  : Colors.red,
+                                          "Passed"
+                                      ? Colors.green[600]
+                                      : Colors.red,
                               padding: EdgeInsets.symmetric(
                                 vertical: verticalPadding * 1.5,
                               ),
@@ -319,8 +323,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       ),
                     ],
                   )
-                : SizedBox.shrink(), // Fallback for unexpected state
-          ),
+                  : SizedBox.shrink(), // Fallback for unexpected state
         ),
       ),
     );

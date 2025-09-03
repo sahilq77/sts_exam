@@ -36,7 +36,7 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
   void shareReceiptUrl() {
     if (controller.resultLink != null) {
       final String customMessage =
-          'Here is your bill receipt:\n${controller.resultLink}';
+          'Here is your result:\n${controller.resultLink}';
 
       Share.share(customMessage, subject: 'Result');
     } else {
