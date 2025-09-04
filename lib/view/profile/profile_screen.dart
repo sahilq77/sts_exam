@@ -200,6 +200,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
               final user = controller.userProfileList[0];
               print("Building with cityId: ${user.city}");
+              print(
+                "profile image: ${controller.imageLink.value}${user.profileImage}",
+              );
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -152,13 +152,13 @@ class ExamListController extends GetxController {
 
       // Show success message if no errors
       if (errorMessage.value.isEmpty) {
-        Get.snackbar(
-          'Success',
-          'Exams refreshed successfully',
-          backgroundColor: AppColors.successColor ?? Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
+        // Get.snackbar(
+        //   'Success',
+        //   'Exams refreshed successfully',
+        //   backgroundColor: AppColors.successColor ?? Colors.green,
+        //   colorText: Colors.white,
+        //   duration: const Duration(seconds: 2),
+        // );
       }
     } catch (e) {
       errorMessage.value = 'Failed to refresh exams: $e';

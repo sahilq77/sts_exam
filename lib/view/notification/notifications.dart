@@ -120,16 +120,13 @@ class _NotificationPageState extends State<NotificationPage> {
               return Column(
                 children: [
                   GestureDetector(
-                    onTap:
-                        noti.landingPage == ""
-                            ? null
-                            : () {
-                              if (noti.landingPage == "test_result_page") {
-                                Get.toNamed(AppRoutes.result);
-                              } else {
-                                Get.toNamed(AppRoutes.examlist);
-                              }
-                            },
+                    onTap: () {
+                      if (noti.landingPage.contains("test_result_page")) {
+                        Get.toNamed(AppRoutes.result);
+                      } else {
+                        Get.toNamed(AppRoutes.examlist);
+                      }
+                    },
                     child: ListTile(
                       leading: Container(
                         height: 40,

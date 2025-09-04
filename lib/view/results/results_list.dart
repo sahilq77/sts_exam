@@ -110,9 +110,10 @@ class ResultListPage extends StatelessWidget {
                       arguments: {"test_id": result.testId},
                     );
                   },
+                  totalMarks: result.scoreOutoff,
                   resultDate: result.resultDate,
                   examName: result.testName,
-                  totalScore: result.scoreOutoff,
+                  totalScore: result.yourScore,
                   totalQuestions: result.totalQuestions,
                   correct: result.correct.toString(),
                   incorrect: result.incorrect.toString(),
@@ -161,6 +162,7 @@ String formatToIndianDateTime(String dateString) {
 
 class ResultCard extends StatelessWidget {
   final String examName;
+  final String totalMarks;
   final String totalScore;
   final String totalQuestions;
   final String correct;
@@ -174,6 +176,7 @@ class ResultCard extends StatelessWidget {
     super.key,
     required this.examName,
     required this.resultDate,
+    required this.totalMarks,
     required this.totalScore,
     required this.totalQuestions,
     required this.correct,
@@ -271,7 +274,7 @@ class ResultCard extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            'Total score',
+                            'Total Questions',
                             style: GoogleFonts.blinker(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
@@ -281,7 +284,7 @@ class ResultCard extends StatelessWidget {
                         ],
                       ),
                       Text(
-                        ': ${totalScore.toString().padLeft(2, '0')}',
+                        ': ${totalQuestions.toString().padLeft(2, '0')}',
                         style: GoogleFonts.blinker(
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
@@ -299,31 +302,32 @@ class ResultCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            'Correct',
-                            style: GoogleFonts.blinker(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.black87,
-                            ),
-                          ),
+                          // Text(
+                          //   'Incorrect',
+                          //   style: GoogleFonts.blinker(
+                          //     fontSize: 15,
+                          //     fontWeight: FontWeight.w400,
+                          //     color: Colors.black87,
+                          //   ),
+                          // ),
                         ],
                       ),
-                      Text(
-                        ': ${correct.toString().padLeft(2, '0')}',
-                        style: GoogleFonts.blinker(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.black87,
-                        ),
-                      ),
+                      // Text(
+                      //   ': ${incorrect.toString().padLeft(2, '0')}',
+                      //   style: GoogleFonts.blinker(
+                      //     fontSize: 15,
+                      //     fontWeight: FontWeight.w400,
+                      //     color: Colors.black87,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 3),
+
           Padding(
             padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: Row(
@@ -336,7 +340,7 @@ class ResultCard extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            'Total Questions',
+                            'Correct',
                             style: GoogleFonts.blinker(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
@@ -346,7 +350,7 @@ class ResultCard extends StatelessWidget {
                         ],
                       ),
                       Text(
-                        ': ${totalQuestions.toString().padLeft(2, '0')}',
+                        ': ${correct.toString().padLeft(2, '0')}',
                         style: GoogleFonts.blinker(
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
@@ -388,7 +392,72 @@ class ResultCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 3),
+          Padding(
+            padding: const EdgeInsets.only(left: 15.0, right: 15),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Total Marks',
+                            style: GoogleFonts.blinker(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        ': ${totalMarks.toString().padLeft(2, '0')}',
+                        style: GoogleFonts.blinker(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Your Score',
+                            style: GoogleFonts.blinker(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        ': ${totalScore.toString().padLeft(2, '0')}',
+                        style: GoogleFonts.blinker(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 3),
           Padding(
             padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: Row(

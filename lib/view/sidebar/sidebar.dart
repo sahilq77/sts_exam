@@ -39,6 +39,7 @@ class _SidebarState extends State<Sidebar> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(HomeController());
+    //  final profileController = Get.put(ProfileController());
     return Drawer(
       child: Column(
         children: [
@@ -60,7 +61,7 @@ class _SidebarState extends State<Sidebar> {
 
                   final user = profileController.userProfileList[0];
                   print(
-                    "Building ${controller.imageLink.value}${user.profileImage}",
+                    "Building ${profileController.imageLink.value}${user.profileImage}",
                   );
 
                   return Column(
@@ -98,39 +99,39 @@ class _SidebarState extends State<Sidebar> {
                                                     fit: BoxFit.cover,
                                                   ),
                                                 )
-                                                : ClipOval(
-                                                  child: () {
-                                                    final imageUrl =
-                                                        "${controller.imageLink.value}${user.profileImage}";
-                                                    print(
-                                                      "Sidebar Image URL: $imageUrl",
-                                                    ); // Log the URL
-                                                    return CachedNetworkImage(
-                                                      imageUrl: imageUrl,
-                                                      fit: BoxFit.cover,
-                                                      placeholder:
-                                                          (
-                                                            context,
-                                                            url,
-                                                          ) => const Center(
-                                                            child:
-                                                                CircularProgressIndicator(),
-                                                          ),
-                                                      errorWidget: (
-                                                        context,
-                                                        url,
-                                                        error,
-                                                      ) {
-                                                        print(
-                                                          "Image Load Error: $error, URL: $url",
-                                                        ); // Log error
-                                                        return const Icon(
-                                                          Icons.error,
-                                                          size: 30,
-                                                        );
-                                                      },
-                                                    );
-                                                  }(),
+                                                : AspectRatio(
+                                                  aspectRatio: 1,
+                                                  child: Container(
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                    child: ClipOval(
+                                                      child: CachedNetworkImage(
+                                                        imageUrl:
+                                                            "${profileController.imageLink.value}${user.profileImage}",
+                                                        fit: BoxFit.cover,
+                                                        placeholder:
+                                                            (
+                                                              context,
+                                                              url,
+                                                            ) => const Center(
+                                                              child:
+                                                                  CircularProgressIndicator(),
+                                                            ),
+                                                        errorWidget:
+                                                            (
+                                                              context,
+                                                              url,
+                                                              error,
+                                                            ) => const Icon(
+                                                              Icons.error,
+                                                              size: 50,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
                                       ),
                                     ],
