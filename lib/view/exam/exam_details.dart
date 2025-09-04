@@ -35,11 +35,6 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        Future.delayed(const Duration(seconds: 3), () {
-          Navigator.of(dialogContext).pop();
-          Get.toNamed(AppRoutes.examInstruction);
-        });
-
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -66,7 +61,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Your payment for the exam has been received, You can start your exam now.',
+                'Your payment for the exam has been received. Proceed to the instructions to start your exam.',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
@@ -75,6 +70,28 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(); // Close dialog
+                  Get.toNamed(
+                    AppRoutes.examInstruction,
+                  ); // Navigate to instructions
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Proceed to Instructions',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -83,34 +100,34 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
   }
 
   void _showatemptDialog(BuildContext context, int count) {
+    // Function to get the correct ordinal suffix
+    String getOrdinalSuffix(int number) {
+      if (number % 10 == 1 && number % 100 != 11) return 'st';
+      if (number % 10 == 2 && number % 100 != 12) return 'nd';
+      if (number % 10 == 3 && number % 100 != 13) return 'rd';
+      return 'th';
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        // Future.delayed(const Duration(seconds: 3), () {
-        //   Navigator.of(dialogContext).pop();
-        //   Get.toNamed(AppRoutes.examInstruction);
-        // });
-
         return AlertDialog(
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
               onPressed: () {
-                Get.back();
-                Get.toNamed(AppRoutes.examInstruction);
+                Navigator.of(dialogContext).pop(); // Close dialog
+                Get.toNamed(
+                  AppRoutes.examInstruction,
+                ); // Navigate to instructions
               },
-              child: Text(
-                'START!',
+              child: const Text(
+                'Proceed to Instructions',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ],
-          // icon: Icon(
-          //   Icons.error_outline,
-          //   color: AppColors.primaryColor,
-          //   size: 80.0,
-          // ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -126,9 +143,9 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Good luck on your ${count + 1} exam attempt! Do your best!',
-                style: TextStyle(
-                  fontSize: 20,
+                'Good luck on your ${count + 1}${getOrdinalSuffix(count + 1)} exam attempt! Do your best!',
+                style: const TextStyle(
+                  fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF4D4D4D),
                 ),

@@ -123,8 +123,10 @@ class _NotificationPageState extends State<NotificationPage> {
                     onTap: () {
                       if (noti.landingPage.contains("test_result_page")) {
                         Get.toNamed(AppRoutes.result);
-                      } else {
+                      } else if (noti.notification.contains("added")) {
                         Get.toNamed(AppRoutes.examlist);
+                      } else {
+                        print("object");
                       }
                     },
                     child: ListTile(

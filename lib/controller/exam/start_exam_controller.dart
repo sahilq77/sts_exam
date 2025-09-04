@@ -195,7 +195,7 @@ class StartExamController extends GetxController {
           colorText: Colors.white,
         );
 
-        print("is shwow ${questionDetail.first.isShowResult}");
+        print("is show ${questionDetail.first.isShowResult}");
         if (questionDetail.first.isShowResult == "0") {
           showThankyouDialog(context);
           selectedAnswers.clear();
@@ -204,7 +204,12 @@ class StartExamController extends GetxController {
           testID = '';
           switchAttemptCount.value = '';
         } else if (questionDetail.first.isShowResult == "1") {
-          Get.offAllNamed(
+          selectedAnswers.clear();
+          selectedOption.value = null;
+          currentQuestionIndex.value = 0;
+          testID = '';
+          switchAttemptCount.value = '';
+          Get.offNamed(
             AppRoutes.testresult,
             arguments: {
               "test_id": questionDetail.first.testId,
@@ -383,18 +388,18 @@ class StartExamController extends GetxController {
         content: const Text(
           'The exam duration has ended. Your answers have been submitted.',
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Get.back();
-              submitTest(context: Get.context!);
-            },
-            child: const Text('OK'),
-          ),
-        ],
       ),
       barrierDismissible: false,
     );
+
+    // Automatically submit and close dialog after a brief delay
+    Future.delayed(const Duration(seconds: 2), () {
+      submitTest(context: Get.context!);
+      selectedOption.value = null;
+      currentQuestionIndex.value = 0;
+      selectedAnswers.clear();
+      Get.back();
+    });
   }
 
   List<Map<String, dynamic>> getAnswerList() {

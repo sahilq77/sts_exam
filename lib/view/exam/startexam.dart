@@ -25,6 +25,7 @@ class _StartExamPageState extends State<StartExamPage>
   final controller = Get.find<StartExamController>();
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
+  bool _isCameraResuming = false; // New state for tracking camera resuming
   int _switchAttemptCount = 0;
   int _faceDetectionCount = 0;
   final int _maxAllowedAttempts = 3;
@@ -36,9 +37,18 @@ class _StartExamPageState extends State<StartExamPage>
   Timer? _faceDetectionTimer;
   final _noScreenshot = NoScreenshot.instance;
 
-  Future<void> initializeCamera() async {
-    if (!mounted) return;
-    debugPrint('Initializing camera...');
+  Future<void> initializeCamera({
+    int retryCount = 0,
+    int maxRetries = 3,
+  }) async {
+    if (!mounted) {
+      debugPrint('Widget not mounted, aborting camera initialization');
+      return;
+    }
+    debugPrint(
+      'Initializing camera... (Attempt ${retryCount + 1}/$maxRetries)',
+    );
+
     if (await Permission.camera.request().isDenied) {
       debugPrint('Camera permission denied');
       setState(() {
@@ -82,13 +92,19 @@ class _StartExamPageState extends State<StartExamPage>
         frontCamera,
         ResolutionPreset.low,
         enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
       );
 
       debugPrint('Camera controller created, initializing...');
       await _cameraController!.initialize();
       debugPrint('Camera initialized successfully.');
 
-      if (!mounted) return;
+      if (!mounted) {
+        debugPrint('Widget unmounted after camera init, disposing...');
+        await _cameraController?.dispose();
+        _cameraController = null;
+        return;
+      }
 
       setState(() {
         _isCameraInitialized = true;
@@ -113,53 +129,95 @@ class _StartExamPageState extends State<StartExamPage>
         _isCameraInitialized = false;
         _isCameraActive = false;
       });
-      Get.snackbar(
-        'Error',
-        'Failed to initialize camera. Please try again.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+
+      if (retryCount < maxRetries - 1) {
+        debugPrint('Retrying camera initialization...');
+        await Future.delayed(const Duration(milliseconds: 50));
+        await initializeCamera(
+          retryCount: retryCount + 1,
+          maxRetries: maxRetries,
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to initialize camera after $maxRetries attempts. Please restart the exam.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
     }
   }
 
   Future<void> _resumeCameraPreview() async {
-    if (!mounted) return;
-    if (_cameraController == null || !_isCameraInitialized) {
-      debugPrint('Camera not initialized, reinitializing...');
-      await initializeCamera();
+    if (!mounted) {
+      debugPrint('Widget not mounted, cannot resume camera');
+      return;
+    }
+    debugPrint('Attempting to resume camera preview...');
+    setState(() {
+      _isCameraResuming = true; // Set resuming state
+    });
+
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      debugPrint(
+        'Camera controller is null or not initialized, reinitializing...',
+      );
+      await _reinitializeCamera();
+      setState(() {
+        _isCameraResuming = false; // Reset resuming state
+      });
       return;
     }
 
     try {
       if (!_cameraController!.value.isPreviewPaused) {
-        debugPrint('Preview already active, skipping resume.');
+        debugPrint('Camera preview already active, no need to resume');
+        setState(() {
+          _isCameraResuming = false; // Reset resuming state
+        });
         return;
       }
       await _cameraController!.resumePreview();
       debugPrint('Camera preview resumed successfully.');
       setState(() {
         _isCameraActive = true;
+        _isCameraResuming = false; // Reset resuming state
       });
       _startFaceDetection();
     } catch (e, stackTrace) {
       debugPrint('Error resuming camera preview: $e\n$stackTrace');
       await _reinitializeCamera();
+      setState(() {
+        _isCameraResuming = false; // Reset resuming state
+      });
     }
   }
 
   Future<void> _reinitializeCamera() async {
-    if (!mounted) return;
-    debugPrint('Reinitializing camera...');
-    if (_cameraController != null) {
-      await _cameraController!.dispose().catchError((e, stackTrace) {
-        debugPrint('Error disposing camera: $e\n$stackTrace');
-      });
+    if (!mounted) {
+      debugPrint('Widget not mounted, cannot reinitialize camera');
+      return;
     }
-    _cameraController = null;
-    _isCameraInitialized = false;
-    _isCameraActive = false;
+    debugPrint('Reinitializing camera...');
+
+    if (_cameraController != null) {
+      try {
+        await _cameraController!.dispose();
+        debugPrint('Camera controller disposed successfully.');
+      } catch (e, stackTrace) {
+        debugPrint('Error disposing camera: $e\n$stackTrace');
+      }
+      _cameraController = null;
+    }
+
+    setState(() {
+      _isCameraInitialized = false;
+      _isCameraActive = false;
+      _isCameraResuming = false; // Reset resuming state
+    });
     _stopFaceDetection();
+
     await initializeCamera();
   }
 
@@ -175,12 +233,15 @@ class _StartExamPageState extends State<StartExamPage>
       return;
     }
     _faceDetectionTimer?.cancel();
-    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 5), (
+    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 2), (
       timer,
     ) async {
-      if (!mounted || !_isCameraActive || _cameraController == null) {
+      if (!mounted ||
+          !_isCameraActive ||
+          _cameraController == null ||
+          !_cameraController!.value.isInitialized) {
         debugPrint(
-          'Stopping face detection due to inactive camera or unmounted state',
+          'Stopping face detection: Camera not ready or widget unmounted',
         );
         _stopFaceDetection();
         return;
@@ -192,20 +253,22 @@ class _StartExamPageState extends State<StartExamPage>
         debugPrint('Face detection: ${faces.length} face(s) detected');
         if (faces.isEmpty) {
           _faceDetectionCount++;
+          print("face Warning count $_faceDetectionCount");
           controller.faceDetectionWarningCount.value =
               _faceDetectionCount.toString();
-          controller.update();
+          setState(() {});
+          // controller.update();
           Get.snackbar(
             'Warning',
-            'Face not detected ($_faceDetectionCount/$_maxAllowedAttempts)',
+            'Face not detected. Please ensure your face is visible to the camera.',
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
             duration: const Duration(seconds: 3),
           );
-          if (_faceDetectionCount >= _maxAllowedAttempts) {
-            _autoSubmitExam();
-          }
+          // if (_faceDetectionCount >= _maxAllowedAttempts) {
+          //   _autoSubmitExam();
+          // }
         } else {
           _faceDetectionCount = 0;
           controller.faceDetectionWarningCount.value = '0';
@@ -213,6 +276,7 @@ class _StartExamPageState extends State<StartExamPage>
         }
       } catch (e, stackTrace) {
         debugPrint('Error in face detection: $e\n$stackTrace');
+        await _reinitializeCamera();
       }
     });
   }
@@ -220,6 +284,7 @@ class _StartExamPageState extends State<StartExamPage>
   void _stopFaceDetection() {
     _faceDetectionTimer?.cancel();
     _faceDetectionTimer = null;
+    debugPrint('Face detection stopped.');
   }
 
   void startScreenshotListener() async {
@@ -361,16 +426,24 @@ class _StartExamPageState extends State<StartExamPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     debugPrint('Lifecycle state changed: $state');
-    if (!mounted) return;
+    if (!mounted) {
+      debugPrint('Widget not mounted, ignoring lifecycle change');
+      return;
+    }
+
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _leftApp = true;
       _pauseStartTime = DateTime.now();
-      if (_isCameraInitialized && _cameraController != null) {
+      if (_isCameraInitialized &&
+          _cameraController != null &&
+          _cameraController!.value.isInitialized) {
         try {
           await _cameraController!.pausePreview();
           debugPrint('Camera preview paused.');
-          _isCameraActive = false;
+          setState(() {
+            _isCameraActive = false;
+          });
         } catch (e, stackTrace) {
           debugPrint('Error pausing camera preview: $e\n$stackTrace');
         }
@@ -379,12 +452,13 @@ class _StartExamPageState extends State<StartExamPage>
       debugPrint('App paused or inactive, pauseStartTime: $_pauseStartTime');
     } else if (state == AppLifecycleState.resumed && _leftApp) {
       _leftApp = false;
+      debugPrint('App resumed, attempting to resume camera...');
       await _resumeCameraPreview();
       if (_pauseStartTime != null) {
         final pauseDuration =
             DateTime.now().difference(_pauseStartTime!).inMilliseconds;
         debugPrint('App resumed, pause duration: $pauseDuration ms');
-        if (pauseDuration > 500) {
+        if (pauseDuration > 50) {
           _switchAttemptCount++;
           debugPrint('Switch attempt count incremented: $_switchAttemptCount');
           controller.switchAttemptCount.value = _switchAttemptCount.toString();
@@ -429,42 +503,69 @@ class _StartExamPageState extends State<StartExamPage>
 
   void _autoSubmitExam() {
     if (!mounted) return;
-    Get.dialog(
-      WillPopScope(
-        onWillPop: () async => false,
-        child: AlertDialog(
-          title: const Text('Exam Auto-Submitted'),
-          content: const Text(
-            'You left the app, attempted restricted actions, or your face was not detected too many times. The exam has been auto-submitted.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                try {
-                  await controller.submitTest(context: context);
-                } catch (e, stackTrace) {
-                  debugPrint('Error submitting test: $e\n$stackTrace');
-                  Get.snackbar(
-                    'Error',
-                    'Failed to submit exam. Please try again.',
-                    snackPosition: SnackPosition.TOP,
-                    backgroundColor: Colors.red,
-                    colorText: Colors.white,
-                  );
-                }
-                controller.selectedOption.value = null;
-                controller.currentQuestionIndex.value = 0;
-                controller.selectedAnswers.clear();
-                Get.offAllNamed(AppRoutes.home);
-              },
-              child: const Text('OK'),
+
+    controller
+        .submitTest(context: context)
+        .then((_) {
+          Get.dialog(
+            WillPopScope(
+              onWillPop: () async => false,
+              child: AlertDialog(
+                title: const Text('Exam Auto-Submitted'),
+                content: const Text(
+                  'You left the app, attempted restricted actions, or your face was not detected too many times. The exam has been auto-submitted.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      controller.selectedOption.value = null;
+                      controller.currentQuestionIndex.value = 0;
+                      controller.selectedAnswers.clear();
+                      Get.offAllNamed(AppRoutes.home);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-      barrierDismissible: false,
-      useSafeArea: true,
-    );
+            barrierDismissible: false,
+            useSafeArea: true,
+          );
+        })
+        .catchError((e, stackTrace) {
+          debugPrint('Error submitting test: $e\n$stackTrace');
+          Get.snackbar(
+            'Error',
+            'Failed to submit exam. Please try again.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          Get.dialog(
+            WillPopScope(
+              onWillPop: () async => false,
+              child: AlertDialog(
+                title: const Text('Exam Submission Failed'),
+                content: const Text(
+                  'Failed to auto-submit the exam. Please try again or return to home.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      controller.selectedOption.value = null;
+                      controller.currentQuestionIndex.value = 0;
+                      controller.selectedAnswers.clear();
+                      Get.offAllNamed(AppRoutes.home);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            ),
+            barrierDismissible: false,
+            useSafeArea: true,
+          );
+        });
   }
 
   @override
@@ -496,320 +597,342 @@ class _StartExamPageState extends State<StartExamPage>
         );
         return false;
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFFFDFDFD),
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              if (!mounted) return;
-              Get.dialog(
-                AlertDialog(
-                  title: const Text('Exit Exam'),
-                  content: const Text(
-                    'Are you sure you want to exit the exam?',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Get.back(),
-                      child: const Text('Cancel'),
+      child: Stack(
+        children: [
+          Scaffold(
+            backgroundColor: const Color(0xFFFDFDFD),
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () {
+                  if (!mounted) return;
+                  Get.dialog(
+                    AlertDialog(
+                      title: const Text('Exit Exam'),
+                      content: const Text(
+                        'Are you sure you want to exit the exam?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Get.back(),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            controller.selectedAnswers.clear();
+                            controller.selectedOption.value = null;
+                            controller.timer?.cancel();
+                            controller.currentQuestionIndex.value = 0;
+                            Get.offAllNamed(AppRoutes.home);
+                          },
+                          child: const Text('Exit'),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () {
-                        controller.selectedAnswers.clear();
-                        controller.selectedOption.value = null;
-                        controller.timer?.cancel();
-                        controller.currentQuestionIndex.value = 0;
-                        Get.offAllNamed(AppRoutes.home);
-                      },
-                      child: const Text('Exit'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          title: Obx(
-            () => Text(
-              controller.questionDetail.isNotEmpty
-                  ? controller.questionDetail.first.testName ?? 'Exam'
-                  : 'Exam',
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                overflow: TextOverflow.ellipsis,
+                  );
+                },
               ),
-            ),
-          ),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: TextButton(
-                onPressed: () => controller.showFilterBottomSheet(context),
-                style: TextButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFDADADA), width: 1),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+              title: Obx(
+                () => Text(
+                  controller.questionDetail.isNotEmpty
+                      ? controller.questionDetail.first.testName ?? 'Exam'
+                      : 'Exam',
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Filter',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                    const SizedBox(width: 8),
-                    Image.asset('assets/filter.png', width: 24, height: 24),
-                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight:
-                  MediaQuery.of(context).size.height -
-                  kToolbarHeight -
-                  kBottomNavigationBarHeight,
-            ),
-            child: Obx(() {
-              if (controller.isLoading.value) {
-                return buildShimmerEffect();
-              }
-              if (controller.errorMessage.isNotEmpty) {
-                return Center(child: Text(controller.errorMessage.value));
-              }
-              if (controller.filteredQuestions.isEmpty ||
-                  controller.currentQuestionIndex.value == -1) {
-                return const Center(
-                  child: Text(
-                    'No questions match the selected filter.',
-                    style: TextStyle(fontSize: 16, color: AppColors.textColor),
-                  ),
-                );
-              }
-              final currentQuestion =
-                  controller.filteredQuestions[controller
-                      .currentQuestionIndex
-                      .value];
-              final Map<String, String>? options = currentQuestion.options;
-              final String questionText =
-                  currentQuestion.question.text ?? 'Question not available';
-              final String questionImage = currentQuestion.question.image ?? '';
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFE5E7EB)),
-                      borderRadius: BorderRadius.circular(0),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: TextButton(
+                    onPressed: () => controller.showFilterBottomSheet(context),
+                    style: TextButton.styleFrom(
+                      side: const BorderSide(
+                        color: Color(0xFFDADADA),
+                        width: 1,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Question ${controller.currentQuestionIndex.value + 1}/${controller.questionDetail.isNotEmpty ? controller.questionDetail[0].questions.length : 0}',
-                          style: const TextStyle(fontSize: 14),
+                        const Text(
+                          'Filter',
+                          style: TextStyle(color: Colors.black, fontSize: 16),
                         ),
-                        Text(
-                          controller.formatTime(
-                            controller.remainingSeconds.value,
-                          ),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        const SizedBox(width: 8),
+                        Image.asset('assets/filter.png', width: 24, height: 24),
                       ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Container(
-                      margin: const EdgeInsets.all(16),
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child:
-                          _isCameraInitialized &&
-                                  _cameraController != null &&
-                                  _isCameraActive
-                              ? ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: CameraPreview(_cameraController!),
-                              )
-                              : const Center(child: Text('Camera unavailable')),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(18.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${controller.currentQuestionIndex.value + 1}. $questionText',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textColor,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        if (questionImage.isNotEmpty &&
-                            questionImage.contains(
-                              RegExp(
-                                r'\.(jpeg|jpg|png)$',
-                                caseSensitive: false,
-                              ),
-                            ))
-                          SizedBox(
-                            height: 100,
-                            width: 100,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: CachedNetworkImage(
-                                imageUrl: questionImage,
-                                fit: BoxFit.cover,
-                                placeholder:
-                                    (context, url) => const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                errorWidget:
-                                    (context, url, error) => const Icon(
-                                      Icons.broken_image,
-                                      size: 50,
-                                    ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (options != null)
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: options.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemBuilder: (context, index) {
-                        final entry = options.entries.toList()[index];
-                        return Obx(
-                          () => _buildOption(entry, index, controller),
-                        );
-                      },
-                    ),
-                ],
-              );
-            }),
-          ),
-        ),
-        bottomNavigationBar: SafeArea(
-          child: Container(
-            height: 90,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: const Border(
-                top: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 10.3,
-                  offset: const Offset(0, 0),
                 ),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Obx(
-                () => Row(
-                  children: [
-                    Expanded(
-                      child:
-                          controller.currentQuestionIndex.value > 0 &&
-                                  controller.currentQuestionIndex.value != -1
-                              ? OutlinedButton(
-                                onPressed: controller.previousQuestion,
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.grey),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Previous',
-                                  style: TextStyle(color: Colors.black),
-                                ),
-                              )
-                              : const SizedBox.shrink(),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          try {
-                            controller.nextQuestion();
-                          } catch (e, stackTrace) {
-                            debugPrint(
-                              'Error navigating to next question: $e\n$stackTrace',
-                            );
-                            Get.snackbar(
-                              'Error',
-                              'Failed to load next question.',
-                              snackPosition: SnackPosition.TOP,
-                              backgroundColor: Colors.red,
-                              colorText: Colors.white,
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              controller.currentQuestionIndex.value <
-                                      controller.filteredQuestions.length - 1
-                                  ? const Color(0xFF3B4453)
-                                  : AppColors.primaryColor,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        child: Text(
-                          controller.currentQuestionIndex.value <
-                                  controller.filteredQuestions.length - 1
-                              ? 'Save & Next'
-                              : 'Submit',
-                          style: const TextStyle(color: Colors.white),
+            body: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight:
+                      MediaQuery.of(context).size.height -
+                      kToolbarHeight -
+                      kBottomNavigationBarHeight,
+                ),
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return buildShimmerEffect();
+                  }
+                  if (controller.errorMessage.isNotEmpty) {
+                    return Center(child: Text(controller.errorMessage.value));
+                  }
+                  if (controller.filteredQuestions.isEmpty ||
+                      controller.currentQuestionIndex.value == -1) {
+                    return const Center(
+                      child: Text(
+                        'No questions match the selected filter.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: AppColors.textColor,
                         ),
                       ),
+                    );
+                  }
+                  final currentQuestion =
+                      controller.filteredQuestions[controller
+                          .currentQuestionIndex
+                          .value];
+                  final Map<String, String>? options = currentQuestion.options;
+                  final String questionText =
+                      currentQuestion.question.text ?? 'Question not available';
+                  final String questionImage =
+                      currentQuestion.question.image ?? '';
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          borderRadius: BorderRadius.circular(0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Question ${controller.currentQuestionIndex.value + 1}/${controller.questionDetail.isNotEmpty ? controller.questionDetail[0].questions.length : 0}',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              controller.formatTime(
+                                controller.remainingSeconds.value,
+                              ),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                          margin: const EdgeInsets.all(16),
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child:
+                              _isCameraInitialized &&
+                                      _cameraController != null &&
+                                      _isCameraActive
+                                  ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CameraPreview(_cameraController!),
+                                  )
+                                  : const Center(
+                                    child: Text('Camera unavailable'),
+                                  ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(18.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${controller.currentQuestionIndex.value + 1}. $questionText',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textColor,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            if (questionImage.isNotEmpty &&
+                                questionImage.contains(
+                                  RegExp(
+                                    r'\.(jpeg|jpg|png)$',
+                                    caseSensitive: false,
+                                  ),
+                                ))
+                              SizedBox(
+                                height: 100,
+                                width: 100,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: CachedNetworkImage(
+                                    imageUrl: questionImage,
+                                    fit: BoxFit.cover,
+                                    placeholder:
+                                        (context, url) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget:
+                                        (context, url, error) => const Icon(
+                                          Icons.broken_image,
+                                          size: 50,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (options != null)
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: options.length,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          itemBuilder: (context, index) {
+                            final entry = options.entries.toList()[index];
+                            return Obx(
+                              () => _buildOption(entry, index, controller),
+                            );
+                          },
+                        ),
+                    ],
+                  );
+                }),
+              ),
+            ),
+            bottomNavigationBar: SafeArea(
+              child: Container(
+                height: 90,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: const Border(
+                    top: BorderSide(color: Color(0xFFE5E7EB), width: 1),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10.3,
+                      offset: const Offset(0, 0),
                     ),
                   ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Obx(
+                    () => Row(
+                      children: [
+                        Expanded(
+                          child:
+                              controller.currentQuestionIndex.value > 0 &&
+                                      controller.currentQuestionIndex.value !=
+                                          -1
+                                  ? OutlinedButton(
+                                    onPressed: controller.previousQuestion,
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Colors.grey,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Previous',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  )
+                                  : const SizedBox.shrink(),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              try {
+                                controller.nextQuestion();
+                              } catch (e, stackTrace) {
+                                debugPrint(
+                                  'Error navigating to next question: $e\n$stackTrace',
+                                );
+                                Get.snackbar(
+                                  'Error',
+                                  'Failed to load next question.',
+                                  snackPosition: SnackPosition.TOP,
+                                  backgroundColor: Colors.red,
+                                  colorText: Colors.white,
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  controller.currentQuestionIndex.value <
+                                          controller.filteredQuestions.length -
+                                              1
+                                      ? const Color(0xFF3B4453)
+                                      : AppColors.primaryColor,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            child: Text(
+                              controller.currentQuestionIndex.value <
+                                      controller.filteredQuestions.length - 1
+                                  ? 'Save & Next'
+                                  : 'Submit',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+          if (_isCameraResuming)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
       ),
     );
   }
