@@ -28,9 +28,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String greetings() {
     final hour = TimeOfDay.now().hour;
-    if (hour <= 12) {
+    if (hour < 12) {
       return 'Good Morning';
-    } else if (hour <= 17) {
+    } else if (hour < 18) {
       return 'Good Afternoon';
     }
     return 'Good Evening';
