@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../app_colors.dart';
@@ -14,12 +13,11 @@ import '../../utility/app_utility.dart';
 import '../../view/filters/exam_filter.dart';
 
 class StartExamController extends GetxController {
-  var selectedOption = RxnString(); // Stores answerId (option key)
+  var selectedOption = RxnString();
   var currentQuestionIndex = 0.obs;
   var remainingSeconds = 0.obs;
   var selectedFilter = RxnString();
-  var selectedAnswers =
-      <String, String?>{}.obs; // questionId -> answerId (option key)
+  var selectedAnswers = <String, String?>{}.obs;
   RxList<QuestionDetail> questionDetail = <QuestionDetail>[].obs;
   RxString imageLink = "".obs;
   var errorMessage = ''.obs;
@@ -30,8 +28,22 @@ class StartExamController extends GetxController {
   String testID = '';
   RxString attempt = "".obs;
   RxString switchAttemptCount = ''.obs;
-  RxString faceDetectionWarningCount =
-      ''.obs; // New for face detection warnings
+  RxString faceDetectionWarningCount = ''.obs;
+
+  // Callbacks for cleanup
+  VoidCallback? _stopFaceDetectionCallback;
+  Future<void> Function()? _stopScreenshotListenerCallback;
+  Future<void> Function()? _disposeCameraCallback;
+
+  void registerCleanupCallbacks({
+    required VoidCallback stopFaceDetection,
+    required Future<void> Function() stopScreenshotListener,
+    required Future<void> Function() disposeCamera,
+  }) {
+    _stopFaceDetectionCallback = stopFaceDetection;
+    _stopScreenshotListenerCallback = stopScreenshotListener;
+    _disposeCameraCallback = disposeCamera;
+  }
 
   void setTestid(String testid) {
     testID = testid;
@@ -154,12 +166,7 @@ class StartExamController extends GetxController {
     });
   }
 
-  Future<void> submitTest({
-    required BuildContext context,
-    bool reset = false,
-    bool isPagination = false,
-    bool forceFetch = false,
-  }) async {
+  Future<void> submitTest({required BuildContext context}) async {
     try {
       isLoadings.value = true;
       errorMessages.value = '';
@@ -173,8 +180,7 @@ class StartExamController extends GetxController {
         "answer_list": getAnswerList(),
         "switch_attempt_count": switchAttemptCount.value,
         "duration": formatTime(remainingSeconds.value),
-        "face_detection_warnings":
-            faceDetectionWarningCount.value, //face warning count
+        "face_detection_warnings": faceDetectionWarningCount.value,
       };
       List<TestSubmitResponse>? response =
           (await Networkcall().postMethod(
@@ -188,6 +194,15 @@ class StartExamController extends GetxController {
       if (response != null &&
           response.isNotEmpty &&
           response[0].status == "true") {
+        // Stop timer
+        timer?.cancel();
+        timer = null;
+
+        // Perform cleanup
+        _stopFaceDetectionCallback?.call();
+        await _stopScreenshotListenerCallback?.call();
+        await _disposeCameraCallback?.call();
+
         Get.snackbar(
           'Success',
           'Test Submitted successfully!',
@@ -198,17 +213,9 @@ class StartExamController extends GetxController {
         print("is show ${questionDetail.first.isShowResult}");
         if (questionDetail.first.isShowResult == "0") {
           showThankyouDialog(context);
-          selectedAnswers.clear();
-          selectedOption.value = null;
-          currentQuestionIndex.value = 0;
-          testID = '';
-          switchAttemptCount.value = '';
+          cleanupAfterSubmission();
         } else if (questionDetail.first.isShowResult == "1") {
-          selectedAnswers.clear();
-          selectedOption.value = null;
-          currentQuestionIndex.value = 0;
-          testID = '';
-          switchAttemptCount.value = '';
+          cleanupAfterSubmission();
           Get.offNamed(
             AppRoutes.testresult,
             arguments: {
@@ -216,12 +223,8 @@ class StartExamController extends GetxController {
               "attempted_test_id": response[0].data.attemptedId.toString(),
             },
           );
-          selectedAnswers.clear();
-          selectedOption.value = null;
-          currentQuestionIndex.value = 0;
-          testID = '';
-          switchAttemptCount.value = '';
         } else {
+          cleanupAfterSubmission();
           Get.offAllNamed(AppRoutes.home);
         }
       } else {
@@ -392,12 +395,8 @@ class StartExamController extends GetxController {
       barrierDismissible: false,
     );
 
-    // Automatically submit and close dialog after a brief delay
     Future.delayed(const Duration(seconds: 2), () {
       submitTest(context: Get.context!);
-      selectedOption.value = null;
-      currentQuestionIndex.value = 0;
-      selectedAnswers.clear();
       Get.back();
     });
   }
@@ -411,7 +410,7 @@ class StartExamController extends GetxController {
     }).toList();
   }
 
-  void showSubmitDialog() {
+  void showSubmitDialog(BuildContext context) {
     int attemptedQuestions =
         selectedAnswers.values.where((answer) => answer != null).length;
     int unattemptedQuestions =
@@ -662,7 +661,7 @@ class StartExamController extends GetxController {
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  void nextQuestion() {
+  void nextQuestion({required BuildContext context}) {
     if (filteredQuestions.isEmpty || currentQuestionIndex.value == -1) return;
     selectedAnswers[filteredQuestions[currentQuestionIndex.value].questionId] =
         selectedOption.value;
@@ -672,7 +671,7 @@ class StartExamController extends GetxController {
           selectedAnswers[filteredQuestions[currentQuestionIndex.value]
               .questionId];
     } else {
-      showSubmitDialog();
+      showSubmitDialog(context);
     }
   }
 
@@ -687,5 +686,18 @@ class StartExamController extends GetxController {
     selectedOption.value =
         selectedAnswers[filteredQuestions[currentQuestionIndex.value]
             .questionId];
+  }
+
+  void cleanupAfterSubmission() {
+    selectedAnswers.clear();
+    selectedOption.value = null;
+    currentQuestionIndex.value = 0;
+    testID = '';
+    switchAttemptCount.value = '';
+    faceDetectionWarningCount.value = '';
+    remainingSeconds.value = 0;
+    _stopFaceDetectionCallback = null;
+    _stopScreenshotListenerCallback = null;
+    _disposeCameraCallback = null;
   }
 }

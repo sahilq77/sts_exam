@@ -25,7 +25,7 @@ class _StartExamPageState extends State<StartExamPage>
   final controller = Get.find<StartExamController>();
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
-  bool _isCameraResuming = false; // New state for tracking camera resuming
+  bool _isCameraResuming = false;
   int _switchAttemptCount = 0;
   int _faceDetectionCount = 0;
   final int _maxAllowedAttempts = 3;
@@ -156,7 +156,7 @@ class _StartExamPageState extends State<StartExamPage>
     }
     debugPrint('Attempting to resume camera preview...');
     setState(() {
-      _isCameraResuming = true; // Set resuming state
+      _isCameraResuming = true;
     });
 
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
@@ -165,7 +165,7 @@ class _StartExamPageState extends State<StartExamPage>
       );
       await _reinitializeCamera();
       setState(() {
-        _isCameraResuming = false; // Reset resuming state
+        _isCameraResuming = false;
       });
       return;
     }
@@ -174,7 +174,7 @@ class _StartExamPageState extends State<StartExamPage>
       if (!_cameraController!.value.isPreviewPaused) {
         debugPrint('Camera preview already active, no need to resume');
         setState(() {
-          _isCameraResuming = false; // Reset resuming state
+          _isCameraResuming = false;
         });
         return;
       }
@@ -182,14 +182,14 @@ class _StartExamPageState extends State<StartExamPage>
       debugPrint('Camera preview resumed successfully.');
       setState(() {
         _isCameraActive = true;
-        _isCameraResuming = false; // Reset resuming state
+        _isCameraResuming = false;
       });
       _startFaceDetection();
     } catch (e, stackTrace) {
       debugPrint('Error resuming camera preview: $e\n$stackTrace');
       await _reinitializeCamera();
       setState(() {
-        _isCameraResuming = false; // Reset resuming state
+        _isCameraResuming = false;
       });
     }
   }
@@ -214,7 +214,7 @@ class _StartExamPageState extends State<StartExamPage>
     setState(() {
       _isCameraInitialized = false;
       _isCameraActive = false;
-      _isCameraResuming = false; // Reset resuming state
+      _isCameraResuming = false;
     });
     _stopFaceDetection();
 
@@ -257,7 +257,6 @@ class _StartExamPageState extends State<StartExamPage>
           controller.faceDetectionWarningCount.value =
               _faceDetectionCount.toString();
           setState(() {});
-          // controller.update();
           Get.snackbar(
             'Warning',
             'Face not detected. Please ensure your face is visible to the camera.',
@@ -266,9 +265,6 @@ class _StartExamPageState extends State<StartExamPage>
             colorText: Colors.white,
             duration: const Duration(seconds: 3),
           );
-          // if (_faceDetectionCount >= _maxAllowedAttempts) {
-          //   _autoSubmitExam();
-          // }
         } else {
           _faceDetectionCount = 0;
           controller.faceDetectionWarningCount.value = '0';
@@ -285,6 +281,29 @@ class _StartExamPageState extends State<StartExamPage>
     _faceDetectionTimer?.cancel();
     _faceDetectionTimer = null;
     debugPrint('Face detection stopped.');
+  }
+
+  Future<void> _stopScreenshotListener() async {
+    try {
+      await platform.invokeMethod('stopScreenshotListener');
+      debugPrint('Screenshot listener stopped.');
+    } catch (e, stackTrace) {
+      debugPrint('Error stopping screenshot listener: $e\n$stackTrace');
+    }
+  }
+
+  Future<void> _disposeCamera() async {
+    if (_cameraController != null) {
+      try {
+        await _cameraController!.dispose();
+        debugPrint('Camera controller disposed.');
+        _cameraController = null;
+        _isCameraInitialized = false;
+        _isCameraActive = false;
+      } catch (e, stackTrace) {
+        debugPrint('Error disposing camera: $e\n$stackTrace');
+      }
+    }
   }
 
   void startScreenshotListener() async {
@@ -363,6 +382,12 @@ class _StartExamPageState extends State<StartExamPage>
       await initializeCamera();
       debugPrint('Calling startScreenshotListener');
       startScreenshotListener();
+      // Register cleanup callbacks with the controller
+      controller.registerCleanupCallbacks(
+        stopFaceDetection: _stopFaceDetection,
+        stopScreenshotListener: _stopScreenshotListener,
+        disposeCamera: _disposeCamera,
+      );
       debugPrint('Processing arguments');
       final args = Get.arguments ?? {};
       final testId = args['test_id'] as String?;
@@ -405,19 +430,8 @@ class _StartExamPageState extends State<StartExamPage>
     _stopFaceDetection();
     _faceDetector?.close();
     _faceDetector = null;
-    if (_cameraController != null) {
-      _cameraController!
-          .dispose()
-          .then((_) {
-            debugPrint('Camera controller disposed.');
-            _cameraController = null;
-            _isCameraInitialized = false;
-            _isCameraActive = false;
-          })
-          .catchError((e, stackTrace) {
-            debugPrint('Error disposing camera: $e\n$stackTrace');
-          });
-    }
+    _disposeCamera();
+    _stopScreenshotListener();
     enableScreenshot();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -482,90 +496,86 @@ class _StartExamPageState extends State<StartExamPage>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Warning'),
-            content: Text(
-              'You switched away from the app, attempted an action like a screenshot, or your face was not detected ($_switchAttemptCount/$_maxAllowedAttempts).\n'
-              'After $_maxAllowedAttempts attempts, the exam will be auto-submitted.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  if (mounted) Navigator.pop(context);
-                },
-                child: const Text('OK'),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text('Warning'),
+        content: Text(
+          'You switched away from the app, attempted an action like a screenshot, or your face was not detected ($_switchAttemptCount/$_maxAllowedAttempts).\n'
+          'After $_maxAllowedAttempts attempts, the exam will be auto-submitted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('OK'),
           ),
+        ],
+      ),
     );
   }
 
   void _autoSubmitExam() {
     if (!mounted) return;
 
-    controller
-        .submitTest(context: context)
-        .then((_) {
-          Get.dialog(
-            WillPopScope(
-              onWillPop: () async => false,
-              child: AlertDialog(
-                title: const Text('Exam Auto-Submitted'),
-                content: const Text(
-                  'You left the app, attempted restricted actions, or your face was not detected too many times. The exam has been auto-submitted.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      controller.selectedOption.value = null;
-                      controller.currentQuestionIndex.value = 0;
-                      controller.selectedAnswers.clear();
-                      Get.offAllNamed(AppRoutes.home);
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
+    _stopFaceDetection();
+    _disposeCamera();
+    _stopScreenshotListener();
+
+    controller.submitTest(context: context).then((_) {
+      Get.dialog(
+        WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: const Text('Exam Auto-Submitted'),
+            content: const Text(
+              'You left the app, attempted restricted actions, or your face was not detected too many times. The exam has been auto-submitted.',
             ),
-            barrierDismissible: false,
-            useSafeArea: true,
-          );
-        })
-        .catchError((e, stackTrace) {
-          debugPrint('Error submitting test: $e\n$stackTrace');
-          Get.snackbar(
-            'Error',
-            'Failed to submit exam. Please try again.',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          Get.dialog(
-            WillPopScope(
-              onWillPop: () async => false,
-              child: AlertDialog(
-                title: const Text('Exam Submission Failed'),
-                content: const Text(
-                  'Failed to auto-submit the exam. Please try again or return to home.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      controller.selectedOption.value = null;
-                      controller.currentQuestionIndex.value = 0;
-                      controller.selectedAnswers.clear();
-                      Get.offAllNamed(AppRoutes.home);
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
+            actions: [
+              TextButton(
+                onPressed: () {
+                  controller.cleanupAfterSubmission();
+                  Get.offAllNamed(AppRoutes.home);
+                },
+                child: const Text('OK'),
               ),
+            ],
+          ),
+        ),
+        barrierDismissible: false,
+        useSafeArea: true,
+      );
+    }).catchError((e, stackTrace) {
+      debugPrint('Error submitting test: $e\n$stackTrace');
+      Get.snackbar(
+        'Error',
+        'Failed to submit exam. Please try again.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      Get.dialog(
+        WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: const Text('Exam Submission Failed'),
+            content: const Text(
+              'Failed to auto-submit the exam. Please try again or return to home.',
             ),
-            barrierDismissible: false,
-            useSafeArea: true,
-          );
-        });
+            actions: [
+              TextButton(
+                onPressed: () {
+                  controller.cleanupAfterSubmission();
+                  Get.offAllNamed(AppRoutes.home);
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        ),
+        barrierDismissible: false,
+        useSafeArea: true,
+      );
+    });
   }
 
   @override
@@ -584,10 +594,10 @@ class _StartExamPageState extends State<StartExamPage>
               ),
               TextButton(
                 onPressed: () {
-                  controller.selectedAnswers.clear();
-                  controller.selectedOption.value = null;
-                  controller.timer?.cancel();
-                  controller.currentQuestionIndex.value = 0;
+                  controller.cleanupAfterSubmission();
+                  _stopFaceDetection();
+                  _stopScreenshotListener();
+                  _disposeCamera();
                   Get.offAllNamed(AppRoutes.home);
                 },
                 child: const Text('Exit'),
@@ -619,10 +629,10 @@ class _StartExamPageState extends State<StartExamPage>
                         ),
                         TextButton(
                           onPressed: () {
-                            controller.selectedAnswers.clear();
-                            controller.selectedOption.value = null;
-                            controller.timer?.cancel();
-                            controller.currentQuestionIndex.value = 0;
+                            controller.cleanupAfterSubmission();
+                            _stopFaceDetection();
+                            _stopScreenshotListener();
+                            _disposeCamera();
                             Get.offAllNamed(AppRoutes.home);
                           },
                           child: const Text('Exit'),
@@ -681,8 +691,7 @@ class _StartExamPageState extends State<StartExamPage>
               scrollDirection: Axis.vertical,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight:
-                      MediaQuery.of(context).size.height -
+                  minHeight: MediaQuery.of(context).size.height -
                       kToolbarHeight -
                       kBottomNavigationBarHeight,
                 ),
@@ -706,9 +715,7 @@ class _StartExamPageState extends State<StartExamPage>
                     );
                   }
                   final currentQuestion =
-                      controller.filteredQuestions[controller
-                          .currentQuestionIndex
-                          .value];
+                      controller.filteredQuestions[controller.currentQuestionIndex.value];
                   final Map<String, String>? options = currentQuestion.options;
                   final String questionText =
                       currentQuestion.question.text ?? 'Question not available';
@@ -755,17 +762,16 @@ class _StartExamPageState extends State<StartExamPage>
                             border: Border.all(color: Colors.black),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child:
-                              _isCameraInitialized &&
-                                      _cameraController != null &&
-                                      _isCameraActive
-                                  ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: CameraPreview(_cameraController!),
-                                  )
-                                  : const Center(
-                                    child: Text('Camera unavailable'),
-                                  ),
+                          child: _isCameraInitialized &&
+                                  _cameraController != null &&
+                                  _isCameraActive
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: CameraPreview(_cameraController!),
+                                )
+                              : const Center(
+                                  child: Text('Camera unavailable'),
+                                ),
                         ),
                       ),
                       Padding(
@@ -797,15 +803,14 @@ class _StartExamPageState extends State<StartExamPage>
                                   child: CachedNetworkImage(
                                     imageUrl: questionImage,
                                     fit: BoxFit.cover,
-                                    placeholder:
-                                        (context, url) => const Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                    errorWidget:
-                                        (context, url, error) => const Icon(
-                                          Icons.broken_image,
-                                          size: 50,
-                                        ),
+                                    placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(
+                                      Icons.broken_image,
+                                      size: 50,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -852,37 +857,35 @@ class _StartExamPageState extends State<StartExamPage>
                     () => Row(
                       children: [
                         Expanded(
-                          child:
-                              controller.currentQuestionIndex.value > 0 &&
-                                      controller.currentQuestionIndex.value !=
-                                          -1
-                                  ? OutlinedButton(
-                                    onPressed: controller.previousQuestion,
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(
-                                        color: Colors.grey,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
+                          child: controller.currentQuestionIndex.value > 0 &&
+                                  controller.currentQuestionIndex.value != -1
+                              ? OutlinedButton(
+                                  onPressed: controller.previousQuestion,
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(
+                                      color: Colors.grey,
                                     ),
-                                    child: const Text(
-                                      'Previous',
-                                      style: TextStyle(color: Colors.black),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 16,
                                     ),
-                                  )
-                                  : const SizedBox.shrink(),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Previous',
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
                               try {
-                                controller.nextQuestion();
+                                controller.nextQuestion(context: context);
                               } catch (e, stackTrace) {
                                 debugPrint(
                                   'Error navigating to next question: $e\n$stackTrace',
@@ -897,12 +900,11 @@ class _StartExamPageState extends State<StartExamPage>
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  controller.currentQuestionIndex.value <
-                                          controller.filteredQuestions.length -
-                                              1
-                                      ? const Color(0xFF3B4453)
-                                      : AppColors.primaryColor,
+                              backgroundColor: controller.currentQuestionIndex
+                                          .value <
+                                      controller.filteredQuestions.length - 1
+                                  ? const Color(0xFF3B4453)
+                                  : AppColors.primaryColor,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 16,
@@ -953,9 +955,8 @@ class _StartExamPageState extends State<StartExamPage>
         try {
           controller.selectedOption.value = optionKey;
           controller.selectedAnswers[controller
-                  .filteredQuestions[controller.currentQuestionIndex.value]
-                  .questionId] =
-              optionKey;
+              .filteredQuestions[controller.currentQuestionIndex.value]
+              .questionId] = optionKey;
         } catch (e, stackTrace) {
           debugPrint('Error selecting option: $e\n$stackTrace');
         }
@@ -977,38 +978,36 @@ class _StartExamPageState extends State<StartExamPage>
                   RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
                 )
                 ? Row(
-                  children: [
-                    Text(
-                      '$optionKey).',
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 100,
-                      width: 100,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: CachedNetworkImage(
-                          imageUrl: optionText,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                          errorWidget:
-                              (context, url, error) =>
-                                  const Icon(Icons.broken_image, size: 50),
+                    children: [
+                      Text(
+                        '$optionKey).',
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: CachedNetworkImage(
+                            imageUrl: optionText,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.broken_image, size: 50),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                )
+                    ],
+                  )
                 : Text(
-                  '$optionKey). $optionText',
-                  style: const TextStyle(fontSize: 16, color: Colors.black),
-                ),
-            if (option.value.isEmpty &&
-                controller.imageLink.value.isNotEmpty) ...[
+                    '$optionKey). $optionText',
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+            if (option.value.isEmpty && controller.imageLink.value.isNotEmpty) ...[
               const SizedBox(height: 8),
               Image.network(
                 controller.imageLink.value,
