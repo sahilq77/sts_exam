@@ -257,14 +257,49 @@ class _StartExamPageState extends State<StartExamPage>
           controller.faceDetectionWarningCount.value =
               _faceDetectionCount.toString();
           setState(() {});
-          Get.snackbar(
-            'Warning',
-            'Face not detected. Please ensure your face is visible to the camera.',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-            duration: const Duration(seconds: 3),
-          );
+          // showDialog(
+          //   context: context,
+          //   builder:
+          //       (context) => AlertDialog(
+          //         title: const Text('Warning'),
+          //         content: const Text(
+          //           'Face not detected. Please ensure your face is visible to the camera.',
+          //         ),
+          //         backgroundColor: Colors.red,
+          //         titleTextStyle: const TextStyle(
+          //           color: Colors.white,
+          //           fontWeight: FontWeight.bold,
+          //         ),
+          //         contentTextStyle: const TextStyle(color: Colors.white),
+          //         actions: [
+          //           TextButton(
+          //             onPressed: () => Navigator.of(context).pop(),
+          //             child: const Text(
+          //               'OK',
+          //               style: TextStyle(color: Colors.white),
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          // );
+          if (mounted && ModalRoute.of(context)?.isCurrent == true) {
+            Get.snackbar(
+              'Warning',
+              'Face not detected. Please ensure your face is visible to the camera.',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 3),
+            );
+          }
+          // Get.snackbar(
+          //   'Warning',
+          //   'Face not detected. Please ensure your face is visible to the camera.',
+          //   snackPosition: SnackPosition.TOP,
+          //   backgroundColor: Colors.red,
+          //   colorText: Colors.white,
+          //   duration: const Duration(seconds: 3),
+          // );
         } else {
           _faceDetectionCount = 0;
           controller.faceDetectionWarningCount.value = '0';
@@ -496,21 +531,22 @@ class _StartExamPageState extends State<StartExamPage>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text('Warning'),
-        content: Text(
-          'You switched away from the app, attempted an action like a screenshot, or your face was not detected ($_switchAttemptCount/$_maxAllowedAttempts).\n'
-          'After $_maxAllowedAttempts attempts, the exam will be auto-submitted.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (mounted) Navigator.pop(context);
-            },
-            child: const Text('OK'),
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Warning'),
+            content: Text(
+              'You switched away from the app, attempted an action like a screenshot, or your face was not detected ($_switchAttemptCount/$_maxAllowedAttempts).\n'
+              'After $_maxAllowedAttempts attempts, the exam will be auto-submitted.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  if (mounted) Navigator.pop(context);
+                },
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -521,61 +557,64 @@ class _StartExamPageState extends State<StartExamPage>
     _disposeCamera();
     _stopScreenshotListener();
 
-    controller.submitTest(context: context).then((_) {
-      Get.dialog(
-        WillPopScope(
-          onWillPop: () async => false,
-          child: AlertDialog(
-            title: const Text('Exam Auto-Submitted'),
-            content: const Text(
-              'You left the app, attempted restricted actions, or your face was not detected too many times. The exam has been auto-submitted.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  controller.cleanupAfterSubmission();
-                  Get.offAllNamed(AppRoutes.home);
-                },
-                child: const Text('OK'),
+    controller
+        .submitTest(context: context)
+        .then((_) {
+          Get.dialog(
+            WillPopScope(
+              onWillPop: () async => false,
+              child: AlertDialog(
+                title: const Text('Exam Auto-Submitted'),
+                content: const Text(
+                  'You left the app, attempted restricted actions, or your face was not detected too many times. The exam has been auto-submitted.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      controller.cleanupAfterSubmission();
+                      Get.offAllNamed(AppRoutes.home);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        barrierDismissible: false,
-        useSafeArea: true,
-      );
-    }).catchError((e, stackTrace) {
-      debugPrint('Error submitting test: $e\n$stackTrace');
-      Get.snackbar(
-        'Error',
-        'Failed to submit exam. Please try again.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      Get.dialog(
-        WillPopScope(
-          onWillPop: () async => false,
-          child: AlertDialog(
-            title: const Text('Exam Submission Failed'),
-            content: const Text(
-              'Failed to auto-submit the exam. Please try again or return to home.',
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  controller.cleanupAfterSubmission();
-                  Get.offAllNamed(AppRoutes.home);
-                },
-                child: const Text('OK'),
+            barrierDismissible: false,
+            useSafeArea: true,
+          );
+        })
+        .catchError((e, stackTrace) {
+          debugPrint('Error submitting test: $e\n$stackTrace');
+          Get.snackbar(
+            'Error',
+            'Failed to submit exam. Please try again.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          Get.dialog(
+            WillPopScope(
+              onWillPop: () async => false,
+              child: AlertDialog(
+                title: const Text('Exam Submission Failed'),
+                content: const Text(
+                  'Failed to auto-submit the exam. Please try again or return to home.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      controller.cleanupAfterSubmission();
+                      Get.offAllNamed(AppRoutes.home);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        barrierDismissible: false,
-        useSafeArea: true,
-      );
-    });
+            ),
+            barrierDismissible: false,
+            useSafeArea: true,
+          );
+        });
   }
 
   @override
@@ -691,7 +730,8 @@ class _StartExamPageState extends State<StartExamPage>
               scrollDirection: Axis.vertical,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(context).size.height -
+                  minHeight:
+                      MediaQuery.of(context).size.height -
                       kToolbarHeight -
                       kBottomNavigationBarHeight,
                 ),
@@ -715,7 +755,9 @@ class _StartExamPageState extends State<StartExamPage>
                     );
                   }
                   final currentQuestion =
-                      controller.filteredQuestions[controller.currentQuestionIndex.value];
+                      controller.filteredQuestions[controller
+                          .currentQuestionIndex
+                          .value];
                   final Map<String, String>? options = currentQuestion.options;
                   final String questionText =
                       currentQuestion.question.text ?? 'Question not available';
@@ -762,16 +804,17 @@ class _StartExamPageState extends State<StartExamPage>
                             border: Border.all(color: Colors.black),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: _isCameraInitialized &&
-                                  _cameraController != null &&
-                                  _isCameraActive
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: CameraPreview(_cameraController!),
-                                )
-                              : const Center(
-                                  child: Text('Camera unavailable'),
-                                ),
+                          child:
+                              _isCameraInitialized &&
+                                      _cameraController != null &&
+                                      _isCameraActive
+                                  ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CameraPreview(_cameraController!),
+                                  )
+                                  : const Center(
+                                    child: Text('Camera unavailable'),
+                                  ),
                         ),
                       ),
                       Padding(
@@ -803,14 +846,15 @@ class _StartExamPageState extends State<StartExamPage>
                                   child: CachedNetworkImage(
                                     imageUrl: questionImage,
                                     fit: BoxFit.cover,
-                                    placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(
-                                      Icons.broken_image,
-                                      size: 50,
-                                    ),
+                                    placeholder:
+                                        (context, url) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget:
+                                        (context, url, error) => const Icon(
+                                          Icons.broken_image,
+                                          size: 50,
+                                        ),
                                   ),
                                 ),
                               ),
@@ -857,28 +901,30 @@ class _StartExamPageState extends State<StartExamPage>
                     () => Row(
                       children: [
                         Expanded(
-                          child: controller.currentQuestionIndex.value > 0 &&
-                                  controller.currentQuestionIndex.value != -1
-                              ? OutlinedButton(
-                                  onPressed: controller.previousQuestion,
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(
-                                      color: Colors.grey,
+                          child:
+                              controller.currentQuestionIndex.value > 0 &&
+                                      controller.currentQuestionIndex.value !=
+                                          -1
+                                  ? OutlinedButton(
+                                    onPressed: controller.previousQuestion,
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Colors.grey,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
                                     ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 16,
+                                    child: const Text(
+                                      'Previous',
+                                      style: TextStyle(color: Colors.black),
                                     ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Previous',
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                )
-                              : const SizedBox.shrink(),
+                                  )
+                                  : const SizedBox.shrink(),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -900,11 +946,12 @@ class _StartExamPageState extends State<StartExamPage>
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: controller.currentQuestionIndex
-                                          .value <
-                                      controller.filteredQuestions.length - 1
-                                  ? const Color(0xFF3B4453)
-                                  : AppColors.primaryColor,
+                              backgroundColor:
+                                  controller.currentQuestionIndex.value <
+                                          controller.filteredQuestions.length -
+                                              1
+                                      ? const Color(0xFF3B4453)
+                                      : AppColors.primaryColor,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 20,
                                 vertical: 16,
@@ -955,8 +1002,9 @@ class _StartExamPageState extends State<StartExamPage>
         try {
           controller.selectedOption.value = optionKey;
           controller.selectedAnswers[controller
-              .filteredQuestions[controller.currentQuestionIndex.value]
-              .questionId] = optionKey;
+                  .filteredQuestions[controller.currentQuestionIndex.value]
+                  .questionId] =
+              optionKey;
         } catch (e, stackTrace) {
           debugPrint('Error selecting option: $e\n$stackTrace');
         }
@@ -978,36 +1026,38 @@ class _StartExamPageState extends State<StartExamPage>
                   RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
                 )
                 ? Row(
-                    children: [
-                      Text(
-                        '$optionKey).',
-                        style:
-                            const TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        height: 100,
-                        width: 100,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: CachedNetworkImage(
-                            imageUrl: optionText,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.broken_image, size: 50),
-                          ),
+                  children: [
+                    Text(
+                      '$optionKey).',
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      height: 100,
+                      width: 100,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: optionText,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                          errorWidget:
+                              (context, url, error) =>
+                                  const Icon(Icons.broken_image, size: 50),
                         ),
                       ),
-                    ],
-                  )
+                    ),
+                  ],
+                )
                 : Text(
-                    '$optionKey). $optionText',
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-            if (option.value.isEmpty && controller.imageLink.value.isNotEmpty) ...[
+                  '$optionKey). $optionText',
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
+            if (option.value.isEmpty &&
+                controller.imageLink.value.isNotEmpty) ...[
               const SizedBox(height: 8),
               Image.network(
                 controller.imageLink.value,
