@@ -85,7 +85,7 @@ class ExamDetailController extends GetxController {
               .replaceAll(r'\/', '/')
               .replaceAll(r'\:', ':');
           log("examjshhgsyhg=======>${response[0].data.first.examName}");
-
+          examDetailList.clear();
           for (var ex in exam) {
             examDetailList.add(
               AvailableExam(

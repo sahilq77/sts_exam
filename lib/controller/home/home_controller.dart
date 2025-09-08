@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stsexam/controller/profile/profile_controller.dart';
 
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
@@ -35,6 +36,7 @@ class HomeController extends GetxController {
   RxBool isLoadingNoti = true.obs;
   RxString imageLink = "".obs;
   final examListController = Get.put(AvilableExamController());
+  final profileController = Get.put(ProfileController());
 
   void onInit() {
     super.onInit();
@@ -311,6 +313,7 @@ class HomeController extends GetxController {
   }) async {
     try {
       // Reset all lists
+      profileController.userProfileList.clear();
       examList.clear();
       bannerImagesList.clear();
       examListController.examDetailList.clear();
@@ -325,6 +328,10 @@ class HomeController extends GetxController {
 
       // Create a list of all fetch operations
       final fetchOperations = <Future<void>>[
+        profileController.fetchUserProfile(
+          context: Get.context!,
+          isRefresh: true,
+        ),
         fetchLatestexam(context: context, reset: true, forceFetch: true),
         fetchBannerImages(context: context, reset: true, forceFetch: true),
         examListController.fetchallExam(

@@ -536,16 +536,26 @@ class _HomePageState extends State<HomePage> {
                               horizontal: _smallPadding,
                             ),
                             child: _buildExamCard(
-                              press: () {
-                                print("id ${exam.id}");
-                                final ExamDetailController
-                                examDetailController = Get.put(
-                                  ExamDetailController(),
+                              press: () async {
+                                await profileController.fetchUserProfile(
+                                  context: Get.context!,
+                                  isRefresh: true,
                                 );
-                                //navigate to detail screen
-                                Get.toNamed(AppRoutes.examdetail);
-                                // Store the selected maintenance order in the controller
-                                examDetailController.setSelectedExamid(exam.id);
+                                if (profileController
+                                    .userProfileList
+                                    .isNotEmpty) {
+                                  print("id ${exam.id}");
+                                  final ExamDetailController
+                                  examDetailController = Get.put(
+                                    ExamDetailController(),
+                                  );
+                                  //navigate to detail screen
+                                  Get.toNamed(AppRoutes.examdetail);
+                                  // Store the selected maintenance order in the controller
+                                  examDetailController.setSelectedExamid(
+                                    exam.id,
+                                  );
+                                }
                               },
                               image,
                               exam.examName,
@@ -688,20 +698,25 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: _smallPadding),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: _smallPadding),
-            child: ElevatedButton(
-              onPressed: press,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+            child: Obx(() {
+              // Check if userProfileList is empty to determine button state
+              final isDisabled = profileController.userProfileList.isEmpty;
+              return ElevatedButton(
+                onPressed: isDisabled ? null : press, // Disable button if empty
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      AppColors.primaryColor, // Normal color for enabled state
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  minimumSize: const Size(double.infinity, 36),
                 ),
-                minimumSize: const Size(double.infinity, 36),
-              ),
-              child: Text(
-                buttonText,
-                style: const TextStyle(fontSize: 12, color: Colors.white),
-              ),
-            ),
+                child: Text(
+                  buttonText,
+                  style: TextStyle(fontSize: 12, color: Colors.white),
+                ),
+              );
+            }),
           ),
         ],
       ),

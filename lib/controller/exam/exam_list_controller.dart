@@ -7,6 +7,7 @@ import '../../core/network/networkcall.dart';
 import '../../core/network/urls.dart';
 import '../../model/exam/available_exam_list_response.dart';
 import '../../utility/app_utility.dart';
+import '../profile/profile_controller.dart';
 
 class ExamListController extends GetxController {
   RxList<AvailableExam> examDetailList = <AvailableExam>[].obs;
@@ -17,7 +18,7 @@ class ExamListController extends GetxController {
   RxBool hasMoreData = true.obs; // To track if more data is available
   RxInt offset = 0.obs; // Pagination offset
   final int limit = 10; // Number of items per page
-
+  final profileController = Get.put(ProfileController());
   @override
   void onInit() {
     super.onInit();
@@ -137,6 +138,7 @@ class ExamListController extends GetxController {
   }) async {
     try {
       // Reset the exam list
+      profileController.userProfileList.clear();
       examDetailList.clear();
       errorMessage.value = '';
       offset.value = 0;
@@ -148,6 +150,10 @@ class ExamListController extends GetxController {
       }
 
       // Fetch the exam list
+      await profileController.fetchUserProfile(
+        context: context,
+        isRefresh: true,
+      );
       await fetchallExam(context: context, reset: true, forceFetch: true);
 
       // Show success message if no errors

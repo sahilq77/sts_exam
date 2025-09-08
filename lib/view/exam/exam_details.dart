@@ -173,9 +173,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && context != null) {
-        controller.fetchExamDetail(context: context);
-      }
+      _refresh();
     });
   }
 

@@ -5,6 +5,7 @@ import '../../app_colors.dart';
 import '../../controller/bottomnavigation/bottom_navigation_controller.dart';
 import '../../controller/exam/exam_detail_controller.dart';
 import '../../controller/exam/exam_list_controller.dart';
+import '../../controller/profile/profile_controller.dart';
 import '../../utility/app_images.dart';
 import '../../utility/app_routes.dart';
 import '../../utility/widgets/custom_shimmer.dart';
@@ -15,6 +16,7 @@ class ExamListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profileController = Get.put(ProfileController());
     final bottomController = Get.put(BottomNavigationController());
     final controller = Get.put(ExamListController());
     final ScrollController scrollController = ScrollController();
@@ -41,7 +43,6 @@ class ExamListScreen extends StatelessWidget {
         ),
       ),
       backgroundColor: AppColors.backgroundColor,
-
       body: RefreshIndicator(
         onRefresh: () => controller.refreshResultList(context: context),
         child: Obx(() {
@@ -161,39 +162,66 @@ class ExamListScreen extends StatelessWidget {
                                   alignment: Alignment.bottomRight,
                                   child: SizedBox(
                                     width: 150,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        final ExamDetailController
-                                        examDetailController = Get.put(
-                                          ExamDetailController(),
-                                        );
-                                        examDetailController.setSelectedExamid(
-                                          exam.id,
-                                        );
-                                        Get.toNamed(AppRoutes.examdetail);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primaryColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            5,
+                                    child: Obx(() {
+                                      // Check if userProfileList is empty to determine button state
+                                      final isDisabled =
+                                          profileController
+                                              .userProfileList
+                                              .isEmpty;
+                                      return ElevatedButton(
+                                        onPressed:
+                                            isDisabled
+                                                ? null
+                                                : () async {
+                                                  await profileController
+                                                      .fetchUserProfile(
+                                                        context: Get.context!,
+                                                        isRefresh: true,
+                                                      );
+                                                  if (profileController
+                                                      .userProfileList
+                                                      .isNotEmpty) {
+                                                    print("id ${exam.id}");
+                                                    final ExamDetailController
+                                                    examDetailController =
+                                                        Get.put(
+                                                          ExamDetailController(),
+                                                        );
+                                                    //navigate to detail screen
+                                                    Get.toNamed(
+                                                      AppRoutes.examdetail,
+                                                    );
+                                                    // Store the selected maintenance order in the controller
+                                                    examDetailController
+                                                        .setSelectedExamid(
+                                                          exam.id,
+                                                        );
+                                                  }
+                                                },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              AppColors.primaryColor,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              5,
+                                            ),
+                                          ),
+                                          minimumSize: const Size(
+                                            double.infinity,
+                                            36,
                                           ),
                                         ),
-                                        minimumSize: const Size(
-                                          double.infinity,
-                                          36,
+                                        child: Text(
+                                          exam.testType == "1"
+                                              ? "Buy Now"
+                                              : "Free",
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white,
+                                          ),
                                         ),
-                                      ),
-                                      child: Text(
-                                        exam.testType == "1"
-                                            ? "Buy Now"
-                                            : "Free",
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
+                                      );
+                                    }),
                                   ),
                                 ),
                               ],
