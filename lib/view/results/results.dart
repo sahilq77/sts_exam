@@ -14,12 +14,14 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   final controller = Get.put(TestResult());
+  DateTime? _lastPressedAt; // For double-back-press-to-exit
 
   @override
   void initState() {
     super.initState();
-    controller.isLoading.value = true; // Set loading state initially
+    controller.isLoading.value = true;
     final args = Get.arguments;
+    print('ResultScreen: Arguments received: $args');
     if (args != null &&
         args is Map &&
         args.containsKey('test_id') &&
@@ -34,11 +36,11 @@ class _ResultScreenState extends State<ResultScreen> {
         );
       } else {
         controller.errorMessage.value = 'Invalid test or attempt ID';
-        controller.isLoading.value = false; // Stop loading if invalid args
+        controller.isLoading.value = false;
       }
     } else {
       controller.errorMessage.value = 'No test or attempt ID provided';
-      controller.isLoading.value = false; // Stop loading if no args
+      controller.isLoading.value = false;
     }
   }
 
@@ -53,18 +55,36 @@ class _ResultScreenState extends State<ResultScreen> {
     final bottomController = Get.put(BottomNavigationController());
     return WillPopScope(
       onWillPop: () async {
-        print(
-          'Main: WillPopScope triggered, current route: ${Get.currentRoute}, selectedIndex: ${bottomController.selectedIndex.value}',
-        );
+        // print(
+        //   'Main: WillPopScope triggered, current route: ${Get.currentRoute}, nav stack: ${Get.nestedKey(Get.currentRoute)?.navigator?.widget.pages}',
+        // );
         if (Get.currentRoute != AppRoutes.home &&
             Get.currentRoute != AppRoutes.splash) {
           print('Main: Navigating to home');
           bottomController.selectedIndex.value = 0;
-          Get.offNamed(AppRoutes.home);
-          return false; // Prevent app exit
+          Get.offAllNamed(AppRoutes.home);
+          return false;
         }
-        print('Main: On home or splash, allowing app exit');
-        return true; // Allow app exit
+        if (Get.currentRoute == AppRoutes.home) {
+          if (_lastPressedAt == null ||
+              DateTime.now().difference(_lastPressedAt!) >
+                  Duration(seconds: 2)) {
+            _lastPressedAt = DateTime.now();
+            Get.snackbar(
+              'Exit',
+              'Press back again to exit',
+              snackPosition: SnackPosition.BOTTOM,
+              duration: Duration(seconds: 2),
+            );
+            return false;
+          }
+          print('Main: On home, allowing app exit');
+          return true;
+        }
+        print('Main: On splash, navigating to home');
+        bottomController.selectedIndex.value = 0;
+        Get.offAllNamed(AppRoutes.home);
+        return false;
       },
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
@@ -72,7 +92,8 @@ class _ResultScreenState extends State<ResultScreen> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () {
-              Get.offNamed(AppRoutes.home);
+              bottomController.selectedIndex.value = 0;
+              Get.offAllNamed(AppRoutes.home);
             },
           ),
           title: Text(
@@ -100,7 +121,6 @@ class _ResultScreenState extends State<ResultScreen> {
                     );
                     Get.toNamed(AppRoutes.overview);
                   } else {
-                    // Optionally show a snackbar or message to inform the user
                     Get.snackbar(
                       'Error',
                       'No result data available to view overview',
@@ -338,7 +358,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         ),
                       ],
                     )
-                    : SizedBox.shrink(), // Fallback for unexpected state
+                    : SizedBox.shrink(),
           ),
         ),
       ),

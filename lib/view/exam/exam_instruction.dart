@@ -106,7 +106,7 @@ class _ExamInstructionState extends State<ExamInstruction> {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '${ins[0].duration ?? 'N/A'} min | ${ins[0].questionCount ?? 'N/A'} Questions',
+                  '${ins[0].duration ?? 'N/A'} min | ${ins[0].questionSCount.isEmpty ? ins[0].questionCount ?? "N/A" : ins[0].questionSCount} Question',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,

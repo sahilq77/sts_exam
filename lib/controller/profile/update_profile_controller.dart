@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:stsexam/controller/profile/profile_controller.dart';
 
-
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
@@ -71,40 +70,74 @@ class UpdateProfileController extends GetxController {
           //  user.
           // );
 
-          Get.snackbar('Success', 'Profile updated successfully!',
-              backgroundColor: AppColors.successColor, colorText: Colors.white);
+          Get.snackbar(
+            'Success',
+            'Profile updated successfully!',
+            backgroundColor: AppColors.successColor,
+            colorText: Colors.white,
+          );
           await profileController.fetchUserProfile(
-              context: Get.context!, isRefresh: true);
+            context: Get.context!,
+            isRefresh: true,
+          );
           Get.offNamed(AppRoutes.myprofile);
         } else {
-          Get.snackbar('Error', response[0].message,
-              backgroundColor: AppColors.errorColor, colorText: Colors.white);
+          Get.snackbar(
+            'Error',
+            response[0].message,
+            backgroundColor: AppColors.errorColor,
+            colorText: Colors.white,
+          );
         }
       } else {
         Get.back();
-        Get.snackbar('Error', 'No response from server',
-            backgroundColor: AppColors.errorColor, colorText: Colors.white);
+        Get.snackbar(
+          'Error',
+          'No response from server',
+          backgroundColor: AppColors.errorColor,
+          colorText: Colors.white,
+        );
       }
     } on NoInternetException catch (e) {
       Get.back();
-      Get.snackbar('Error', e.message,
-          backgroundColor: AppColors.errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        e.message,
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
     } on TimeoutException catch (e) {
       Get.back();
-      Get.snackbar('Error', e.message,
-          backgroundColor: AppColors.errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        e.message,
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
     } on HttpException catch (e) {
       Get.back();
-      Get.snackbar('Error', '${e.message} (Code: ${e.statusCode})',
-          backgroundColor: AppColors.errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        '${e.message} (Code: ${e.statusCode})',
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
     } on ParseException catch (e) {
       Get.back();
-      Get.snackbar('Error', e.message,
-          backgroundColor: AppColors.errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        e.message,
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.back();
-      Get.snackbar('Error', 'Unexpected errorColor: $e',
-          backgroundColor: AppColors.errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        'Unexpected errorColor: $e',
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
     } finally {
       isLoadingu.value = false;
     }

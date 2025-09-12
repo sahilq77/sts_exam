@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:stsexam/utility/customdesign/nointernetconnectionpage.dart';
 import 'package:stsexam/view/about/about_us_screen.dart';
+import 'package:stsexam/view/announcements/announcements_screen.dart';
 import 'package:stsexam/view/contact/contact_us_screen.dart';
 import 'package:stsexam/view/results/view_result_screen.dart';
 import 'package:stsexam/view/terms/terms_screen.dart';
@@ -46,6 +47,8 @@ class AppRoutes {
   static const String contactUs = '/contact_us';
   static const String aboutUs = '/about_us';
   static const String terms = '/terms';
+
+  static const String announcements = '/announcements';
 
   static final routes = [
     GetPage(
@@ -157,6 +160,11 @@ class AppRoutes {
     GetPage(
       name: aboutUs,
       page: () => AboutUsPage(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: announcements,
+      page: () => AnnouncementsScreen(),
       transition: Transition.fadeIn,
     ),
   ];

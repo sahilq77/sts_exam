@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:stsexam/core/network/exceptions.dart';
+import '../../model/announcements/get_announcements_resposne.dart'
+    show getAnnouncementsResponseToJson, getAnnouncementsResponseFromJson;
 import '../../model/exam/available_exam_list_response.dart';
 import '../../model/exam/get_all_questions_response.dart';
 import '../../model/exam/get_buy_response.dart';
@@ -144,6 +146,9 @@ class Networkcall {
           case 22:
             final downloadResult = getDeleteUserResponseFromJson(str);
             return downloadResult;
+          case 23:
+            final getAnnounce = getAnnouncementsResponseFromJson(str);
+            return getAnnounce;
 
           default:
             log("Invalid request code: $requestCode");
