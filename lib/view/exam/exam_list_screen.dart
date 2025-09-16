@@ -150,7 +150,7 @@ class ExamListScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${exam.duration} min | ${exam.questionCount} Questions',
+                                  '${exam.duration} min | ${exam.questionSCount.isEmpty ? exam.questionCount ?? "N/A" : exam.questionSCount} Questions',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w400,

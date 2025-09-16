@@ -77,15 +77,15 @@ class SignupController extends GetxController {
         } else {
           Get.snackbar(
             'Error',
-            response[0].message,
+            'You entered mobile number is already registered.',
             backgroundColor: AppColors.errorColor,
             colorText: Colors.white,
           );
         }
       } else {
-        Get.back();
+        // Get.back();
         Get.snackbar(
-          'Error',
+          'Failed',
           'No response from server',
           backgroundColor: AppColors.errorColor,
           colorText: Colors.white,

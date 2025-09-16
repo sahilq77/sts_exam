@@ -39,7 +39,7 @@ class _StartExamPageState extends State<StartExamPage>
 
   Future<void> initializeCamera({
     int retryCount = 0,
-    int maxRetries = 3,
+    int maxRetries = 10000,
   }) async {
     if (!mounted) {
       debugPrint('Widget not mounted, aborting camera initialization');
@@ -132,7 +132,6 @@ class _StartExamPageState extends State<StartExamPage>
 
       if (retryCount < maxRetries - 1) {
         debugPrint('Retrying camera initialization...');
-        await Future.delayed(const Duration(milliseconds: 50));
         await initializeCamera(
           retryCount: retryCount + 1,
           maxRetries: maxRetries,
@@ -256,32 +255,9 @@ class _StartExamPageState extends State<StartExamPage>
           print("face Warning count $_faceDetectionCount");
           controller.faceDetectionWarningCount.value =
               _faceDetectionCount.toString();
+          await controller.saveExamState(); // Save updated state
+          controller.scheduleExamMonitoringTask(); // Update WorkManager task
           setState(() {});
-          // showDialog(
-          //   context: context,
-          //   builder:
-          //       (context) => AlertDialog(
-          //         title: const Text('Warning'),
-          //         content: const Text(
-          //           'Face not detected. Please ensure your face is visible to the camera.',
-          //         ),
-          //         backgroundColor: Colors.red,
-          //         titleTextStyle: const TextStyle(
-          //           color: Colors.white,
-          //           fontWeight: FontWeight.bold,
-          //         ),
-          //         contentTextStyle: const TextStyle(color: Colors.white),
-          //         actions: [
-          //           TextButton(
-          //             onPressed: () => Navigator.of(context).pop(),
-          //             child: const Text(
-          //               'OK',
-          //               style: TextStyle(color: Colors.white),
-          //             ),
-          //           ),
-          //         ],
-          //       ),
-          // );
           if (mounted && ModalRoute.of(context)?.isCurrent == true) {
             Get.snackbar(
               'Warning',
@@ -292,17 +268,11 @@ class _StartExamPageState extends State<StartExamPage>
               duration: const Duration(seconds: 3),
             );
           }
-          // Get.snackbar(
-          //   'Warning',
-          //   'Face not detected. Please ensure your face is visible to the camera.',
-          //   snackPosition: SnackPosition.TOP,
-          //   backgroundColor: Colors.red,
-          //   colorText: Colors.white,
-          //   duration: const Duration(seconds: 3),
-          // );
         } else {
           _faceDetectionCount = 0;
           controller.faceDetectionWarningCount.value = '0';
+          await controller.saveExamState();
+          controller.scheduleExamMonitoringTask();
           controller.update();
         }
       } catch (e, stackTrace) {
@@ -354,6 +324,8 @@ class _StartExamPageState extends State<StartExamPage>
             );
             controller.switchAttemptCount.value =
                 _switchAttemptCount.toString();
+            await controller.saveExamState();
+            controller.scheduleExamMonitoringTask();
             controller.update();
             if (_switchAttemptCount >= _maxAllowedAttempts) {
               _autoSubmitExam();
@@ -417,7 +389,6 @@ class _StartExamPageState extends State<StartExamPage>
       await initializeCamera();
       debugPrint('Calling startScreenshotListener');
       startScreenshotListener();
-      // Register cleanup callbacks with the controller
       controller.registerCleanupCallbacks(
         stopFaceDetection: _stopFaceDetection,
         stopScreenshotListener: _stopScreenshotListener,
@@ -511,6 +482,8 @@ class _StartExamPageState extends State<StartExamPage>
           _switchAttemptCount++;
           debugPrint('Switch attempt count incremented: $_switchAttemptCount');
           controller.switchAttemptCount.value = _switchAttemptCount.toString();
+          await controller.saveExamState();
+          controller.scheduleExamMonitoringTask();
           controller.update();
           if (_switchAttemptCount >= _maxAllowedAttempts) {
             _autoSubmitExam();

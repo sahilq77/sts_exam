@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 import '../../app_colors.dart';
 import '../../core/network/networkcall.dart';
 import '../../core/network/urls.dart';
@@ -11,6 +13,8 @@ import '../../model/exam/test_submit_response.dart';
 import '../../utility/app_routes.dart';
 import '../../utility/app_utility.dart';
 import '../../view/filters/exam_filter.dart';
+
+const String examTaskKey = "com.stsexam.examTask";
 
 class StartExamController extends GetxController {
   var selectedOption = RxnString();
@@ -45,21 +49,68 @@ class StartExamController extends GetxController {
     _disposeCameraCallback = disposeCamera;
   }
 
+  // Save exam state to shared preferences
+  Future<void> saveExamState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('testId', testID);
+    await prefs.setString('switchAttemptCount', switchAttemptCount.value);
+    await prefs.setString(
+      'faceDetectionWarningCount',
+      faceDetectionWarningCount.value,
+    );
+    await prefs.setString('attempt', attempt.value);
+    await prefs.setInt('maxAttempts', 3);
+  }
+
   void setTestid(String testid) {
     testID = testid;
     log("set id $testid");
+    saveExamState();
     update();
+  }
+
+  void scheduleExamMonitoringTask() {
+    Workmanager().registerPeriodicTask(
+      "examMonitoringTask",
+      examTaskKey,
+      inputData: {
+        'testId': testID,
+        'switchAttemptCount': switchAttemptCount.value,
+        'maxAttempts': 3,
+        'attempt': attempt.value,
+      },
+      frequency: Duration(minutes: 15), // Run every 15 minutes
+      initialDelay: Duration(seconds: 10),
+      constraints: Constraints(
+        networkType: NetworkType.connected,
+        requiresBatteryNotLow: true,
+      ),
+    );
+    log("WorkManager: Scheduled exam monitoring task for testId: $testID");
+  }
+
+  void cancelExamMonitoringTask() {
+    Workmanager().cancelByUniqueName("examMonitoringTask");
+    log("WorkManager: Cancelled exam monitoring task");
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    scheduleExamMonitoringTask();
   }
 
   @override
   void onClose() {
     timer?.cancel();
+    cancelExamMonitoringTask();
     super.onClose();
   }
 
   @override
   void dispose() {
     timer?.cancel();
+    cancelExamMonitoringTask();
     super.dispose();
   }
 
@@ -74,7 +125,7 @@ class StartExamController extends GetxController {
     try {
       isLoading.value = true;
       errorMessage.value = '';
-      log("Test ID $testId");
+      setTestid(testId);
       final jsonBody = {
         "user_id": AppUtility.userID,
         "user_type": AppUtility.userType,
@@ -120,6 +171,7 @@ class StartExamController extends GetxController {
           remainingSeconds.value =
               (int.tryParse(response[0].data.first.duration) ?? 60) * 60;
           startTimer();
+          scheduleExamMonitoringTask(); // Update WorkManager task
         } else {
           errorMessage.value = 'No questions available';
           Get.snackbar(
@@ -194,22 +246,17 @@ class StartExamController extends GetxController {
       if (response != null &&
           response.isNotEmpty &&
           response[0].status == "true") {
-        // Stop timer
         timer?.cancel();
         timer = null;
-
-        // Perform cleanup
         _stopFaceDetectionCallback?.call();
         await _stopScreenshotListenerCallback?.call();
         await _disposeCameraCallback?.call();
-
         Get.snackbar(
           'Success',
           'Test Submitted successfully!',
           backgroundColor: AppColors.successColor,
           colorText: Colors.white,
         );
-
         print("is show ${questionDetail.first.isShowResult}");
         if (questionDetail.first.isShowResult == "0") {
           showThankyouDialog(context);
@@ -699,5 +746,14 @@ class StartExamController extends GetxController {
     _stopFaceDetectionCallback = null;
     _stopScreenshotListenerCallback = null;
     _disposeCameraCallback = null;
+    cancelExamMonitoringTask();
+    // Clear shared preferences
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.remove('testId');
+      prefs.remove('switchAttemptCount');
+      prefs.remove('faceDetectionWarningCount');
+      prefs.remove('attempt');
+      prefs.remove('maxAttempts');
+    });
   }
 }
