@@ -170,8 +170,8 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 icon: const Icon(CupertinoIcons.chevron_down, size: 20),
                 items: const [
-                  DropdownMenuItem(value: "1", child: Text("Male")),
-                  DropdownMenuItem(value: "2", child: Text("Female")),
+                  DropdownMenuItem(value: "0", child: Text("Male")),
+                  DropdownMenuItem(value: "1", child: Text("Female")),
                 ],
                 onChanged: (value) {
                   setState(() {
