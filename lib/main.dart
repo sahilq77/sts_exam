@@ -97,7 +97,7 @@ class MyApp extends StatelessWidget {
     final BottomNavigationController bottomController =
         Get.find<BottomNavigationController>();
     return GetMaterialApp(
-      title: 'STS Exam',
+      title: 'Vidya Sarthi',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         appBarTheme: AppBarTheme(scrolledUnderElevation: 0.0),
