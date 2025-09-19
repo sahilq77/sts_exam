@@ -224,7 +224,10 @@ class _ResultScreenState extends State<ResultScreen> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Image.asset(
-                          'assets/smily.png',
+                          controller.resultList.first.examStatus == "Passed"
+                              ? 'assets/smily.png'
+                              : 'assets/sad.png',
+
                           width: screenWidth * 0.3,
                           height: screenHeight * 0.13,
                         ),
