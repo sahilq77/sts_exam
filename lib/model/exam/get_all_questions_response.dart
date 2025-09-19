@@ -95,11 +95,11 @@ class QuestionDetail {
 
 class Question {
   String questionId;
-  QuestionQuestion question;
-  dynamic answerOption;
+  OptionModel question;
+  String answerOption;
   String positiveMark;
   String negativeMark;
-  Map<String, String> options;
+  Map<String, OptionModel> options;
 
   Question({
     required this.questionId,
@@ -112,39 +112,35 @@ class Question {
 
   factory Question.fromJson(Map<String, dynamic> json) => Question(
     questionId: json["question_id"] ?? "",
-    question: QuestionQuestion.fromJson(json["question"]),
+    question: OptionModel.fromJson(json["question"]),
     answerOption: json["answer_option"] ?? "",
     positiveMark: json["positive_mark"] ?? "",
     negativeMark: json["negative_mark"] ?? "",
     options: Map.from(
       json["options"],
-    ).map((k, v) => MapEntry<String, String>(k, v)),
+    ).map((k, v) => MapEntry<String, OptionModel>(k, OptionModel.fromJson(v))),
   );
 
   Map<String, dynamic> toJson() => {
     "question_id": questionId,
-    "question": question,
+    "question": question.toJson(),
     "answer_option": answerOption,
     "positive_mark": positiveMark,
     "negative_mark": negativeMark,
-    "options": Map.from(options).map((k, v) => MapEntry<String, dynamic>(k, v)),
+    "options": Map.from(
+      options,
+    ).map((k, v) => MapEntry<String, dynamic>(k, v.toJson())),
   };
 }
 
-class QuestionQuestion {
-  String image;
-  String text;
-
-  QuestionQuestion({required this.image, required this.text});
-
-  factory QuestionQuestion.fromJson(Map<String, dynamic> json) =>
-      QuestionQuestion(image: json["image"] ?? "", text: json["text"] ?? "");
-
-  Map<String, dynamic> toJson() => {"image": image, "text": text};
-}
-
 class OptionModel {
-  final String id;
-  final String text;
-  OptionModel({required this.id, required this.text});
+  String text;
+  String image;
+
+  OptionModel({required this.text, required this.image});
+
+  factory OptionModel.fromJson(Map<String, dynamic> json) =>
+      OptionModel(text: json["text"] ?? "", image: json["image"] ?? "");
+
+  Map<String, dynamic> toJson() => {"text": text, "image": image};
 }

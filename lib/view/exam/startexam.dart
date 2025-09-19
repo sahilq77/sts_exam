@@ -12,6 +12,7 @@ import 'dart:async';
 import '../../app_colors.dart';
 import '../../controller/exam/start_exam_controller.dart';
 import '../../utility/app_routes.dart';
+import '../../model/exam/get_all_questions_response.dart'; // Import the model
 
 class StartExamPage extends StatefulWidget {
   const StartExamPage({super.key});
@@ -731,7 +732,8 @@ class _StartExamPageState extends State<StartExamPage>
                       controller.filteredQuestions[controller
                           .currentQuestionIndex
                           .value];
-                  final Map<String, String>? options = currentQuestion.options;
+                  final Map<String, OptionModel>? options =
+                      currentQuestion.options; // Updated type
                   final String questionText =
                       currentQuestion.question.text ?? 'Question not available';
                   final String questionImage =
@@ -960,13 +962,16 @@ class _StartExamPageState extends State<StartExamPage>
   }
 
   Widget _buildOption(
-    MapEntry<String, String> option,
+    MapEntry<String, OptionModel> option,
     int index,
     StartExamController controller,
   ) {
     final String optionKey = option.key;
+    final OptionModel optionValue = option.value;
     final String optionText =
-        option.value.isEmpty ? 'Option $optionKey (Image)' : option.value;
+        optionValue.text.isNotEmpty
+            ? optionValue.text
+            : 'Option $optionKey (Image)';
     bool isSelected = controller.selectedOption.value == optionKey;
 
     return GestureDetector(
@@ -995,41 +1000,43 @@ class _StartExamPageState extends State<StartExamPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            optionText.contains(
+            if (optionValue.image.isNotEmpty &&
+                optionValue.image.contains(
                   RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
-                )
-                ? Row(
-                  children: [
-                    Text(
-                      '$optionKey).',
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 100,
-                      width: 100,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: CachedNetworkImage(
-                          imageUrl: optionText,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                          errorWidget:
-                              (context, url, error) =>
-                                  const Icon(Icons.broken_image, size: 50),
-                        ),
+                ))
+              Row(
+                children: [
+                  Text(
+                    '$optionKey).',
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 100,
+                    width: 100,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                        imageUrl: optionValue.image,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                        errorWidget:
+                            (context, url, error) =>
+                                const Icon(Icons.broken_image, size: 50),
                       ),
                     ),
-                  ],
-                )
-                : Text(
-                  '$optionKey). $optionText',
-                  style: const TextStyle(fontSize: 16, color: Colors.black),
-                ),
-            if (option.value.isEmpty &&
+                  ),
+                ],
+              )
+            else
+              Text(
+                '$optionKey). $optionText',
+                style: const TextStyle(fontSize: 16, color: Colors.black),
+              ),
+            if (optionValue.text.isEmpty &&
                 controller.imageLink.value.isNotEmpty) ...[
               const SizedBox(height: 8),
               Image.network(
