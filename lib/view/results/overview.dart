@@ -108,6 +108,14 @@ class _OverviewPageState extends State<OverviewPage> {
                 color: AppColors.textColor,
               ),
             ),
+            // Text(
+            //   '${questionNumber}. ${question.image} ',
+            //   style: const TextStyle(
+            //     fontSize: 16,
+            //     fontWeight: FontWeight.w600,
+            //     color: AppColors.textColor,
+            //   ),
+            // ),
             const SizedBox(height: 4),
             Column(
               children: [
@@ -179,7 +187,7 @@ class _OverviewPageState extends State<OverviewPage> {
                     ),
                   ),
                   child:
-                      options[index].text.contains(
+                      options[index].image.contains(
                             RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
                           )
                           ? Row(
@@ -200,9 +208,7 @@ class _OverviewPageState extends State<OverviewPage> {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: CachedNetworkImage(
-                                      imageUrl:
-                                          "${controller.imageLink}" +
-                                          "${options[index].text}",
+                                      imageUrl: "${options[index].image}",
                                       fit: BoxFit.cover,
                                       placeholder:
                                           (context, url) => const Center(
@@ -293,9 +299,7 @@ class _OverviewPageState extends State<OverviewPage> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
                                         child: CachedNetworkImage(
-                                          imageUrl:
-                                              controller.imageLink +
-                                              correctAnswer,
+                                          imageUrl: correctAnswer,
                                           fit: BoxFit.cover,
                                           placeholder:
                                               (context, url) => const Center(
