@@ -49,7 +49,7 @@ class NotificationServices {
   ) async {
     try {
       var androidInitialization = const AndroidInitializationSettings(
-        '@mipmap/ic_launcher',
+        '@mipmap/launcher_icon',
       );
       var iosInitialization = const DarwinInitializationSettings();
       var initializationSettings = InitializationSettings(

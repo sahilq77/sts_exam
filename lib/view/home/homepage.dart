@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:readmore/readmore.dart';
 
 import '../../app_colors.dart';
 import '../../controller/announcements/announcements_controller.dart';
@@ -249,6 +250,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  String _getTimeAgo(DateTime createdOn) {
+    final now = DateTime.now();
+    final difference = now.difference(createdOn);
+
+    if (difference.inMinutes < 1) {
+      return "Just now";
+    } else if (difference.inMinutes == 1) {
+      return "1 min ago";
+    } else if (difference.inMinutes < 60) {
+      return "${difference.inMinutes} min ago";
+    } else if (difference.inHours == 1) {
+      return "1 hr ago";
+    } else if (difference.inHours < 24) {
+      return "${difference.inHours} hrs ago";
+    } else if (difference.inDays == 1) {
+      return "1 day ago";
+    } else {
+      return "${difference.inDays} days ago";
+    }
+  }
+
   Widget _buildAnnouncementsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,19 +304,13 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: _smallPadding),
         Obx(() {
           if (announcementsController.isLoading.value) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(
-                  5,
-                  (index) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: _smallPadding,
-                    ),
-                    child: AnnouncementCardShimmer(),
-                  ),
-                ),
-              ),
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                return Column(children: [AnnouncementCardShimmer()]);
+              },
             );
           }
 
@@ -305,61 +321,63 @@ class _HomePageState extends State<HomePage> {
             );
           }
 
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children:
-                  announcementsController.announcementsList
-                      .asMap()
-                      .entries
-                      .take(5)
-                      .map((entry) {
-                        final announcement = entry.value;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: _smallPadding,
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount:
+                announcementsController.announcementsList.length > 3
+                    ? 3
+                    : announcementsController.announcementsList.length,
+            itemBuilder: (context, index) {
+              final announcement =
+                  announcementsController.announcementsList[index];
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        height: 30,
+                        width: 30,
+                        padding: EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor.withOpacity(
+                            0.1,
+                          ), // AppColors.primaryTeal
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.campaign,
+                            color: AppColors.primaryColor,
+                            size: 15,
                           ),
-                          child: _buildAnnouncementCard(announcement.title),
-                        );
-                      })
-                      .toList(),
-            ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: ReadMoreText(
+                          announcement.title,
+                          trimMode: TrimMode.Line,
+                          style: GoogleFonts.poppins(fontSize: 12),
+                          trimLines: 2,
+                          colorClickableText: Colors.pink,
+                          trimCollapsedText: 'Read more',
+                          trimExpandedText: 'Show less',
+                          moreStyle: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(color: Colors.grey, thickness: 0.2),
+                ],
+              );
+            },
           );
         }),
       ],
-    );
-  }
-
-  Widget _buildAnnouncementCard(String title) {
-    return Card(
-      shape: RoundedRectangleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.all(_smallPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textColor,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: _smallPadding),
-            Text(
-              'Posted on: ${DateTime.now().toString().substring(0, 10)}',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF5C5F6D),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -939,28 +957,29 @@ class AnnouncementCardShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 180,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFDFE6F8), width: 0.5),
-      ),
+      width: double.infinity,
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
         highlightColor: Colors.grey[100]!,
-        child: Padding(
-          padding: const EdgeInsets.all(_smallPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 14,
-                width: double.infinity,
-                color: Colors.grey[300],
-              ),
-              const SizedBox(height: _smallPadding),
-              Container(height: 14, width: 100, color: Colors.grey[300]),
-            ],
+        child: ListTile(
+          leading: Container(
+            height: 20,
+            width: 20,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          title: Container(
+            height: 16,
+            width: double.infinity,
+            color: Colors.white,
+          ),
+          subtitle: Container(
+            height: 12,
+            width: 100,
+            color: Colors.white,
+            margin: const EdgeInsets.only(top: 8),
           ),
         ),
       ),

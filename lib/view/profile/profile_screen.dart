@@ -277,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CutsomTile(title: "Student Name", value: user.fullName),
                   CutsomTile(
                     title: "Gender",
-                    value: user.gender == "1" ? "Male" : "Female",
+                    value: user.gender == "0" ? "Male" : "Female",
                   ),
                   CutsomTile(title: "Mobile Number", value: user.mobileNumber),
                   CutsomTile(title: "Email ID", value: user.email),

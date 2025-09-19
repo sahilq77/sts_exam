@@ -42,7 +42,6 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -97,23 +96,26 @@ class _NotificationPageState extends State<NotificationPage> {
               }
 
               if (index == controller.notiList.length) {
-                return controller.isLoadingMore.value
-                    ? const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                    : Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(
-                        child: Text(
-                          'No more data',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: AppColors.textColor,
-                          ),
+                if (controller.isLoadingMore.value) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (!controller.hasMoreData.value) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(
+                      child: Text(
+                        'No more data',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: AppColors.textColor,
                         ),
                       ),
-                    );
+                    ),
+                  );
+                }
+                return const SizedBox.shrink(); // Fallback for safety
               }
 
               var noti = controller.notiList[index];
@@ -160,12 +162,10 @@ class _NotificationPageState extends State<NotificationPage> {
                         trimCollapsedText: 'Read more',
                         trimExpandedText: 'Show less',
                         moreStyle: GoogleFonts.poppins(
-                          // color: Colors.blue,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-
                       trailing: Text(
                         _getTimeAgo(noti.createdOn),
                         style: TextStyle(fontSize: 12, color: Colors.grey),

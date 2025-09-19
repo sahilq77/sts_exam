@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../app_colors.dart';
 import '../../controller/forgot_password/forgot_password_controller.dart';
+import '../../utility/secure_input_formater.dart';
 import '../home/homepage.dart'; // Import the HomePage
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -11,7 +13,7 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  //final controller = Get.put(LoginController()); // Ensure LoginController is properly defined
+  final controller = Get.put(ForgotPasswordController());
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -66,7 +68,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final controller = Get.put(ForgotPasswordController());
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -180,6 +182,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         child: TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            SecureTextInputFormatter.deny(),
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(10),
+                          ],
                           maxLength: 10,
                           style: TextStyle(fontSize: 17),
                           decoration: const InputDecoration(
@@ -200,8 +207,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ],
                   ),
                 ),
-
                 // Phone Error Message
+                if (_phoneError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, left: 12),
+                    child: Text(
+                      _phoneError!,
+                      style: TextStyle(
+                        color: AppColors.errorColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
                 SizedBox(height: screenHeight * 0.02),
                 // Password Label
                 Align(
@@ -228,7 +245,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color:
-                          _confirmPasswordError != null
+                          _passwordError != null
                               ? AppColors.errorColor
                               : const Color(0xFFD0D0D0),
                       width: 0.8,
@@ -240,6 +257,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         child: TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          inputFormatters: [
+                            SecureTextInputFormatter.deny(),
+                            FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                          ],
                           style: TextStyle(fontSize: 17),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -249,8 +270,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Password is required';
-                            } else if (value.length < 3) {
+                            } else if (value.length < 8) {
                               return 'Password must be at least 8 characters';
+                            } else if (!RegExp(
+                              r'^(?=.*[0-9])(?=.*[!@#$%^&*])',
+                            ).hasMatch(value)) {
+                              return 'Password must contain a number and a special character';
                             }
                             return null;
                           },
@@ -323,6 +348,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         child: TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
+                          inputFormatters: [
+                            SecureTextInputFormatter.deny(),
+                            FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                          ],
                           style: TextStyle(fontSize: 17),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -357,51 +386,25 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                 ),
                 // Confirm Password Error Message
-
-                // SizedBox(height: screenHeight * 0.02),
-                // // Terms and Conditions Checkbox
-                // Row(
-                //   children: [
-                //     Checkbox(
-                //       value: _isTermsAccepted,
-                //       onChanged: (value) {
-                //         setState(() {
-                //           _isTermsAccepted = value ?? false;
-                //           if (_isTermsAccepted) {
-                //             _termsError = null; // Clear error when checked
-                //           }
-                //         });
-                //       },
-                //     ),
-                //     Expanded(
-                //       child: Text(
-                //         'I accept the terms and conditions',
-                //         style: TextStyle(
-                //           fontSize: 14,
-                //           color: AppColors.textColor,
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // // Terms Error Message
-                // if (_termsError != null)
-                //   Padding(
-                //     padding: const EdgeInsets.only(top: 5, left: 12),
-                //     child: Text(
-                //       _termsError!,
-                //       style: TextStyle(
-                //         color: AppColors.errorColor,
-                //         fontSize: 12,
-                //       ),
-                //     ),
-                //   ),
+                if (_confirmPasswordError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5, left: 12),
+                    child: Text(
+                      _confirmPasswordError!,
+                      style: TextStyle(
+                        color: AppColors.errorColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
                 SizedBox(height: screenHeight * 0.04),
                 // Submit Button (centered and full-width)
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      if (formKey.currentState!.validate()) {
+                      _validateInputs();
+                      if (formKey.currentState!.validate() &&
+                          _termsError == null) {
                         // If the form is valid, proceed with password reset
                         controller.changePassword(
                           mobile: _phoneController.text,

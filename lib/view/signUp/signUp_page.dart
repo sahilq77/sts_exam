@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:stsexam/utility/secure_input_formater.dart';
 import '../../app_colors.dart';
 import '../../controller/global_controller.dart/city_controller.dart';
 import '../../controller/global_controller.dart/state_controller.dart';
@@ -136,6 +137,7 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ),
                 inputFormatters: [
+                  SecureTextInputFormatter.deny(),
                   FilteringTextInputFormatter.deny(RegExp(r'^\s')),
                   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                 ],
@@ -208,6 +210,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
+                  SecureTextInputFormatter.deny(),
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(
                     10,
@@ -245,6 +248,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 keyboardType: TextInputType.emailAddress,
                 inputFormatters: [
+                  SecureTextInputFormatter.deny(),
                   FilteringTextInputFormatter.deny(RegExp(r'^\s')),
                 ],
                 validator: (value) {
@@ -281,6 +285,7 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                   ),
                   inputFormatters: [
+                    SecureTextInputFormatter.deny(),
                     FilteringTextInputFormatter.deny(RegExp(r'^\s')),
                     FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                   ],
@@ -314,6 +319,7 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                   ),
                   inputFormatters: [
+                    SecureTextInputFormatter.deny(),
                     FilteringTextInputFormatter.deny(RegExp(r'^\s')),
                     FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                   ],
@@ -593,7 +599,8 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ),
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'^\s')),
+                  SecureTextInputFormatter.deny(),
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -639,7 +646,8 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ),
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'^\s')),
+                  SecureTextInputFormatter.deny(),
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
                 ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {

@@ -220,7 +220,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
         onRefresh: _refresh,
         color: AppColors.primaryColor,
         child: Obx(() {
-          if (controller.isLoading.value && controller.examDetailList.isEmpty) {
+          if (controller.isLoading.value || controller.examDetailList.isEmpty) {
             return const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: ExamDetailShimmer(),

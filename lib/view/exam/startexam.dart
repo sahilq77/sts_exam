@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import '../../app_colors.dart';
 import '../../controller/exam/start_exam_controller.dart';
+import '../../utility/app_images.dart';
 import '../../utility/app_routes.dart';
 import '../../model/exam/get_all_questions_response.dart'; // Import the model
 
@@ -771,27 +772,39 @@ class _StartExamPageState extends State<StartExamPage>
                       ),
                       Align(
                         alignment: Alignment.topLeft,
-                        child: Container(
-                          margin: const EdgeInsets.all(16),
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child:
-                              _isCameraInitialized &&
-                                      _cameraController != null &&
-                                      _isCameraActive
-                                  ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: CameraPreview(_cameraController!),
-                                  )
-                                  : const Center(
-                                    child: Text('Camera unavailable'),
-                                  ),
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.all(16),
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.black),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child:
+                                  _isCameraInitialized &&
+                                          _cameraController != null &&
+                                          _isCameraActive
+                                      ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: CameraPreview(
+                                          _cameraController!,
+                                        ),
+                                      )
+                                      : const Center(
+                                        child: Text('Camera unavailable'),
+                                      ),
+                            ),
+                            SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: Image.asset(AppImages.recorder),
+                            ),
+                          ],
                         ),
                       ),
+
                       Padding(
                         padding: const EdgeInsets.all(18.0),
                         child: Column(

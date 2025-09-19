@@ -16,4 +16,5 @@ class AppImages {
   static const String examplaceholder = 'assets/exam_placeholder.png';
   static const String noI = 'assets/exam_placeholder.png';
   static const String profile = 'assets/profile.png';
+  static const String recorder = 'assets/recorder.gif';
 }
