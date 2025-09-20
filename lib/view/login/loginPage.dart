@@ -108,12 +108,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               // App logo (centered)
               Center(
-                child: Image.asset(
-                  AppImages
-                      .logo, // Make sure the image exists in your assets folder
-                  width: 263,
-                  height: 260,
-                ),
+                child: Image.asset(AppImages.logo, height: 206, width: 244),
               ),
               SizedBox(height: 20),
               // Title (left-aligned)

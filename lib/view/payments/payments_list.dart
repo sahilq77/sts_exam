@@ -65,7 +65,11 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
           backgroundColor: AppColors.backgroundColor,
           title: const Text(
             'Payment Receipt',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor,
+            ),
           ),
           automaticallyImplyLeading: true,
           elevation: 0,

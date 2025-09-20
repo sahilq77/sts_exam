@@ -137,7 +137,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Enter your mobile number',
+                    'Enter your mobile number*',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,

@@ -50,7 +50,14 @@ class ResultListPage extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: AppColors.backgroundColor,
           automaticallyImplyLeading: true,
-          title: const Text('Result List'),
+          title: const Text(
+            'Result List',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor,
+            ),
+          ),
           elevation: 0,
           bottom: const PreferredSize(
             preferredSize: Size.fromHeight(1.0),

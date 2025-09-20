@@ -357,7 +357,7 @@ class _SidebarState extends State<Sidebar> {
                     onPressed: () {
                       Get.snackbar(
                         'Success',
-                        'Logged out',
+                        'Logged out successfully',
                         backgroundColor: AppColors.successColor,
                         colorText: Colors.white,
                       );

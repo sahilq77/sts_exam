@@ -129,7 +129,7 @@ class _PaymentReceiptDetailsScreenState
 
       // Create a unique filename
       String fileName =
-          'receipt_${receipt!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+          'payment_receipt_${receipt!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
       String filePath = '${directory!.path}/$fileName';
 
       // Download the file with binary response

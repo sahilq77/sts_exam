@@ -98,7 +98,7 @@ class QuestionQuestion {
 
 class Option {
   String text;
-  dynamic image;
+  String image;
 
   Option({required this.text, required this.image});
 

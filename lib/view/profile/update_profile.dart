@@ -155,9 +155,9 @@ class _UpdateProfileState extends State<UpdateProfile> {
         title: const Text(
           "Update Profile",
           style: TextStyle(
-            color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
+            color: AppColors.textColor,
           ),
         ),
         elevation: 0,

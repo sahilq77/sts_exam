@@ -24,7 +24,7 @@ class StartExamPage extends StatefulWidget {
 
 class _StartExamPageState extends State<StartExamPage>
     with WidgetsBindingObserver {
-  final controller = Get.find<StartExamController>();
+  final controller = Get.put(StartExamController());
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   bool _isCameraResuming = false;
@@ -254,7 +254,7 @@ class _StartExamPageState extends State<StartExamPage>
         debugPrint('Face detection: ${faces.length} face(s) detected');
         if (faces.isEmpty) {
           _faceDetectionCount++;
-          ("face Warning count $_faceDetectionCount");
+          print("face Warning count $_faceDetectionCount");
           controller.faceDetectionWarningCount.value =
               _faceDetectionCount.toString();
           await controller.saveExamState(); // Save updated state
@@ -271,11 +271,11 @@ class _StartExamPageState extends State<StartExamPage>
             );
           }
         } else {
-          // _faceDetectionCount = 0;
-          // controller.faceDetectionWarningCount.value = '0';
-          // await controller.saveExamState();
-          // controller.scheduleExamMonitoringTask();
-          // controller.update();
+          _faceDetectionCount = 0;
+          controller.faceDetectionWarningCount.value = '0';
+          await controller.saveExamState();
+          controller.scheduleExamMonitoringTask();
+          controller.update();
         }
       } catch (e, stackTrace) {
         debugPrint('Error in face detection: $e\n$stackTrace');

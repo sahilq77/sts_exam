@@ -45,13 +45,8 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App logo
-            Image.asset(
-              AppImages
-                  .logo, // Make sure the image exists in your assets folder
-              width: 263,
-              height: 260,
-            ),
+            Image.asset(AppImages.logo, height: 206, width: 244),
+
             SizedBox(height: 20),
             Text(
               'युवा संदेश प्रतिष्ठान नाटळ-सांगवे',

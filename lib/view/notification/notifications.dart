@@ -61,7 +61,11 @@ class _NotificationPageState extends State<NotificationPage> {
         automaticallyImplyLeading: true,
         title: Text(
           'Notification',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textColor,
+          ),
         ),
         elevation: 0,
         bottom: const PreferredSize(

@@ -52,7 +52,7 @@ class ResultList {
   int incorrect;
   int unattempted;
   String totalQuestions;
-  String examStatus;
+  String examStatus; 
   String resultDate;
 
   ResultList({
