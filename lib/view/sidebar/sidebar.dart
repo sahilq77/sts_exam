@@ -355,8 +355,11 @@ class _SidebarState extends State<Sidebar> {
                       ),
                     ),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Logged out')),
+                      Get.snackbar(
+                        'Success',
+                        'Logged out',
+                        backgroundColor: AppColors.successColor,
+                        colorText: Colors.white,
                       );
                       Navigator.pop(context);
                       controller.logout(); // Use the _logout function
