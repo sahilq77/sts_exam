@@ -282,12 +282,20 @@ class _OverviewPageState extends State<OverviewPage> {
                 ),
 
                 child:
-                    correctAnswer.contains(
+                    options[int.parse(correctAnswer.trim()) - 1].image.contains(
                           RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
                         )
                         ? Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            Text(
+                              "$correctAnswer. ",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.green,
+                              ),
+                            ),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +307,12 @@ class _OverviewPageState extends State<OverviewPage> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
                                         child: CachedNetworkImage(
-                                          imageUrl: correctAnswer,
+                                          imageUrl:
+                                              options[int.parse(
+                                                        correctAnswer.trim(),
+                                                      ) -
+                                                      1]
+                                                  .image,
                                           fit: BoxFit.cover,
                                           placeholder:
                                               (context, url) => const Center(
