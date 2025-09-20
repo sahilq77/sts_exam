@@ -9,6 +9,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
+import 'dart:io'; // Added for File handling
 import '../../app_colors.dart';
 import '../../controller/exam/start_exam_controller.dart';
 import '../../utility/app_images.dart';
@@ -41,7 +42,7 @@ class _StartExamPageState extends State<StartExamPage>
 
   Future<void> initializeCamera({
     int retryCount = 0,
-    int maxRetries = 10000,
+    int maxRetries = 3, // Reduced from 10000 to 3
   }) async {
     if (!mounted) {
       debugPrint('Widget not mounted, aborting camera initialization');
@@ -134,6 +135,7 @@ class _StartExamPageState extends State<StartExamPage>
 
       if (retryCount < maxRetries - 1) {
         debugPrint('Retrying camera initialization...');
+        // await Future.delayed(const Duration(milliseconds: 500)); // Added delay
         await initializeCamera(
           retryCount: retryCount + 1,
           maxRetries: maxRetries,
@@ -202,15 +204,7 @@ class _StartExamPageState extends State<StartExamPage>
     }
     debugPrint('Reinitializing camera...');
 
-    if (_cameraController != null) {
-      try {
-        await _cameraController!.dispose();
-        debugPrint('Camera controller disposed successfully.');
-      } catch (e, stackTrace) {
-        debugPrint('Error disposing camera: $e\n$stackTrace');
-      }
-      _cameraController = null;
-    }
+    await _disposeCamera(); // Use the updated _disposeCamera
 
     setState(() {
       _isCameraInitialized = false;
@@ -234,7 +228,8 @@ class _StartExamPageState extends State<StartExamPage>
       return;
     }
     _faceDetectionTimer?.cancel();
-    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 2), (
+    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 5), (
+      // Increased interval to 5 seconds
       timer,
     ) async {
       if (!mounted ||
@@ -247,32 +242,44 @@ class _StartExamPageState extends State<StartExamPage>
         _stopFaceDetection();
         return;
       }
+      XFile? image;
       try {
-        final image = await _cameraController!.takePicture();
+        image = await _cameraController!.takePicture();
         final inputImage = InputImage.fromFilePath(image.path);
         final faces = await _faceDetector!.processImage(inputImage);
         debugPrint('Face detection: ${faces.length} face(s) detected');
         if (faces.isEmpty) {
           _faceDetectionCount++;
-          print("face Warning count $_faceDetectionCount");
+          debugPrint('Face not detected, count: $_faceDetectionCount');
           controller.faceDetectionWarningCount.value =
-              _faceDetectionCount.toString();
-          await controller.saveExamState(); // Save updated state
-          controller.scheduleExamMonitoringTask(); // Update WorkManager task
+              _faceDetectionCount; // Update RxInt
+          debugPrint(
+            'Updated controller.faceDetectionWarningCount: ${controller.faceDetectionWarningCount.value}',
+          );
+          await controller.saveExamState();
+          controller.scheduleExamMonitoringTask();
           setState(() {});
           if (mounted && ModalRoute.of(context)?.isCurrent == true) {
             Get.snackbar(
               'Warning',
-              'Face not detected (Count: $_faceDetectionCount). Please ensure your face is visible to the camera.',
+              'Face not detected. Please ensure your face is visible to the camera.',
               snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.red,
               colorText: Colors.white,
               duration: const Duration(seconds: 3),
             );
+            // Get.snackbar(
+            //   'Warning',
+            //   'Face not detected (Count: $_faceDetectionCount). Please ensure your face is visible to the camera.',
+            //   snackPosition: SnackPosition.TOP,
+            //   backgroundColor: Colors.red,
+            //   colorText: Colors.white,
+            //   duration: const Duration(seconds: 3),
+            // );
           }
         } else {
-          _faceDetectionCount = 0;
-          controller.faceDetectionWarningCount.value = '0';
+          // _faceDetectionCount = 0;
+          // controller.faceDetectionWarningCount.value = 0;
           await controller.saveExamState();
           controller.scheduleExamMonitoringTask();
           controller.update();
@@ -280,6 +287,16 @@ class _StartExamPageState extends State<StartExamPage>
       } catch (e, stackTrace) {
         debugPrint('Error in face detection: $e\n$stackTrace');
         await _reinitializeCamera();
+      } finally {
+        // Clean up temporary image file
+        if (image != null) {
+          try {
+            await File(image.path).delete();
+            debugPrint('Temporary image deleted.');
+          } catch (e) {
+            debugPrint('Error deleting temp image: $e');
+          }
+        }
       }
     });
   }
@@ -302,14 +319,18 @@ class _StartExamPageState extends State<StartExamPage>
   Future<void> _disposeCamera() async {
     if (_cameraController != null) {
       try {
+        if (_cameraController!.value.isInitialized) {
+          await _cameraController!.pausePreview();
+          debugPrint('Camera preview paused before disposal.');
+        }
         await _cameraController!.dispose();
         debugPrint('Camera controller disposed.');
-        _cameraController = null;
-        _isCameraInitialized = false;
-        _isCameraActive = false;
       } catch (e, stackTrace) {
         debugPrint('Error disposing camera: $e\n$stackTrace');
       }
+      _cameraController = null;
+      _isCameraInitialized = false;
+      _isCameraActive = false;
     }
   }
 
@@ -325,7 +346,10 @@ class _StartExamPageState extends State<StartExamPage>
               'Screenshot detected, attempt count: $_switchAttemptCount',
             );
             controller.switchAttemptCount.value =
-                _switchAttemptCount.toString();
+                _switchAttemptCount; // Update RxInt
+            debugPrint(
+              'Updated controller.switchAttemptCount: ${controller.switchAttemptCount.value}',
+            );
             await controller.saveExamState();
             controller.scheduleExamMonitoringTask();
             controller.update();
@@ -396,6 +420,9 @@ class _StartExamPageState extends State<StartExamPage>
         stopScreenshotListener: _stopScreenshotListener,
         disposeCamera: _disposeCamera,
       );
+      // Sync counts from controller
+      _switchAttemptCount = controller.switchAttemptCount.value;
+      _faceDetectionCount = controller.faceDetectionWarningCount.value;
       debugPrint('Processing arguments');
       final args = Get.arguments ?? {};
       final testId = args['test_id'] as String?;
@@ -483,7 +510,11 @@ class _StartExamPageState extends State<StartExamPage>
         if (pauseDuration > 50) {
           _switchAttemptCount++;
           debugPrint('Switch attempt count incremented: $_switchAttemptCount');
-          controller.switchAttemptCount.value = _switchAttemptCount.toString();
+          controller.switchAttemptCount.value =
+              _switchAttemptCount; // Update RxInt
+          debugPrint(
+            'Updated controller.switchAttemptCount: ${controller.switchAttemptCount.value}',
+          );
           await controller.saveExamState();
           controller.scheduleExamMonitoringTask();
           controller.update();

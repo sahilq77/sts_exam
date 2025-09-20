@@ -31,8 +31,8 @@ class StartExamController extends GetxController {
   Timer? timer;
   String testID = '';
   RxString attempt = "".obs;
-  RxString switchAttemptCount = ''.obs;
-  RxString faceDetectionWarningCount = ''.obs;
+  RxInt switchAttemptCount = 0.obs; // Changed from RxString to RxInt
+  RxInt faceDetectionWarningCount = 0.obs; // Changed from RxString to RxInt
 
   // Callbacks for cleanup
   VoidCallback? _stopFaceDetectionCallback;
@@ -53,11 +53,14 @@ class StartExamController extends GetxController {
   Future<void> saveExamState() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('testId', testID);
-    await prefs.setString('switchAttemptCount', switchAttemptCount.value);
-    await prefs.setString(
+    await prefs.setInt(
+      'switchAttemptCount',
+      switchAttemptCount.value,
+    ); // Store as int
+    await prefs.setInt(
       'faceDetectionWarningCount',
       faceDetectionWarningCount.value,
-    );
+    ); // Store as int
     await prefs.setString('attempt', attempt.value);
     await prefs.setInt('maxAttempts', 3);
   }
@@ -75,7 +78,7 @@ class StartExamController extends GetxController {
       examTaskKey,
       inputData: {
         'testId': testID,
-        'switchAttemptCount': switchAttemptCount.value,
+        'switchAttemptCount': switchAttemptCount.value, // Send as int
         'maxAttempts': 3,
         'attempt': attempt.value,
       },
@@ -97,7 +100,17 @@ class StartExamController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _loadExamState(); // Load saved state
     scheduleExamMonitoringTask();
+  }
+
+  Future<void> _loadExamState() async {
+    final prefs = await SharedPreferences.getInstance();
+    testID = prefs.getString('testId') ?? '';
+    switchAttemptCount.value = prefs.getInt('switchAttemptCount') ?? 0;
+    faceDetectionWarningCount.value =
+        prefs.getInt('faceDetectionWarningCount') ?? 0;
+    attempt.value = prefs.getString('attempt') ?? '';
   }
 
   @override
@@ -223,6 +236,9 @@ class StartExamController extends GetxController {
       isLoadings.value = true;
       errorMessages.value = '';
       log("ATTP ${attempt.value}");
+      debugPrint(
+        'Submitting test with switchAttemptCount: ${switchAttemptCount.value}, faceDetectionWarningCount: ${faceDetectionWarningCount.value}',
+      );
       final jsonBody = {
         "user_id": AppUtility.userID,
         "user_type": AppUtility.userType,
@@ -230,9 +246,10 @@ class StartExamController extends GetxController {
         "attempted_test_id": attempt.value,
         "submitted_on": DateTime.now().toString(),
         "answer_list": getAnswerList(),
-        "switch_attempt_count": switchAttemptCount.value,
+        "switch_attempt_count": switchAttemptCount.value, // Send as int
         "duration": formatTime(remainingSeconds.value),
-        "face_detection_warnings": faceDetectionWarningCount.value,
+        "face_detection_warnings":
+            faceDetectionWarningCount.value, // Send as int
       };
       List<TestSubmitResponse>? response =
           (await Networkcall().postMethod(
@@ -739,8 +756,8 @@ class StartExamController extends GetxController {
     selectedOption.value = null;
     currentQuestionIndex.value = 0;
     testID = '';
-    switchAttemptCount.value = '';
-    faceDetectionWarningCount.value = '';
+    switchAttemptCount.value = 0; // Reset to 0
+    faceDetectionWarningCount.value = 0; // Reset to 0
     remainingSeconds.value = 0;
     _stopFaceDetectionCallback = null;
     _stopScreenshotListenerCallback = null;
