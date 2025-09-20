@@ -260,9 +260,9 @@ class StartExamController extends GetxController {
         print("is show ${questionDetail.first.isShowResult}");
         if (questionDetail.first.isShowResult == "0") {
           showThankyouDialog(context);
-          cleanupAfterSubmission();
+          await cleanupAfterSubmission();
         } else if (questionDetail.first.isShowResult == "1") {
-          cleanupAfterSubmission();
+          await cleanupAfterSubmission();
           Get.offNamed(
             AppRoutes.testresult,
             arguments: {
@@ -271,7 +271,7 @@ class StartExamController extends GetxController {
             },
           );
         } else {
-          cleanupAfterSubmission();
+          await cleanupAfterSubmission();
           Get.offAllNamed(AppRoutes.home);
         }
       } else {
@@ -431,7 +431,7 @@ class StartExamController extends GetxController {
     );
   }
 
-  void showTimeoutDialog() {
+  void showTimeoutDialog() async {
     Get.dialog(
       AlertDialog(
         title: const Text('Time’s Up!'),
@@ -442,10 +442,8 @@ class StartExamController extends GetxController {
       barrierDismissible: false,
     );
 
-    Future.delayed(const Duration(seconds: 2), () {
-      submitTest(context: Get.context!);
-      Get.back();
-    });
+    await Future.delayed(const Duration(seconds: 2));
+    await submitTest(context: Get.context!);
   }
 
   List<Map<String, dynamic>> getAnswerList() {
@@ -581,8 +579,9 @@ class StartExamController extends GetxController {
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      submitTest(context: Get.context!);
+                    onPressed: () async {
+                      Get.back();
+                      await submitTest(context: Get.context!);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
@@ -735,7 +734,7 @@ class StartExamController extends GetxController {
             .questionId];
   }
 
-  void cleanupAfterSubmission() {
+  Future<void> cleanupAfterSubmission() async {
     selectedAnswers.clear();
     selectedOption.value = null;
     currentQuestionIndex.value = 0;
@@ -748,12 +747,11 @@ class StartExamController extends GetxController {
     _disposeCameraCallback = null;
     cancelExamMonitoringTask();
     // Clear shared preferences
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.remove('testId');
-      prefs.remove('switchAttemptCount');
-      prefs.remove('faceDetectionWarningCount');
-      prefs.remove('attempt');
-      prefs.remove('maxAttempts');
-    });
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('testId');
+    prefs.remove('switchAttemptCount');
+    prefs.remove('faceDetectionWarningCount');
+    prefs.remove('attempt');
+    prefs.remove('maxAttempts');
   }
 }

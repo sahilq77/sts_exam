@@ -202,11 +202,11 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
           },
         ),
         title: const Text(
-          'Exam Detail',
+          'Exam Details',
           style: TextStyle(
-            color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w600,
+            color: AppColors.textColor,
           ),
         ),
         elevation: 0,

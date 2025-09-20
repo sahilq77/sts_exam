@@ -14,8 +14,9 @@ class ConnectivityService {
     initConnectivity();
 
     // Listen for connectivity changes
-    _connectivity.onConnectivityChanged
-        .listen((List<ConnectivityResult> result) {
+    _connectivity.onConnectivityChanged.listen((
+      List<ConnectivityResult> result,
+    ) {
       bool isConnected =
           result.contains(ConnectivityResult.none) ? false : true;
       log('Connectivity changed: $isConnected');

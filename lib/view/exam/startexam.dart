@@ -263,7 +263,7 @@ class _StartExamPageState extends State<StartExamPage>
           if (mounted && ModalRoute.of(context)?.isCurrent == true) {
             Get.snackbar(
               'Warning',
-              'Face not detected. Please ensure your face is visible to the camera.',
+              'Face not detected (Count: $_faceDetectionCount). Please ensure your face is visible to the camera.',
               snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.red,
               colorText: Colors.white,
@@ -534,7 +534,7 @@ class _StartExamPageState extends State<StartExamPage>
 
     controller
         .submitTest(context: context)
-        .then((_) {
+        .then((_) async {
           Get.dialog(
             WillPopScope(
               onWillPop: () async => false,
@@ -545,8 +545,8 @@ class _StartExamPageState extends State<StartExamPage>
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () {
-                      controller.cleanupAfterSubmission();
+                    onPressed: () async {
+                      await controller.cleanupAfterSubmission();
                       Get.offAllNamed(AppRoutes.home);
                     },
                     child: const Text('OK'),
@@ -577,8 +577,8 @@ class _StartExamPageState extends State<StartExamPage>
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () {
-                      controller.cleanupAfterSubmission();
+                    onPressed: () async {
+                      await controller.cleanupAfterSubmission();
                       Get.offAllNamed(AppRoutes.home);
                     },
                     child: const Text('OK'),
@@ -607,8 +607,8 @@ class _StartExamPageState extends State<StartExamPage>
                 child: const Text('Cancel'),
               ),
               TextButton(
-                onPressed: () {
-                  controller.cleanupAfterSubmission();
+                onPressed: () async {
+                  await controller.cleanupAfterSubmission();
                   _stopFaceDetection();
                   _stopScreenshotListener();
                   _disposeCamera();
@@ -642,8 +642,8 @@ class _StartExamPageState extends State<StartExamPage>
                           child: const Text('Cancel'),
                         ),
                         TextButton(
-                          onPressed: () {
-                            controller.cleanupAfterSubmission();
+                          onPressed: () async {
+                            await controller.cleanupAfterSubmission();
                             _stopFaceDetection();
                             _stopScreenshotListener();
                             _disposeCamera();
@@ -793,7 +793,7 @@ class _StartExamPageState extends State<StartExamPage>
                                         ),
                                       )
                                       : const Center(
-                                        child: Text('Camera unavailable'),
+                                        child: CircularProgressIndicator(),
                                       ),
                             ),
                             SizedBox(

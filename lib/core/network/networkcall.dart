@@ -30,7 +30,7 @@ import '../../model/result_list/get_result_list_response.dart';
 import '../../model/result_list/get_result_overview_response.dart';
 import '../../model/signUp/signUp_response.dart';
 import '../../utility/app_routes.dart';
-import '../../utility/network_connectivity/connectivityservice.dart';
+import '../../utility/customdesign/connctivityservice.dart';
 
 class Networkcall {
   final ConnectivityService _connectivityService =

@@ -134,7 +134,7 @@ class AppRoutes {
     ),
     GetPage(
       name: noInternet,
-      page: () => NoInternetPage(),
+      page: () => NoInternetScreen(),
       transition: Transition.fadeIn,
     ),
     GetPage(

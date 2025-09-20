@@ -97,6 +97,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final bottomController = Get.put(BottomNavigationController());
 
@@ -145,27 +146,39 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       backgroundColor: AppColors.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: _onRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(_standardPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildBannerCarousel(),
-                const SizedBox(height: 10),
-                _buildAnnouncementsSection(),
-                const SizedBox(height: 20),
-                _buildLatestExamResultSection(controller),
-                const SizedBox(height: 20),
-                _buildAvailableExamsSection(),
-              ],
+      body: Obx(() {
+        // Check if all relevant lists are empty
+        // if (profileController.userProfileList.isEmpty &&
+        //     controller.bannerImagesList.isEmpty &&
+        //     announcementsController.announcementsList.isEmpty &&
+        //     controller.examList.isEmpty &&
+        //     examListController.examDetailList.isEmpty) {
+        //   return Center(child: Image.asset(AppImages.empty));
+        // }
+
+        // Existing UI when lists are not empty
+        return RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(_standardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBannerCarousel(),
+                  const SizedBox(height: 10),
+                  _buildAnnouncementsSection(),
+                  const SizedBox(height: 20),
+                  _buildLatestExamResultSection(controller),
+                  const SizedBox(height: 20),
+                  _buildAvailableExamsSection(),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
       bottomNavigationBar: CustomBottomBar(),
     );
   }

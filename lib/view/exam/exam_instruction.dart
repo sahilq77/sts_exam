@@ -50,9 +50,9 @@ class _ExamInstructionState extends State<ExamInstruction> {
         title: const Text(
           'Exam Instruction',
           style: TextStyle(
-            color: AppColors.textColor,
             fontSize: 18,
             fontWeight: FontWeight.w600,
+            color: AppColors.textColor,
           ),
         ),
         elevation: 0,
