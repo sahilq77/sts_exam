@@ -228,7 +228,7 @@ class _StartExamPageState extends State<StartExamPage>
       return;
     }
     _faceDetectionTimer?.cancel();
-    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 5), (
+    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 10), (
       // Increased interval to 5 seconds
       timer,
     ) async {
@@ -262,7 +262,7 @@ class _StartExamPageState extends State<StartExamPage>
           if (mounted && ModalRoute.of(context)?.isCurrent == true) {
             Get.snackbar(
               'Warning',
-              'Face not detected. Please ensure your face is visible to the camera.',
+              'Face not detected . Please ensure your face is visible to the camera.',
               snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.red,
               colorText: Colors.white,
