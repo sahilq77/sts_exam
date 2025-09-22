@@ -181,6 +181,8 @@ class _StartExamPageState extends State<StartExamPage>
         });
         return;
       }
+      // Add a small delay to ensure system resources are available
+      // await Future.delayed(const Duration(milliseconds: 100));
       await _cameraController!.resumePreview();
       debugPrint('Camera preview resumed successfully.');
       setState(() {
@@ -190,7 +192,11 @@ class _StartExamPageState extends State<StartExamPage>
       _startFaceDetection();
     } catch (e, stackTrace) {
       debugPrint('Error resuming camera preview: $e\n$stackTrace');
-      await _reinitializeCamera();
+      // Only reinitialize if the error indicates a camera initialization issue
+      if (e.toString().contains('CameraException') ||
+          e.toString().contains('initialize')) {
+        await _reinitializeCamera();
+      }
       setState(() {
         _isCameraResuming = false;
       });
@@ -204,7 +210,10 @@ class _StartExamPageState extends State<StartExamPage>
     }
     debugPrint('Reinitializing camera...');
 
-    await _disposeCamera(); // Use the updated _disposeCamera
+    // Only dispose if camera controller exists
+    if (_cameraController != null) {
+      await _disposeCamera();
+    }
 
     setState(() {
       _isCameraInitialized = false;
@@ -213,6 +222,8 @@ class _StartExamPageState extends State<StartExamPage>
     });
     _stopFaceDetection();
 
+    // Add a small delay to allow system resources to stabilize
+    // await Future.delayed(const Duration(milliseconds: 200));
     await initializeCamera();
   }
 

@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:colorful_safe_area/colorful_safe_area.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stsexam/core/network/urls.dart';
 import 'package:stsexam/notification_services%20.dart';
 import 'package:stsexam/utility/customdesign/connctivityservice.dart';
 import 'package:workmanager/workmanager.dart';
@@ -50,12 +53,12 @@ void callbackDispatcher() {
                 prefs.getString('faceDetectionWarningCount') ?? '0',
           };
           // Uncomment and implement the actual network call
-          // await Networkcall().postMethod(
-          //   Networkutility.testSubmitApi,
-          //   Networkutility.testSubmit,
-          //   jsonEncode(jsonBody),
-          //   null, // Context is not available in background
-          // );
+          await Networkcall().postMethod(
+            Networkutility.testSubmitApi,
+            Networkutility.testSubmit,
+            jsonEncode(jsonBody),
+            Get.context!, // Context is not available in background
+          );
         } else {
           print(
             "WorkManager: Exam still active, switch attempts: $switchAttemptCount",
