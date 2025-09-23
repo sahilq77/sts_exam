@@ -39,15 +39,11 @@ class _StartExamPageState extends State<StartExamPage>
   FaceDetector? _faceDetector;
   Timer? _faceDetectionTimer;
   final _noScreenshot = NoScreenshot.instance;
-
   Future<void> initializeCamera({
     int retryCount = 0,
-    int maxRetries = 3, // Reduced from 10000 to 3
+    int maxRetries = 3,
   }) async {
-    if (!mounted) {
-      debugPrint('Widget not mounted, aborting camera initialization');
-      return;
-    }
+    if (!mounted) return;
     debugPrint(
       'Initializing camera... (Attempt ${retryCount + 1}/$maxRetries)',
     );
@@ -60,7 +56,7 @@ class _StartExamPageState extends State<StartExamPage>
       });
       Get.snackbar(
         'Permission Denied',
-        'Camera permission is required to proceed with the exam.',
+        'Camera permission is required.',
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -78,7 +74,7 @@ class _StartExamPageState extends State<StartExamPage>
         });
         Get.snackbar(
           'Error',
-          'No cameras available on this device.',
+          'No cameras available.',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -103,7 +99,6 @@ class _StartExamPageState extends State<StartExamPage>
       debugPrint('Camera initialized successfully.');
 
       if (!mounted) {
-        debugPrint('Widget unmounted after camera init, disposing...');
         await _cameraController?.dispose();
         _cameraController = null;
         return;
@@ -114,7 +109,8 @@ class _StartExamPageState extends State<StartExamPage>
         _isCameraActive = true;
       });
 
-      await _cameraController!.resumePreview();
+      await Future.delayed(const Duration(milliseconds: 200)); // Stabilize
+      await _cameraController!.resumePreview(); // Resume preview
       debugPrint('Camera preview started.');
 
       _faceDetector = FaceDetector(
@@ -135,7 +131,6 @@ class _StartExamPageState extends State<StartExamPage>
 
       if (retryCount < maxRetries - 1) {
         debugPrint('Retrying camera initialization...');
-        // await Future.delayed(const Duration(milliseconds: 500)); // Added delay
         await initializeCamera(
           retryCount: retryCount + 1,
           maxRetries: maxRetries,
@@ -143,7 +138,7 @@ class _StartExamPageState extends State<StartExamPage>
       } else {
         Get.snackbar(
           'Error',
-          'Failed to initialize camera after $maxRetries attempts. Please restart the exam.',
+          'Failed to initialize camera after $maxRetries attempts.',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -153,77 +148,19 @@ class _StartExamPageState extends State<StartExamPage>
   }
 
   Future<void> _resumeCameraPreview() async {
-    if (!mounted) {
-      debugPrint('Widget not mounted, cannot resume camera');
-      return;
-    }
-    debugPrint('Attempting to resume camera preview...');
+    if (!mounted) return;
+    debugPrint('App resumed, reinitializing camera...');
     setState(() {
       _isCameraResuming = true;
     });
-
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      debugPrint(
-        'Camera controller is null or not initialized, reinitializing...',
-      );
-      await _reinitializeCamera();
-      setState(() {
-        _isCameraResuming = false;
-      });
-      return;
-    }
-
-    try {
-      if (!_cameraController!.value.isPreviewPaused) {
-        debugPrint('Camera preview already active, no need to resume');
-        setState(() {
-          _isCameraResuming = false;
-        });
-        return;
-      }
-      // Add a small delay to ensure system resources are available
-      // await Future.delayed(const Duration(milliseconds: 100));
-      await _cameraController!.resumePreview();
-      debugPrint('Camera preview resumed successfully.');
-      setState(() {
-        _isCameraActive = true;
-        _isCameraResuming = false;
-      });
-      _startFaceDetection();
-    } catch (e, stackTrace) {
-      debugPrint('Error resuming camera preview: $e\n$stackTrace');
-      // Only reinitialize if the error indicates a camera initialization issue
-      if (e.toString().contains('CameraException') ||
-          e.toString().contains('initialize')) {
-        await _reinitializeCamera();
-      }
-      setState(() {
-        _isCameraResuming = false;
-      });
-    }
+    await initializeCamera(); // Full reinitialization for reliability
+    setState(() {
+      _isCameraResuming = false;
+    });
   }
 
   Future<void> _reinitializeCamera() async {
-    if (!mounted) {
-      debugPrint('Widget not mounted, cannot reinitialize camera');
-      return;
-    }
-    debugPrint('Reinitializing camera...');
-
-    // Only dispose if camera controller exists
-    if (_cameraController != null) {
-      await _disposeCamera();
-    }
-
-    setState(() {
-      _isCameraInitialized = false;
-      _isCameraActive = false;
-      _isCameraResuming = false;
-    });
-    _stopFaceDetection();
-
-    // Add a small delay to allow system resources to stabilize
-    // await Future.delayed(const Duration(milliseconds: 200));
+    await _disposeCamera();
     await initializeCamera();
   }
 
@@ -232,24 +169,16 @@ class _StartExamPageState extends State<StartExamPage>
         _faceDetector == null ||
         _cameraController == null ||
         !_isCameraInitialized ||
-        !_isCameraActive) {
-      debugPrint(
-        'Cannot start face detection: Camera not ready or widget unmounted',
-      );
+        !_isCameraActive)
       return;
-    }
     _faceDetectionTimer?.cancel();
-    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 10), (
-      // Increased interval to 5 seconds
+    _faceDetectionTimer = Timer.periodic(const Duration(seconds: 5), (
       timer,
     ) async {
       if (!mounted ||
           !_isCameraActive ||
           _cameraController == null ||
           !_cameraController!.value.isInitialized) {
-        debugPrint(
-          'Stopping face detection: Camera not ready or widget unmounted',
-        );
         _stopFaceDetection();
         return;
       }
@@ -261,52 +190,38 @@ class _StartExamPageState extends State<StartExamPage>
         debugPrint('Face detection: ${faces.length} face(s) detected');
         if (faces.isEmpty) {
           _faceDetectionCount++;
-          debugPrint('Face not detected, count: $_faceDetectionCount');
-          controller.faceDetectionWarningCount.value =
-              _faceDetectionCount; // Update RxInt
-          debugPrint(
-            'Updated controller.faceDetectionWarningCount: ${controller.faceDetectionWarningCount.value}',
-          );
+          controller.faceDetectionWarningCount.value = _faceDetectionCount;
           await controller.saveExamState();
           controller.scheduleExamMonitoringTask();
           setState(() {});
           if (mounted && ModalRoute.of(context)?.isCurrent == true) {
             Get.snackbar(
               'Warning',
-              'Face not detected . Please ensure your face is visible to the camera.',
+              'Face not detected. Please ensure your face is visible.',
               snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.red,
               colorText: Colors.white,
               duration: const Duration(seconds: 3),
             );
-            // Get.snackbar(
-            //   'Warning',
-            //   'Face not detected (Count: $_faceDetectionCount). Please ensure your face is visible to the camera.',
-            //   snackPosition: SnackPosition.TOP,
-            //   backgroundColor: Colors.red,
-            //   colorText: Colors.white,
-            //   duration: const Duration(seconds: 3),
-            // );
           }
         } else {
-          // _faceDetectionCount = 0;
-          // controller.faceDetectionWarningCount.value = 0;
           await controller.saveExamState();
           controller.scheduleExamMonitoringTask();
           controller.update();
         }
       } catch (e, stackTrace) {
         debugPrint('Error in face detection: $e\n$stackTrace');
-        await _reinitializeCamera();
+        if (e.toString().contains('Previous capture has not returned yet')) {
+          debugPrint('Skipping face detection for pending capture error');
+          // Retry next tick, no reinit
+        } else {
+          await _reinitializeCamera();
+        }
       } finally {
-        // Clean up temporary image file
         if (image != null) {
           try {
             await File(image.path).delete();
-            debugPrint('Temporary image deleted.');
-          } catch (e) {
-            debugPrint('Error deleting temp image: $e');
-          }
+          } catch (e) {}
         }
       }
     });
@@ -330,10 +245,7 @@ class _StartExamPageState extends State<StartExamPage>
   Future<void> _disposeCamera() async {
     if (_cameraController != null) {
       try {
-        if (_cameraController!.value.isInitialized) {
-          await _cameraController!.pausePreview();
-          debugPrint('Camera preview paused before disposal.');
-        }
+        await _cameraController!.pausePreview();
         await _cameraController!.dispose();
         debugPrint('Camera controller disposed.');
       } catch (e, stackTrace) {
@@ -484,48 +396,27 @@ class _StartExamPageState extends State<StartExamPage>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  void didChangeAppLifecycleState(AppLifecycleState state) async { 
     debugPrint('Lifecycle state changed: $state');
-    if (!mounted) {
-      debugPrint('Widget not mounted, ignoring lifecycle change');
-      return;
-    }
+    if (!mounted) return;
 
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _leftApp = true;
       _pauseStartTime = DateTime.now();
-      if (_isCameraInitialized &&
-          _cameraController != null &&
-          _cameraController!.value.isInitialized) {
-        try {
-          await _cameraController!.pausePreview();
-          debugPrint('Camera preview paused.');
-          setState(() {
-            _isCameraActive = false;
-          });
-        } catch (e, stackTrace) {
-          debugPrint('Error pausing camera preview: $e\n$stackTrace');
-        }
-      }
       _stopFaceDetection();
-      debugPrint('App paused or inactive, pauseStartTime: $_pauseStartTime');
+      await _disposeCamera(); // Full dispose on pause
+      debugPrint('App paused, camera disposed.');
     } else if (state == AppLifecycleState.resumed && _leftApp) {
       _leftApp = false;
-      debugPrint('App resumed, attempting to resume camera...');
       await _resumeCameraPreview();
       if (_pauseStartTime != null) {
         final pauseDuration =
             DateTime.now().difference(_pauseStartTime!).inMilliseconds;
-        debugPrint('App resumed, pause duration: $pauseDuration ms');
+        debugPrint('Pause duration: $pauseDuration ms');
         if (pauseDuration > 50) {
           _switchAttemptCount++;
-          debugPrint('Switch attempt count incremented: $_switchAttemptCount');
-          controller.switchAttemptCount.value =
-              _switchAttemptCount; // Update RxInt
-          debugPrint(
-            'Updated controller.switchAttemptCount: ${controller.switchAttemptCount.value}',
-          );
+          controller.switchAttemptCount.value = _switchAttemptCount;
           await controller.saveExamState();
           controller.scheduleExamMonitoringTask();
           controller.update();
@@ -537,9 +428,7 @@ class _StartExamPageState extends State<StartExamPage>
         }
       }
       _pauseStartTime = null;
-      if (mounted) {
-        setState(() {});
-      }
+      if (mounted) setState(() {});
     }
   }
 
