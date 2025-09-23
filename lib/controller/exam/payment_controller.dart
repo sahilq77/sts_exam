@@ -3,46 +3,37 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stsexam/model/payments/get_payment_url_response.dart';
 
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
 import '../../core/network/urls.dart';
-import '../../model/signUp/signUp_response.dart';
+
+import '../../model/exam/get_buy_response.dart';
+
 import '../../utility/app_routes.dart';
 import '../../utility/app_utility.dart';
 
-class SignupController extends GetxController {
-
-  //dikomap905@bitfami.com
+class PaymentController extends GetxController {
   RxBool isLoading = true.obs;
-  Future<void> signUp({
+  RxString paymentUrl = "".obs;
+
+  Future<void> getPaymentUrl({
     BuildContext? context,
-    required String? userType,
-    required String? fullName,
-    required String? email,
-    required String? mobileNumber,
-    required String? gender,
-    required String? profileImg,
-    required String? state,
-    required String? city,
-    required String? udiseNumber,
-    required String? schoolName,
-    required String? password,
+    // required String? subscriptionid,
+    // required String? stateID,
+    // required dynamic cityID,
+    // required String? transactionID,
+    required String? testid,
+    required String? amt,
   }) async {
     try {
       final jsonBody = {
-        "user_type": userType == "Student" ? "0" : "1",
-        "full_name": fullName,
-        "email": email,
-        "mobile_number": mobileNumber,
-        "gender": gender,
-        "udis_number": udiseNumber ?? "",
-        "school_name": schoolName ?? "",
-        "state": state,
-        "city": city,
-        "password": password,
-        "confirm_password": password,
+        "user_type": AppUtility.userType,
+        "user_id": AppUtility.userID,
+        "ammount": amt,
+        "test_id": testid,
       };
 
       isLoading.value = true;
@@ -54,40 +45,40 @@ class SignupController extends GetxController {
       //   password.value,
       // );
       List<Object?>? list = await Networkcall().postMethod(
-        Networkutility.signUpApi,
-        Networkutility.signUp,
+        Networkutility.paymentApi,
+        Networkutility.payment,
         jsonEncode(jsonBody),
         Get.context!,
       );
 
       if (list != null && list.isNotEmpty) {
-        List<GetRegisterResponse> response = List.from(list);
+        List<GetPaymentUrlResponse> response = List.from(list);
         if (response[0].status == "true") {
-          // final user = response[0].data;
-          // await AppUtility.setUserInfo(
-          //  user.
+          final pUrl = response[0].paymentUrl;
+          // log("userid${user.userid}");
+          log("Payment Url: $pUrl");
+          paymentUrl.value = pUrl;
+          Get.toNamed(AppRoutes.paymentScreen);
+          // Get.snackbar(
+          //   'Success',
+          //   'Buy successfully',
+          //   backgroundColor: AppColors.successColor,
+          //   colorText: Colors.white,
           // );
-
-          Get.snackbar(
-            'Success',
-            'Registered Successfully',
-            backgroundColor: AppColors.successColor,
-            colorText: Colors.white,
-          );
-
-          Get.offNamed(AppRoutes.login);
+          // _showPaymentSuccessDialog(context!);
+          // Get.offNamed(AppRoutes.PaymentReceipt);
         } else {
           Get.snackbar(
             'Error',
-            'You entered mobile number is already registered.',
+            response[0].message,
             backgroundColor: AppColors.errorColor,
             colorText: Colors.white,
           );
         }
       } else {
-        // Get.back();
+        Get.back();
         Get.snackbar(
-          'Failed',
+          'Error',
           'No response from server',
           backgroundColor: AppColors.errorColor,
           colorText: Colors.white,

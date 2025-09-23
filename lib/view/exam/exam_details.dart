@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../app_colors.dart';
 import '../../controller/exam/buy_exam_controller.dart';
 import '../../controller/exam/exam_detail_controller.dart';
+import '../../controller/exam/payment_controller.dart';
 import '../../utility/app_routes.dart';
 import 'exam_instruction.dart';
 import 'startexam.dart';
@@ -19,7 +20,7 @@ class ExamDetailPage extends StatefulWidget {
 
 class _ExamDetailPageState extends State<ExamDetailPage> {
   final controller = Get.put(ExamDetailController());
-  final buyController = Get.put(BuyExamController());
+  final buyController = Get.put(PaymentController());
 
   String? _selectedOption;
 
@@ -428,9 +429,10 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                           return print("button disabled");
 
                         case 3:
-                          buyController.buyExam(
+                          buyController.getPaymentUrl(
                             context: context,
                             testid: exam.id,
+                            amt: exam.amount,
                           );
                           // _showPaymentSuccessDialog(context);
                           return print("pay");

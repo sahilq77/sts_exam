@@ -20,6 +20,7 @@ import 'package:stsexam/utility/app_utility.dart';
 // WorkManager callback dispatcher
 const String examTaskKey = "com.stsexam.examTask";
 
+@pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == examTaskKey) {
@@ -57,7 +58,7 @@ void callbackDispatcher() {
             Networkutility.testSubmitApi,
             Networkutility.testSubmit,
             jsonEncode(jsonBody),
-            Get.context!, // Context is not available in background
+            null!, // Context is not available in background
           );
         } else {
           print(

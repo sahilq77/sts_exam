@@ -21,6 +21,7 @@ import '../../model/home/get_available_exam_response.dart';
 import '../../model/home/get_notifications_response.dart';
 import '../../model/home/latest_exam_response.dart';
 import '../../model/login/get_login_response.dart';
+import '../../model/payments/get_payment_url_response.dart';
 import '../../model/payments/get_payments_receipt_response.dart';
 import '../../model/payments/payment_receipt_link_response.dart';
 import '../../model/profile/get_delete_user_response.dart';
@@ -148,6 +149,10 @@ class Networkcall {
             return downloadResult;
           case 23:
             final getAnnounce = getAnnouncementsResponseFromJson(str);
+            return getAnnounce;
+
+          case 24:
+            final getAnnounce = getPaymentUrlResponseFromJson(str);
             return getAnnounce;
 
           default:

@@ -288,7 +288,7 @@ class _PaymentReceiptDetailsScreenState
                       height: 20,
                     ),
                     // const SizedBox(height: 20),
-                    _buildDetailRow('Ref Number', receipt!.receiptNo),
+                    // _buildDetailRow('Ref Number', receipt!.receiptNo),
                     const SizedBox(height: 12),
                     _buildDetailRow('Txn Number', receipt!.transactionNo),
                     const SizedBox(height: 12),
@@ -296,7 +296,11 @@ class _PaymentReceiptDetailsScreenState
                     const SizedBox(height: 12),
                     _buildDetailRow(
                       'Date',
-                      DateFormat('dd-MM-yyyy').format(receipt!.paymentDate),
+                      receipt!.paymentDate != null
+                          ? DateFormat(
+                            'dd-MM-yyyy',
+                          ).format(receipt!.paymentDate!)
+                          : '', // Fallback value if null
                     ),
                     const SizedBox(height: 12),
                     _buildDetailRow(
@@ -414,7 +418,7 @@ class _PaymentReceiptDetailsScreenState
                   ),
                 ),
                 child: const Text(
-                  'Back to Home',
+                  'Back',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,

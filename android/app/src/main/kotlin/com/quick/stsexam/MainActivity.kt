@@ -4,25 +4,29 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import android.content.ContentResolver
+import android.content.Intent // Added missing import
 import android.database.ContentObserver
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.MediaStore
 import android.util.Log
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.quick.stsexam/screenshot"
-    private var methodChannel: MethodChannel? = null
+    private val SCREENSHOT_CHANNEL = "com.quick.stsexam/screenshot"
+    private val BATTERY_CHANNEL = "com.quick.stsexam/battery_optimization"
+    private var screenshotMethodChannel: MethodChannel? = null
+    private var batteryMethodChannel: MethodChannel? = null
     private var screenshotObserver: ContentObserver? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
-        // Create and store the MethodChannel once here (flutterEngine is non-null)
-        methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
-        
-        methodChannel?.setMethodCallHandler { call, result ->
+        // Screenshot channel
+        screenshotMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SCREENSHOT_CHANNEL)
+        screenshotMethodChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "listenForScreenshots" -> {
                     startScreenshotListener()
@@ -31,6 +35,35 @@ class MainActivity : FlutterActivity() {
                 "stopScreenshotListener" -> {
                     stopScreenshotListener()
                     result.success(true)
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+        
+        // Battery optimization channel
+        batteryMethodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BATTERY_CHANNEL)
+        batteryMethodChannel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "isIgnoringBatteryOptimizations" -> {
+                    val isIgnoring = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+                        powerManager.isIgnoringBatteryOptimizations(packageName)
+                    } else {
+                        true // Battery optimization not applicable below Android M
+                    }
+                    result.success(isIgnoring)
+                }
+                "requestIgnoreBatteryOptimizations" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val intent = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                        intent.setData(Uri.parse("package:$packageName")) // Fixed syntax
+                        startActivity(intent)
+                        result.success(true) // Assume success as we can't track user action
+                    } else {
+                        result.success(true) // No need for optimization below Android M
+                    }
                 }
                 else -> {
                     result.notImplemented()
@@ -54,7 +87,7 @@ class MainActivity : FlutterActivity() {
                     Log.d("MainActivity", "Screenshot detected at URI: $uri")
                     
                     // Use the stored non-null MethodChannel to notify Flutter
-                    methodChannel?.invokeMethod("screenshotDetected", null)
+                    screenshotMethodChannel?.invokeMethod("screenshotDetected", null)
                 }
             }
 
@@ -86,7 +119,8 @@ class MainActivity : FlutterActivity() {
         super.onDestroy()
         // Clean up the observer when the activity is destroyed
         stopScreenshotListener()
-        // Optionally clear the channel reference
-        methodChannel = null
+        // Optionally clear the channel references
+        screenshotMethodChannel = null
+        batteryMethodChannel = null
     }
 }

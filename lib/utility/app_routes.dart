@@ -9,6 +9,7 @@ import '../binding/start_exam_binding.dart';
 import '../view/exam/exam_details.dart';
 import '../view/exam/exam_instruction.dart';
 import '../view/exam/exam_list_screen.dart';
+import '../view/exam/payment_sccreen.dart';
 import '../view/exam/startexam.dart';
 import '../view/forgotpassword/forgot_password_page.dart';
 import '../view/home/homepage.dart';
@@ -49,6 +50,7 @@ class AppRoutes {
   static const String terms = '/terms';
 
   static const String announcements = '/announcements';
+  static const String paymentScreen = '/payment_screen';
 
   static final routes = [
     GetPage(
@@ -165,6 +167,12 @@ class AppRoutes {
     GetPage(
       name: announcements,
       page: () => AnnouncementsScreen(),
+      transition: Transition.fadeIn,
+    ),
+
+    GetPage(
+      name: paymentScreen,
+      page: () => PaymentWebView(),
       transition: Transition.fadeIn,
     ),
   ];

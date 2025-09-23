@@ -34,7 +34,7 @@ android {
     defaultConfig {
         applicationId = "com.quick.stsexam"
         minSdk = 21
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true

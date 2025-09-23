@@ -69,7 +69,7 @@ dependencies:
   url_launcher: ^6.3.2
   workmanager: ^0.9.0+3
   crypto: ^3.0.3
-  webview_flutter: ^4.4.2
+  webview_flutter: ^4.8.0
   
  
 

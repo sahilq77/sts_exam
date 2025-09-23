@@ -131,10 +131,10 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
                             status:
                                 payment.paymentStatus == "1"
                                     ? 'Completed'
-                                    : 'Pending',
+                                    : 'Failed',
                             isPending:
                                 payment.paymentStatus == "1" ? false : true,
-                            refNumber: payment.receiptNo,
+                            refNumber: payment.receiptNo.toString(),
                             studentName: payment.userName,
                             date: DateFormater.formatDate(
                               payment.paymentDate.toString(),
@@ -143,7 +143,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
                             paymentStatus:
                                 payment.paymentStatus == "1"
                                     ? 'Completed'
-                                    : 'Pending',
+                                    : 'Failed',
                           ),
                         );
                       },
@@ -243,31 +243,31 @@ class PaymentReceiptCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Ref Number',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF707070),
-                  ),
-                ),
-                Text(
-                  refNumber.toString(),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 5),
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 20, right: 20),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //     children: [
+          //       const Text(
+          //         'Ref Number',
+          //         style: TextStyle(
+          //           fontSize: 13,
+          //           fontWeight: FontWeight.w400,
+          //           color: Color(0xFF707070),
+          //         ),
+          //       ),
+          //       Text(
+          //         refNumber.toString(),
+          //         style: TextStyle(
+          //           fontSize: 13,
+          //           fontWeight: FontWeight.w600,
+          //           color: AppColors.textColor,
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          // const SizedBox(height: 5),
           Padding(
             padding: const EdgeInsets.only(left: 20, right: 20),
             child: Row(

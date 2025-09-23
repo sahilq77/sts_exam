@@ -49,12 +49,11 @@ class PaymentReciptList {
   String testName;
   String paymentAmount;
   String transactionNo;
-  DateTime paymentDate;
+  DateTime? paymentDate; // Made nullable
   String testId;
   String receiptNo;
   String isDeleted;
   String status;
-
 
   PaymentReciptList({
     required this.id,
@@ -66,7 +65,7 @@ class PaymentReciptList {
     required this.testName,
     required this.paymentAmount,
     required this.transactionNo,
-    required this.paymentDate,
+    this.paymentDate, // Made nullable
     required this.testId,
     required this.receiptNo,
     required this.isDeleted,
@@ -84,7 +83,12 @@ class PaymentReciptList {
         testName: json["test_name"] ?? "",
         paymentAmount: json["payment_amount"] ?? "",
         transactionNo: json["transaction_no"] ?? "",
-        paymentDate: DateTime.parse(json["payment_date"]),
+        paymentDate:
+            json["payment_date"] != null
+                ? DateTime.tryParse(
+                  json["payment_date"],
+                ) // Use tryParse to handle invalid or null dates
+                : null,
         testId: json["test_id"] ?? "",
         receiptNo: json["receipt_no"] ?? "",
         isDeleted: json["is_deleted"] ?? "",
@@ -102,11 +106,12 @@ class PaymentReciptList {
     "payment_amount": paymentAmount,
     "transaction_no": transactionNo,
     "payment_date":
-        "${paymentDate.year.toString().padLeft(4, '0')}-${paymentDate.month.toString().padLeft(2, '0')}-${paymentDate.day.toString().padLeft(2, '0')}",
+        paymentDate != null
+            ? "${paymentDate!.year.toString().padLeft(4, '0')}-${paymentDate!.month.toString().padLeft(2, '0')}-${paymentDate!.day.toString().padLeft(2, '0')}"
+            : null, // Handle null case
     "test_id": testId,
     "receipt_no": receiptNo,
     "is_deleted": isDeleted,
     "status": status,
-  
   };
 }
