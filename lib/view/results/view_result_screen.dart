@@ -257,16 +257,18 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
           //   child: const Icon(Icons.refresh),
           // ),
           //  const SizedBox(height: 10),
-          FloatingActionButton(
-            onPressed:
-                controller.resultLink.value.isEmpty
-                    ? null
-                    : () async {
-                      print("Url ${controller.resultLink.value}");
-                      await _downloadReceipt(controller.resultLink.value);
-                    },
-            heroTag: 'share', // Trigger share action
-            child: const Icon(Icons.download),
+          Obx(
+            () => FloatingActionButton(
+              onPressed:
+                  controller.resultLink.value.isEmpty
+                      ? null
+                      : () async {
+                        print("Url ${controller.resultLink.value}");
+                        await _downloadReceipt(controller.resultLink.value);
+                      },
+              heroTag: 'share', // Trigger share action
+              child: const Icon(Icons.download),
+            ),
           ),
         ],
       ),

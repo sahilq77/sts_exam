@@ -133,7 +133,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen> {
                                     ? 'Completed'
                                     : 'Failed',
                             isPending:
-                                payment.paymentStatus == "1" ? false : true,
+                                payment.paymentStatus == "1" ? true : false,
                             refNumber: payment.receiptNo.toString(),
                             studentName: payment.userName,
                             date: DateFormater.formatDate(
@@ -224,9 +224,7 @@ class PaymentReceiptCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color:
-                          paymentStatus == "Pending"
-                              ? Colors.red
-                              : Colors.green,
+                          paymentStatus == "Failed" ? Colors.red : Colors.green,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

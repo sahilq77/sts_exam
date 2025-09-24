@@ -253,29 +253,47 @@ class _PaymentReceiptDetailsScreenState
                   children: [
                     Container(
                       child: ClipOval(
-                        child: Image.asset(
-                          AppImages.success, // your asset image path here
-                          width: 200,
-                          height: 100,
-                          fit: BoxFit.contain,
-                        ),
+                        child:
+                            receipt!.paymentStatus == "1"
+                                ? Image.asset(
+                                  AppImages
+                                      .success, // your asset image path here
+                                  width: 200,
+                                  height: 100,
+                                  fit: BoxFit.contain,
+                                )
+                                : Image.asset(
+                                  'assets/failed.png', // Ensure you have a failure image asset
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
                       ),
                     ),
                     // Payment status icon
                     const SizedBox(height: 20),
 
                     const SizedBox(height: 16),
-                    const Text(
-                      'Payment Success!!',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF474747),
-                      ),
-                    ),
+                    receipt!.paymentStatus == "1"
+                        ? Text(
+                          'Payment Success!!',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF474747),
+                          ),
+                        )
+                        : Text(
+                          'Payment Failed!!',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF474747),
+                          ),
+                        ),
                     const SizedBox(height: 8),
                     Text(
-                      receipt!.paymentAmount,
+                      "₹ ${receipt!.paymentAmount}",
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
@@ -305,7 +323,7 @@ class _PaymentReceiptDetailsScreenState
                     const SizedBox(height: 12),
                     _buildDetailRow(
                       'Pay Status',
-                      receipt!.paymentStatus == "1" ? "Completed" : "Pending",
+                      receipt!.paymentStatus == "1" ? "Completed" : "Failed",
                       isStatus: true,
                     ),
 
@@ -318,21 +336,50 @@ class _PaymentReceiptDetailsScreenState
                         spacing: 5,
                       ),
                     ),
-
-                    Container(
-                      width: double.infinity,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        receipt!.testName,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textColor,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Exam Name',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: const Color(0xFF707070),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            "${receipt!.testName} ",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            textAlign: TextAlign.end,
+                          ),
+                        ),
+                      ],
                     ),
+                    // Container(
+                    //   width: double.infinity,
+                    //   alignment: Alignment.centerLeft,
+                    //   child: Text(
+                    //     receipt!.testName,
+                    //     style: TextStyle(
+                    //       fontSize: 13,
+                    //       fontWeight: FontWeight.w600,
+                    //       color: AppColors.textColor,
+                    //     ),
+                    //     overflow: TextOverflow.ellipsis,
+                    //     maxLines: 1,
+                    //   ),
+                    // ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -351,7 +398,7 @@ class _PaymentReceiptDetailsScreenState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            receipt!.paymentAmount,
+                            "₹ ${receipt!.paymentAmount} ",
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -442,7 +489,7 @@ class _PaymentReceiptDetailsScreenState
     Color getStatusColor(String status) {
       if (status.toLowerCase() == 'completed') {
         return Colors.green;
-      } else if (status.toLowerCase() == 'pending') {
+      } else if (status.toLowerCase() == 'failed') {
         return Colors.red;
       } else {
         return AppColors.textColor;

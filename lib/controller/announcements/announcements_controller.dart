@@ -8,7 +8,6 @@ import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
 import '../../core/network/urls.dart';
-
 import '../../model/announcements/get_announcements_resposne.dart';
 import '../../utility/app_utility.dart';
 
@@ -70,9 +69,18 @@ class AnnouncementsController extends GetxController {
             hasMoreData.value =
                 false; // No more data if fewer announcements than limit
           }
+
+          // Check for duplicates before adding
           for (var announcement in announcements) {
-            announcementsList.add(AnnouncementData(title: announcement.title));
+            if (!announcementsList.any(
+              (item) => item.title == announcement.title,
+            )) {
+              announcementsList.add(
+                AnnouncementData(title: announcement.title),
+              );
+            }
           }
+
           offset.value += limit; // Increment offset for next page
         } else {
           hasMoreData.value = false;
