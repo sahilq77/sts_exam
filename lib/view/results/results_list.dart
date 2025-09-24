@@ -114,7 +114,10 @@ class ResultListPage extends StatelessWidget {
                   resultView: () {
                     Get.toNamed(
                       AppRoutes.viewResult,
-                      arguments: {"test_id": result.testId},
+                      arguments: {
+                        "test_id": result.testId,
+                        "attempt_id": result.attemptedTestId,
+                      },
                     );
                   },
                   totalMarks: result.scoreOutoff,

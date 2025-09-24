@@ -31,6 +31,7 @@ class DownloadResultController extends GetxController {
     required BuildContext context,
     bool isRefresh = false,
     required String testID,
+      required String attemptID,
   }) async {
     try {
       isLoading.value = true;
@@ -40,6 +41,7 @@ class DownloadResultController extends GetxController {
         "user_id": AppUtility.userID,
         "user_type": AppUtility.userType,
         "test_id": testID,
+        "attempted_test_id":attemptID
       };
 
       List<GetDownloadResultResoponse>? response =

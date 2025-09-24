@@ -193,9 +193,14 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
     super.initState();
     final args = Get.arguments;
     final testId = args['test_id'] as String?;
+    final atemptId = args['attempt_id'] as String?;
     print("test id $testId");
     setState(() {
-      controller.fetchResult(context: context, testID: testId.toString());
+      controller.fetchResult(
+        context: context,
+        testID: testId.toString(),
+        attemptID: atemptId.toString(),
+      );
     });
   }
 
