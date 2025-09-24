@@ -191,36 +191,64 @@ class _OverviewPageState extends State<OverviewPage> {
                             RegExp(r'\.(jpeg|jpg|png)$', caseSensitive: false),
                           )
                           ? Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${index + 1}.',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              SizedBox(
-                                child: SizedBox(
-                                  height: 100,
-                                  width: 100,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: CachedNetworkImage(
-                                      imageUrl: "${options[index].image}",
-                                      fit: BoxFit.cover,
-                                      placeholder:
-                                          (context, url) => const Center(
-                                            child: CircularProgressIndicator(),
+                              Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${index + 1}.',
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      SizedBox(
+                                        child: SizedBox(
+                                          height: 100,
+                                          width: 100,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            child: CachedNetworkImage(
+                                              imageUrl:
+                                                  "${options[index].image}",
+                                              fit: BoxFit.cover,
+                                              placeholder:
+                                                  (
+                                                    context,
+                                                    url,
+                                                  ) => const Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      const Icon(
+                                                        Icons.error,
+                                                        size: 50,
+                                                      ),
+                                            ),
                                           ),
-                                      errorWidget:
-                                          (context, url, error) =>
-                                              const Icon(Icons.error, size: 50),
-                                    ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              if (isSelected)
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Icon(
+                                    isCorrect ? Icons.check : Icons.close,
+                                    color:
+                                        isCorrect ? Colors.green : Colors.red,
                                   ),
                                 ),
-                              ),
                             ],
                           )
                           : Row(
