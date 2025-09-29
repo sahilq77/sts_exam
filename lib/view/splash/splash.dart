@@ -47,16 +47,16 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             Image.asset(AppImages.logo, height: 206, width: 244),
 
-            SizedBox(height: 20),
-            Text(
-              'युवा संदेश प्रतिष्ठान नाटळ-सांगवे',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textColor, // Use custom text color
-              ),
-              textAlign: TextAlign.center,
-            ),
+            // SizedBox(height: 20),
+            // Text(
+            //   'युवा संदेश प्रतिष्ठान नाटळ-सांगवे',
+            //   style: TextStyle(
+            //     fontSize: 20,
+            //     fontWeight: FontWeight.w500,
+            //     color: AppColors.textColor, // Use custom text color
+            //   ),
+            //   textAlign: TextAlign.center,
+            // ),
           ],
         ),
       ),

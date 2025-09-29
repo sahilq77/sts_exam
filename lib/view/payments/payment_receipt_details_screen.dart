@@ -416,36 +416,46 @@ class _PaymentReceiptDetailsScreenState
                       thickness: 1,
                       height: 20,
                     ),
-                    Obx(
-                      () => SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed:
-                              controller.url.value.isEmpty
-                                  ? null
-                                  : () =>
-                                      _downloadReceipt(controller.url.value),
-                          icon: Image.asset(
-                            'assets/download.png',
-                            width: 20,
-                            height: 20,
-                          ),
-                          label: const Text('Download Payment Receipt'),
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            backgroundColor: Colors.white,
-                            side: const BorderSide(color: Color(0xFFE5E7EB)),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
-                          ),
-                        ),
-                      ),
+                    SizedBox(
+                      child:
+                          receipt!.paymentStatus == "1"
+                              ? Obx(
+                                () => SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                        controller.url.value.isEmpty
+                                            ? null
+                                            : () => _downloadReceipt(
+                                              controller.url.value,
+                                            ),
+                                    icon: Image.asset(
+                                      'assets/download.png',
+                                      width: 20,
+                                      height: 20,
+                                    ),
+                                    label: const Text(
+                                      'Download Payment Receipt',
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                      backgroundColor: Colors.white,
+                                      side: const BorderSide(
+                                        color: Color(0xFFE5E7EB),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              : SizedBox.shrink(),
                     ),
                   ],
                 ),

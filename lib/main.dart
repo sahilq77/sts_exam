@@ -58,7 +58,7 @@ void callbackDispatcher() {
             Networkutility.testSubmitApi,
             Networkutility.testSubmit,
             jsonEncode(jsonBody),
-            null!, // Context is not available in background
+            null!, // Context is not available in backgroundp
           );
         } else {
           print(
