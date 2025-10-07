@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stsexam/controller/exam/payment_controller.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:url_launcher/url_launcher.dart'; // Add url_launcher
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../controller/exam/payment_controller.dart';
 import '../../utility/app_routes.dart';
 
 class PaymentWebView extends StatefulWidget {
@@ -15,21 +15,19 @@ class PaymentWebView extends StatefulWidget {
 }
 
 class _PaymentWebViewState extends State<PaymentWebView> {
-  late WebViewController _controller;
   final controller = Get.put(PaymentController());
+  InAppWebViewController? _webViewController;
+  // bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    // Enable hybrid composition for Android
-    if (Platform.isAndroid) {
-      // WebView.platform = SurfaceAndroidWebView();
-    }
+    // Log the payment URL for debugging
+    log('Payment URL from controller: ${controller.paymentUrl.value}');
   }
 
   Future<void> _onRefresh() async {
-    // Reload the WebView
-    await _controller.reload();
+    await _webViewController?.reload();
   }
 
   // Function to launch UPI URL
@@ -40,103 +38,128 @@ class _PaymentWebViewState extends State<PaymentWebView> {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No UPI app found to handle the payment.')),
+          const SnackBar(
+            content: Text('No UPI app found to handle the payment.'),
+          ),
         );
       }
     } catch (e) {
-      print("Error $e");
+      log("Error launching UPI URL: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to launch UPI app: $e')));
     }
+  }
+
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                content: const Text('Do you want to cancel this transaction?'),
+                actions: <Widget>[
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('No'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Get.offAllNamed(AppRoutes.home);
+                    },
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+        )) ??
+        false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: const Text('CCAvenue Payment')),
-
-      body: Obx(
-        () =>
-            controller.isLoading.value
-                ? Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  child: WebViewWidget(
-                    controller:
-                        _controller =
-                            WebViewController()
-                              ..setJavaScriptMode(JavaScriptMode.unrestricted)
-                              ..setNavigationDelegate(
-                                NavigationDelegate(
-                                  onPageStarted: (String url) {
-                                    print('Page started loading: $url');
-                                  },
-                                  onPageFinished: (String url) {
-                                    print('Page finished loading: $url');
-                                  },
-                                  onWebResourceError: (WebResourceError error) {
-                                    print(
-                                      'WebView error: ${error.description}',
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Error loading payment page: ${error.description}',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  onNavigationRequest: (
-                                    NavigationRequest request,
-                                  ) async {
-                                    // Check if the URL is a UPI link
-                                    if (request.url.startsWith('upi://')) {
-                                      print("${request.url}");
-                                      await _launchUpiUrl(request.url);
-                                      return NavigationDecision
-                                          .prevent; // Prevent WebView from loading the UPI URL
-                                    } else if (request.url.contains(
-                                      'Success',
-                                    )) {
-                                      final uri = Uri.parse(request.url);
-                                      String? txn = uri.queryParameters['txn'];
-                                      if (txn != null) {
-                                        _showPaymentSuccessDialog(context, txn);
-                                      } else {
-                                        _showPaymentSuccessDialog(
-                                          context,
-                                          "Unknown Transaction",
-                                        );
-                                      }
-                                      return NavigationDecision.prevent;
-                                    } else if (request.url.contains(
-                                      'Failure',
-                                    )) {
-                                      final uri = Uri.parse(request.url);
-                                      String? txn = uri.queryParameters['txn'];
-                                      if (txn != null) {
-                                        _showPaymentFailedDialog(context, txn);
-                                      } else {
-                                        _showPaymentFailedDialog(
-                                          context,
-                                          "Unknown Transaction",
-                                        );
-                                      }
-                                      return NavigationDecision.prevent;
-                                    } else if (request.url.contains(
-                                          'cancelTransaction',
-                                        ) ||
-                                        request.url.contains('cancel')) {
-                                      print("Navigation cancelled");
-                                    }
-                                    return NavigationDecision.navigate;
-                                  },
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(title: const Text('CCAvenue Payment')),
+        body: Obx(
+          () =>
+              controller.isLoading.value
+                  ? const Center(child: CircularProgressIndicator())
+                  : controller.paymentUrl.value.isEmpty
+                  ? const Center(child: Text('Payment URL not available'))
+                  : RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    child: Stack(
+                      children: [
+                        InAppWebView(
+                          initialUrlRequest: URLRequest(
+                            url: WebUri(controller.paymentUrl.value),
+                          ),
+                          initialOptions: InAppWebViewGroupOptions(
+                            crossPlatform: InAppWebViewOptions(
+                              useShouldOverrideUrlLoading: true,
+                              mediaPlaybackRequiresUserGesture: false,
+                              javaScriptEnabled: true,
+                              javaScriptCanOpenWindowsAutomatically: true,
+                            ),
+                            android: AndroidInAppWebViewOptions(
+                              useWideViewPort: false,
+                              useHybridComposition: true,
+                              loadWithOverviewMode: true,
+                              domStorageEnabled: true,
+                            ),
+                            ios: IOSInAppWebViewOptions(
+                              allowsInlineMediaPlayback: true,
+                              enableViewportScale: true,
+                              ignoresViewportScaleLimits: true,
+                            ),
+                          ),
+                          onWebViewCreated: (
+                            InAppWebViewController controller,
+                          ) {
+                            _webViewController = controller;
+                          },
+                          onLoadStart: (controller, url) {
+                            log('Page started loading: $url');
+                          },
+                          onLoadStop: (controller, url) async {
+                            log('Page finished loading: $url');
+                            // setState(() {
+                            //   loading = false;
+                            // });
+                          },
+                          onLoadError: (controller, url, code, message) {
+                            log('WebView error: $message (code: $code)');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Error loading payment page: $message',
                                 ),
-                              )
-                              ..loadRequest(
-                                Uri.parse(controller.paymentUrl.value),
                               ),
+                            );
+                          },
+                          shouldOverrideUrlLoading: (
+                            controller,
+                            navigationAction,
+                          ) async {
+                            final uri = navigationAction.request.url!;
+                            print("uri = " + uri.toString());
+                            if (uri.toString().contains("phonepe://pay?") ||
+                                uri.toString().contains("paytmmp://pay?") ||
+                                uri.toString().contains("tez://upi/pay?") ||
+                                uri.toString().contains("upi://pay?")) {
+                              if (!await launchUrl(uri)) {}
+                              return NavigationActionPolicy.CANCEL;
+                            }
+                            return NavigationActionPolicy.ALLOW;
+                          },
+                        ),
+                        // if (loading) const Center(child: CircularProgressIndicator()),
+                      ],
+                    ),
                   ),
-                ),
+        ),
       ),
     );
   }
@@ -146,7 +169,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        Timer(Duration(seconds: 3), () {
+        Timer(const Duration(seconds: 3), () {
           Get.offNamed(AppRoutes.examInstruction);
         });
         return PopScope(
@@ -167,7 +190,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Payment Successful !',
+                  'Payment Successful!',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -178,7 +201,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 const SizedBox(height: 10),
                 Text(
                   'TXN ID: $txn',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF353B43),
@@ -195,7 +218,6 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 10),
               ],
             ),
           ),
@@ -209,7 +231,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        Timer(Duration(seconds: 3), () {
+        Timer(const Duration(seconds: 3), () {
           Get.offAllNamed(AppRoutes.home);
         });
         return PopScope(
@@ -241,7 +263,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                 const SizedBox(height: 10),
                 Text(
                   'TXN ID: $txn',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF353B43),
@@ -258,7 +280,6 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 10),
               ],
             ),
           ),
