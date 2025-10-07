@@ -144,14 +144,38 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                             navigationAction,
                           ) async {
                             final uri = navigationAction.request.url!;
-                            print("uri = " + uri.toString());
+                            log("Navigating to URL: $uri");
+
+                            // Check for UPI payment URLs
                             if (uri.toString().contains("phonepe://pay?") ||
                                 uri.toString().contains("paytmmp://pay?") ||
                                 uri.toString().contains("tez://upi/pay?") ||
                                 uri.toString().contains("upi://pay?")) {
-                              if (!await launchUrl(uri)) {}
+                              await _launchUpiUrl(uri.toString());
                               return NavigationActionPolicy.CANCEL;
                             }
+
+                            // Check for payment success or failure URLs
+                            // Assuming CCAvenue redirects to specific URLs for success/failure
+                            // Adjust the URL patterns based on your payment gateway's behavior
+                            if (uri.toString().contains("Success")) {
+                              // Extract transaction ID from URL or controller
+                              // For demo purposes, using a dummy txn ID
+                              String txnId =
+                                  uri.queryParameters['txn'].toString();
+                              _showPaymentSuccessDialog(context, txnId);
+                              return NavigationActionPolicy.CANCEL;
+                            } else if (uri.toString().contains(
+                                  "cancelTransaction",
+                                ) ||
+                                uri.toString().contains("cancel")) {
+                              // Extract transaction ID from URL or controller
+                              String txnId =
+                                  uri.queryParameters['txn_id'].toString();
+                              _showPaymentFailedDialog(context, txnId);
+                              return NavigationActionPolicy.CANCEL;
+                            }
+
                             return NavigationActionPolicy.ALLOW;
                           },
                         ),
