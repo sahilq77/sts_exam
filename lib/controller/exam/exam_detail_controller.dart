@@ -115,6 +115,7 @@ class ExamDetailController extends GetxController {
                 questionSCount: ex.questionSCount,
                 testType:
                     ex.testType, //test_type '0' for free & test_type '1' for paid
+                isPaid: ex.isPaid,
               ),
             );
           }

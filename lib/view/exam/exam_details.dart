@@ -366,7 +366,6 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
               return Colors.grey;
 
             case 3:
-              //  _showPaymentSuccessDialog(context);
               return AppColors.primaryColor;
 
             default:
@@ -385,7 +384,6 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
               return "Already Attempted";
 
             case 3:
-              //  _showPaymentSuccessDialog(context);
               return "START EXAM FOR RS ${exam.amount}";
 
             default:
@@ -403,6 +401,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                     : () {
                       print("Testype ${exam.testType}");
                       print("Attempted ${exam.isAttempted}");
+                      print("IsPaid ${exam.isPaid}");
                       int? testType;
                       if (exam.testType == "0") {
                         testType =
@@ -414,6 +413,8 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                         testType =
                             exam.testType == "1" && exam.isAttempted == true
                                 ? 2
+                                : exam.isPaid == 1
+                                ? 4
                                 : 3;
                       }
 
@@ -434,24 +435,15 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                             testid: exam.id,
                             amt: exam.amount,
                           );
-                          // _showPaymentSuccessDialog(context);
                           return print("pay");
+
+                        case 4:
+                          Get.toNamed(AppRoutes.examInstruction);
+                          return print("paid exam, proceed to instructions");
 
                         default:
                           print("default");
                       }
-                      // if (exam.testType == "0" && exam.isAttempted == true) {
-                      //   _showatemptDialog(context, exam.attemptCount);
-                      // } else {
-                      //   print("fresher");
-                      //   // Get.toNamed(AppRoutes.examInstruction);
-                      // }
-
-                      // if (exam.testType == "1" && exam.isAttempted == true) {
-                      //   print("Already attemted button disabled");
-                      // } else {
-                      //   _showPaymentSuccessDialog(context);
-                      // }
                     },
             style: ElevatedButton.styleFrom(
               backgroundColor: getColor(),

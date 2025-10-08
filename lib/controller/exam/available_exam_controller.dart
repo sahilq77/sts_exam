@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-
 import '../../app_colors.dart';
 import '../../core/network/exceptions.dart';
 import '../../core/network/networkcall.dart';
@@ -46,27 +45,28 @@ class AvilableExamController extends GetxController {
         "limit": "4",
         "offset": "0",
         "user_type": AppUtility.userType,
-        "user_id": AppUtility.userID
+        "user_id": AppUtility.userID,
       };
       List<AvailableExamListResponse>? response =
           (await Networkcall().postMethod(
-        Networkutility.getallExamsListApi,
-        Networkutility.getallExamsList,
-        jsonEncode(jsonBody),
-        context,
-      )) as List<AvailableExamListResponse>?;
+                Networkutility.getallExamsListApi,
+                Networkutility.getallExamsList,
+                jsonEncode(jsonBody),
+                context,
+              ))
+              as List<AvailableExamListResponse>?;
       // log("examjshhgsyhg=======>$response");
       if (response != null && response.isNotEmpty) {
         if (response[0].status == "true") {
           final exam = response[0].data;
-          imageLink.value = response[0]
-              .imageLink
+          imageLink.value = response[0].imageLink
               .replaceAll(r'\/', '/')
               .replaceAll(r'\:', ':');
           log("examjshhgsyhg=======>${response[0].data.first.examName}");
 
           for (var ex in exam) {
-            examDetailList.add(AvailableExam(
+            examDetailList.add(
+              AvailableExam(
                 id: ex.id,
                 examId: ex.examId,
                 testName: ex.testName,
@@ -91,10 +91,11 @@ class AvilableExamController extends GetxController {
                 questionCount: ex.questionCount,
                 questionSCount: ex.questionSCount,
                 attemptCount: ex.attemptCount,
-                testType: ex
-                    .testType //test_type '0' for free & test_type '1' for paid
-
-                ));
+                testType:
+                    ex.testType, //test_type '0' for free & test_type '1' for paid
+                isPaid: ex.isPaid,
+              ),
+            );
           }
         }
       } else {

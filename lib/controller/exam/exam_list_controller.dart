@@ -98,6 +98,7 @@ class ExamListController extends GetxController {
                 attemptCount: ex.attemptCount,
                 isAttempted: ex.isAttempted,
                 testType: ex.testType,
+                isPaid: ex.isPaid,
               ),
             );
           }
