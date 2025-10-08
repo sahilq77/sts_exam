@@ -196,9 +196,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Phone number is required';
+                              //  return 'Phone number is required';
                             } else if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-                              return 'Enter a valid 10-digit phone number';
+                              // return 'Enter a valid 10-digit phone number';
                             }
                             return null;
                           },
@@ -269,13 +269,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Password is required';
+                              //  return 'Password is required';
                             } else if (value.length < 8) {
-                              return 'Password must be at least 8 characters';
+                              //return 'Password must be at least 8 characters';
                             } else if (!RegExp(
                               r'^(?=.*[0-9])(?=.*[!@#$%^&*])',
                             ).hasMatch(value)) {
-                              return 'Password must contain a number and a special character';
+                              //  return 'Password must contain a number and a special character';
                             }
                             return null;
                           },
@@ -360,9 +360,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Confirm password is required';
+                              //   return 'Confirm password is required';
                             } else if (value != _passwordController.text) {
-                              return 'Passwords do not match';
+                              // return 'Passwords do not match';
                             }
                             return null;
                           },

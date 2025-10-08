@@ -352,22 +352,26 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
           testType = exam.testType == "0" && exam.isAttempted == true ? 0 : 1;
         }
         if (exam.testType == "1") {
-          testType = exam.testType == "1" && exam.isAttempted == true ? 2 : 3;
+          testType =
+              exam.testType == "1" && exam.isAttempted == true
+                  ? 2
+                  : exam.isPaid == 1
+                  ? 4
+                  : 3;
         }
 
         Color getColor() {
           switch (testType) {
             case 0:
               return AppColors.primaryColor;
-
             case 1:
               return AppColors.primaryColor;
             case 2:
               return Colors.grey;
-
             case 3:
               return AppColors.primaryColor;
-
+            case 4:
+              return AppColors.primaryColor;
             default:
               return AppColors.primaryColor;
           }
@@ -377,15 +381,14 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
           switch (testType) {
             case 0:
               return "START EXAM FOR FREE";
-
             case 1:
               return "START EXAM FOR FREE";
             case 2:
               return "Already Attempted";
-
             case 3:
               return "START EXAM FOR RS ${exam.amount}";
-
+            case 4:
+              return "You already paid start your exam";
             default:
               return "START EXAM FOR FREE";
           }
@@ -422,13 +425,11 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                         case 0:
                           _showatemptDialog(context, exam.attemptCount);
                           return print("attempted count");
-
                         case 1:
                           Get.toNamed(AppRoutes.examInstruction);
                           return print("fresher");
                         case 2:
                           return print("button disabled");
-
                         case 3:
                           buyController.getPaymentUrl(
                             context: context,
@@ -436,11 +437,9 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                             amt: exam.amount,
                           );
                           return print("pay");
-
                         case 4:
                           Get.toNamed(AppRoutes.examInstruction);
                           return print("paid exam, proceed to instructions");
-
                         default:
                           print("default");
                       }
