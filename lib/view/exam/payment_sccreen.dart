@@ -151,7 +151,7 @@ class _PaymentWebViewState extends State<PaymentWebView> {
                                 uri.toString().contains("paytmmp://pay?") ||
                                 uri.toString().contains("tez://upi/pay?") ||
                                 uri.toString().contains("upi://pay?")) {
-                              await _launchUpiUrl(uri.toString());
+                              if (!await launchUrl(uri)) {}
                               return NavigationActionPolicy.CANCEL;
                             }
 
