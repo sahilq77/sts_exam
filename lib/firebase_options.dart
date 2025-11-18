@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAPmNmi3NTTAdYrQEoWEGnyObVte-olqHQ',
-    appId: '1:919983361967:web:4b7788ca857a0a325c295a',
-    messagingSenderId: '919983361967',
-    projectId: 'stsexam-a5988',
-    authDomain: 'stsexam-a5988.firebaseapp.com',
-    storageBucket: 'stsexam-a5988.firebasestorage.app',
-    measurementId: 'G-GRPZ6VTQ2F',
+    apiKey: 'AIzaSyASrag7lCBDmvhjhYotCE1zGq3bj3t0rkA',
+    appId: '1:984009292270:web:7fcc08b4a90f3a999db6ff',
+    messagingSenderId: '984009292270',
+    projectId: 'vidyasarthi-7fcd4',
+    authDomain: 'vidyasarthi-7fcd4.firebaseapp.com',
+    storageBucket: 'vidyasarthi-7fcd4.firebasestorage.app',
+    measurementId: 'G-C4854CDWZ1',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDCSGNGSAx_ojeOu-SXB9DZBjUaMnyrsPQ',
-    appId: '1:919983361967:android:afdc364490ad44f95c295a',
-    messagingSenderId: '919983361967',
-    projectId: 'stsexam-a5988',
-    storageBucket: 'stsexam-a5988.firebasestorage.app',
+    apiKey: 'AIzaSyBuKJFXYs9BAxa-iH_0Q3261dOZ38F-oY8',
+    appId: '1:984009292270:android:4c22caf52ba827869db6ff',
+    messagingSenderId: '984009292270',
+    projectId: 'vidyasarthi-7fcd4',
+    storageBucket: 'vidyasarthi-7fcd4.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDikN9D__0pPPBjnbwjcEWgE8tRvKU36uI',
-    appId: '1:919983361967:ios:2aecc1fd3de9d0b25c295a',
-    messagingSenderId: '919983361967',
-    projectId: 'stsexam-a5988',
-    storageBucket: 'stsexam-a5988.firebasestorage.app',
-    iosBundleId: 'com.quick.stsexam',
+    apiKey: 'AIzaSyBlDCqR0UnesBNJUdn6HOhLCM-Qr83OBzU',
+    appId: '1:984009292270:ios:d908e406fcb3fcac9db6ff',
+    messagingSenderId: '984009292270',
+    projectId: 'vidyasarthi-7fcd4',
+    storageBucket: 'vidyasarthi-7fcd4.firebasestorage.app',
+    iosBundleId: 'com.quick.vidyasarthi',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDikN9D__0pPPBjnbwjcEWgE8tRvKU36uI',
-    appId: '1:919983361967:ios:2aecc1fd3de9d0b25c295a',
-    messagingSenderId: '919983361967',
-    projectId: 'stsexam-a5988',
-    storageBucket: 'stsexam-a5988.firebasestorage.app',
-    iosBundleId: 'com.quick.stsexam',
+    apiKey: 'AIzaSyBlDCqR0UnesBNJUdn6HOhLCM-Qr83OBzU',
+    appId: '1:984009292270:ios:d908e406fcb3fcac9db6ff',
+    messagingSenderId: '984009292270',
+    projectId: 'vidyasarthi-7fcd4',
+    storageBucket: 'vidyasarthi-7fcd4.firebasestorage.app',
+    iosBundleId: 'com.quick.vidyasarthi',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAPmNmi3NTTAdYrQEoWEGnyObVte-olqHQ',
-    appId: '1:919983361967:web:6646a2c9a11f53305c295a',
-    messagingSenderId: '919983361967',
-    projectId: 'stsexam-a5988',
-    authDomain: 'stsexam-a5988.firebaseapp.com',
-    storageBucket: 'stsexam-a5988.firebasestorage.app',
-    measurementId: 'G-NW0Y7YFTMW',
+    apiKey: 'AIzaSyASrag7lCBDmvhjhYotCE1zGq3bj3t0rkA',
+    appId: '1:984009292270:web:c98ab4dd2198d1d89db6ff',
+    messagingSenderId: '984009292270',
+    projectId: 'vidyasarthi-7fcd4',
+    authDomain: 'vidyasarthi-7fcd4.firebaseapp.com',
+    storageBucket: 'vidyasarthi-7fcd4.firebasestorage.app',
+    measurementId: 'G-J7N1B9449L',
   );
+
 }

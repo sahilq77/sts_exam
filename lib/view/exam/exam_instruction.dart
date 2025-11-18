@@ -37,139 +37,152 @@ class _ExamInstructionState extends State<ExamInstruction> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Get.back();
-            controller.clearSelectedExamid();
-            controller.examDetailList.clear();
-          },
-        ),
-        title: const Text(
-          'Exam Instruction',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textColor,
+    return WillPopScope(
+      onWillPop: () async {
+        if (controller.examDetailList.isNotEmpty &&
+            controller.examDetailList.first.testType == "1") {
+          controller.clearSelectedExamid();
+          controller.examDetailList.clear();
+          Get.offAllNamed(AppRoutes.home);
+        }
+
+        return true; // Allow the pop
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Get.back();
+              controller.clearSelectedExamid();
+              controller.examDetailList.clear();
+            },
+          ),
+          title: const Text(
+            'Exam Instruction',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor,
+            ),
+          ),
+          elevation: 0,
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(1.0),
+            child: Divider(height: 1, color: Color(0xFFE5E7EB)),
           ),
         ),
-        elevation: 0,
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1.0),
-          child: Divider(height: 1, color: Color(0xFFE5E7EB)),
-        ),
-      ),
-      backgroundColor: AppColors.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        color: AppColors.primaryColor,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Obx(() {
-            if (controller.isLoading.value ||
-                controller.examDetailList.isEmpty) {
-              return const ExamDetailShimmer();
-            }
-            final ins = controller.examDetailList;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    height: 200,
-                    width: double.infinity,
-                    child: CachedNetworkImage(
-                      imageUrl:
-                          "${controller.imageLink.value}${ins[0].testImage.toString()}",
-                      fit: BoxFit.cover,
-                      placeholder:
-                          (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                      errorWidget:
-                          (context, url, error) =>
-                              const Icon(Icons.error, size: 50),
+        backgroundColor: AppColors.backgroundColor,
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          color: AppColors.primaryColor,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Obx(() {
+              if (controller.isLoading.value ||
+                  controller.examDetailList.isEmpty) {
+                return const ExamDetailShimmer();
+              }
+              final ins = controller.examDetailList;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 200,
+                      width: double.infinity,
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            "${controller.imageLink.value}${ins[0].testImage.toString()}",
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                        errorWidget:
+                            (context, url, error) =>
+                                const Icon(Icons.error, size: 50),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  ins[0].testName ?? 'No Title',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                  const SizedBox(height: 15),
+                  Text(
+                    ins[0].testName ?? 'No Title',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '${ins[0].duration ?? 'N/A'} min | ${ins[0].questionSCount.isEmpty ? ins[0].questionCount ?? "N/A" : ins[0].questionSCount} Question',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.primaryColor,
+                  const SizedBox(height: 5),
+                  Text(
+                    '${ins[0].duration ?? 'N/A'} min | ${ins[0].questionSCount.isEmpty ? ins[0].questionCount ?? "N/A" : ins[0].questionSCount} Question',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.primaryColor,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                const Text(
-                  'Please read the text below carefully so you can understand it',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textColor,
+                  const SizedBox(height: 15),
+                  const Text(
+                    'Please read the text below carefully so you can understand it',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textColor,
+                    ),
                   ),
-                ),
-                Html(
-                  data: ins[0].instructionDescription.replaceAll(
-                    r'\r\n',
-                    '<br>',
+                  Html(
+                    data: ins[0].instructionDescription.replaceAll(
+                      r'\r\n',
+                      '<br>',
+                    ),
+                    style: TextDesign.commonStyles,
                   ),
-                  style: TextDesign.commonStyles,
-                ),
-              ],
-            );
-          }),
-        ),
-      ),
-      bottomNavigationBar: Obx(() {
-        if (controller.examDetailList.isEmpty) {
-          return const SizedBox.shrink();
-        }
-        final ins = controller.examDetailList;
-        return SizedBox(
-          height: 79,
-          child: ElevatedButton(
-            onPressed: () {
-              final startExamController = Get.put(StartExamController());
-              startExamController.setTestid(ins[0].id);
-              Get.toNamed(
-                AppRoutes.startexam,
-                arguments: {
-                  "test_id": ins[0].id,
-                  "attempted_count": ins[0].attemptCount,
-                },
-              ); // Use Get.toNamed instead of Get.offNamed to preserve back navigation
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-              ),
-            ),
-            child: const Text(
-              'Start Your Exam',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+                ],
+              );
+            }),
           ),
-        );
-      }),
+        ),
+        bottomNavigationBar: Obx(() {
+          if (controller.examDetailList.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          final ins = controller.examDetailList;
+          return SizedBox(
+            height: 79,
+            child: ElevatedButton(
+              onPressed: () {
+                final startExamController = Get.put(StartExamController());
+                startExamController.setTestid(ins[0].id);
+                Get.toNamed(
+                  AppRoutes.startexam,
+                  arguments: {
+                    "test_id": ins[0].id,
+                    "attempted_count": ins[0].attemptCount,
+                  },
+                ); // Use Get.toNamed instead of Get.offNamed to preserve back navigation
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                ),
+              ),
+              child: const Text(
+                'Start Your Exam',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
     );
   }
 }

@@ -1,4 +1,4 @@
-package com.quick.stsexam
+package com.quick.vidyasarthi
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -15,8 +15,8 @@ import android.provider.MediaStore
 import android.util.Log
 
 class MainActivity : FlutterActivity() {
-    private val SCREENSHOT_CHANNEL = "com.quick.stsexam/screenshot"
-    private val BATTERY_CHANNEL = "com.quick.stsexam/battery_optimization"
+    private val SCREENSHOT_CHANNEL = "com.quick.vidyasarthi/screenshot"
+    private val BATTERY_CHANNEL = "com.quick.vidyasarthi/battery_optimization"
     private var screenshotMethodChannel: MethodChannel? = null
     private var batteryMethodChannel: MethodChannel? = null
     private var screenshotObserver: ContentObserver? = null

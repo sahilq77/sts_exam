@@ -473,12 +473,12 @@ class StartExamController extends GetxController {
   }
 
   void showSubmitDialog(BuildContext context) {
-    int attemptedQuestions =
-        selectedAnswers.values.where((answer) => answer != null).length;
-    int unattemptedQuestions =
-        questionDetail.isEmpty
-            ? 0
-            : questionDetail.first.questions.length - attemptedQuestions;
+    int attemptedQuestions = selectedAnswers.values
+        .where((answer) => answer != null)
+        .length;
+    int unattemptedQuestions = questionDetail.isEmpty
+        ? 0
+        : questionDetail.first.questions.length - attemptedQuestions;
 
     Get.bottomSheet(
       Container(
@@ -656,17 +656,15 @@ class StartExamController extends GetxController {
               selectedOption.value =
                   selectedAnswers[questionDetail.first.questions[0].questionId];
             } else if (filter.startsWith('Questions:')) {
-              final questionNumbers =
-                  filter
-                      .substring('Questions:'.length)
-                      .split(',')
-                      .map((num) => int.tryParse(num.trim()) ?? 0)
-                      .where(
-                        (num) =>
-                            num > 0 &&
-                            num <= questionDetail.first.questions.length,
-                      )
-                      .toList();
+              final questionNumbers = filter
+                  .substring('Questions:'.length)
+                  .split(',')
+                  .map((num) => int.tryParse(num.trim()) ?? 0)
+                  .where(
+                    (num) =>
+                        num > 0 && num <= questionDetail.first.questions.length,
+                  )
+                  .toList();
               if (questionNumbers.isNotEmpty) {
                 currentQuestionIndex.value = questionNumbers.first - 1;
                 selectedOption.value =
@@ -707,10 +705,9 @@ class StartExamController extends GetxController {
               }
             }
           },
-          totalQuestions:
-              questionDetail.isEmpty
-                  ? 0
-                  : questionDetail.first.questions.length,
+          totalQuestions: questionDetail.isEmpty
+              ? 0
+              : questionDetail.first.questions.length,
           attemptedQuestions: attemptedQuestionNumbers,
         );
       },

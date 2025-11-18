@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.quick.stsexam"
+    namespace = "com.quick.vidyasarthi"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -32,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.quick.stsexam"
+        applicationId = "com.quick.vidyasarthi"
         minSdk = 21
         targetSdk = 35
         versionCode = flutter.versionCode

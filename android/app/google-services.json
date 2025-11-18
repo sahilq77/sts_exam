@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "919983361967",
-    "project_id": "stsexam-a5988",
-    "storage_bucket": "stsexam-a5988.firebasestorage.app"
+    "project_number": "984009292270",
+    "project_id": "vidyasarthi-7fcd4",
+    "storage_bucket": "vidyasarthi-7fcd4.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:919983361967:android:afdc364490ad44f95c295a",
+        "mobilesdk_app_id": "1:984009292270:android:4c22caf52ba827869db6ff",
         "android_client_info": {
-          "package_name": "com.quick.stsexam"
+          "package_name": "com.quick.vidyasarthi"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDCSGNGSAx_ojeOu-SXB9DZBjUaMnyrsPQ"
+          "current_key": "AIzaSyBuKJFXYs9BAxa-iH_0Q3261dOZ38F-oY8"
         }
       ],
       "services": {

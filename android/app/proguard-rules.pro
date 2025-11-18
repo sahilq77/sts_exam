@@ -7,4 +7,4 @@
 -dontwarn com.google.firebase.**
 
 # Keep your app-specific classes
--keep class com.quick.stsexam.** { *; }
+-keep class com.quick.vidyasarthi.** { *; }

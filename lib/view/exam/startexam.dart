@@ -35,7 +35,7 @@ class _StartExamPageState extends State<StartExamPage>
   bool _leftApp = false;
   DateTime? _pauseStartTime;
   bool _isCameraActive = false;
-  static const platform = MethodChannel('com.quick.stsexam/screenshot');
+  static const platform = MethodChannel('com.quick.vidyasarthi/screenshot');
   FaceDetector? _faceDetector;
   Timer? _faceDetectionTimer;
   final _noScreenshot = NoScreenshot.instance;

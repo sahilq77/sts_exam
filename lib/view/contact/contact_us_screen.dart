@@ -146,7 +146,7 @@ class ContactUsScreen extends StatelessWidget {
               ),
               onTap: () async {
                 const url =
-                    'https://play.google.com/store/apps/details?id=com.quick.stsexam';
+                    'https://play.google.com/store/apps/details?id=com.quick.vidyasarthi';
                 final Uri websiteUri = Uri.parse(url);
                 if (await canLaunchUrl(websiteUri)) {
                   await launchUrl(
