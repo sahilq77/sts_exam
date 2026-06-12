@@ -1,5 +1,5 @@
 class Networkutility {
-  static String baseUrl = "https://seekhelp.in/sts-phase-two/api/";
+  static String baseUrl = "https://vidyasarthi.sts-exam.com/api/";
   static String apiKey = "?key=131b1770&__method=POST";
   static String signUp = "${baseUrl + "register"}";
   static int signUpApi = 1;
