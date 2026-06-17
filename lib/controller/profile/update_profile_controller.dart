@@ -23,12 +23,27 @@ class UpdateProfileController extends GetxController {
 
   final ImagePicker _picker = ImagePicker();
   Future<void> pickImage(ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      imagePath.value = pickedFile.path;
-      final bytes = await File(pickedFile.path).readAsBytes();
-      base64Image.value = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-      print('Bs64====>$base64Image');
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 70,
+        maxWidth: 800,
+      );
+      if (pickedFile != null) {
+        final file = File(pickedFile.path);
+        if (await file.exists()) {
+          imagePath.value = pickedFile.path;
+          final bytes = await file.readAsBytes();
+          base64Image.value = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to pick image: $e',
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -40,12 +55,14 @@ class UpdateProfileController extends GetxController {
     required String? fullName,
   }) async {
     try {
-      final jsonBody = {
+      final jsonBody = <String, dynamic>{
         "user_type": AppUtility.userType,
         "user_id": AppUtility.userID,
         "full_name": fullName,
-        "profile_image": base64Image.value,
       };
+      if (base64Image.value.isNotEmpty) {
+        jsonBody["profile_image"] = base64Image.value;
+      }
 
       isLoadingu.value = true;
       // ProgressDialog.showProgressDialog(context);
