@@ -12,6 +12,7 @@
         android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
         android:fullBackupOnly="false">
+        <property android:name="android.app.16kb_page_agnostic" android:value="true"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

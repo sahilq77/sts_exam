@@ -18,7 +18,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.quick.vidyasarthi"
     compileSdk = 36
-
+    ndkVersion = "29.0.14206865"
     // ndkVersion removed for now → uses your installed NDK + flags below
 
     compileOptions {
@@ -40,7 +40,7 @@ android {
         multiDexEnabled = true
 
         ndk {
-            abiFilters.addAll(listOf("arm64-v8a"))
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
         }
     }
 
