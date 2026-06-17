@@ -5,13 +5,13 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:stsexam/controller/result_list/download_result_controller.dart';
 import '../../app_colors.dart';
@@ -27,8 +27,10 @@ class ViewResultScreen extends StatefulWidget {
 class _ViewResultScreenState extends State<ViewResultScreen> {
   final controller = Get.put(DownloadResultController());
   String productID = '';
-  String? receiptUrl; // To store the receipt URL
-  bool isLoading = true; // To manage API loading state
+  String? receiptUrl;
+  bool isLoading = true;
+  String? _localPdfPath;
+  // Helper method to check Android version (API 33+ for READ_MEDIA_IMAGES)
   Future<bool> _isAndroid13OrAbove() async {
     if (Platform.isAndroid) {
       try {
@@ -48,31 +50,30 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
   Future<bool> _requestStoragePermissions() async {
     if (Platform.isAndroid) {
       bool isAndroid13OrAbove = await _isAndroid13OrAbove();
-      PermissionStatus status;
 
       if (isAndroid13OrAbove) {
-        // For Android 13+ (API 33+), request READ_MEDIA_IMAGES
-        status = await Permission.photos.request();
+        // For Android 13+ (API 33+), no special permission needed for Downloads folder
+        return true;
       } else {
         // For older Android versions, request storage permission
-        status = await Permission.storage.request();
-      }
+        PermissionStatus status = await Permission.storage.request();
 
-      if (status.isGranted) {
-        return true;
-      } else if (status.isPermanentlyDenied) {
-        Fluttertoast.showToast(
-          msg: "Please enable storage permission in settings",
-          toastLength: Toast.LENGTH_LONG,
-        );
-        await openAppSettings();
-        return false;
-      } else {
-        Fluttertoast.showToast(
-          msg: "Storage permission denied",
-          toastLength: Toast.LENGTH_LONG,
-        );
-        return false;
+        if (status.isGranted) {
+          return true;
+        } else if (status.isPermanentlyDenied) {
+          Fluttertoast.showToast(
+            msg: "Please enable storage permission in settings",
+            toastLength: Toast.LENGTH_LONG,
+          );
+          await openAppSettings();
+          return false;
+        } else {
+          Fluttertoast.showToast(
+            msg: "Storage permission denied",
+            toastLength: Toast.LENGTH_LONG,
+          );
+          return false;
+        }
       }
     }
     return true; // No permission needed for iOS or other platforms
@@ -125,7 +126,7 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
 
       // Create a unique filename
       String fileName =
-          'result_${"767565"}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+          'result_${"76756554"}_${DateTime.now().millisecondsSinceEpoch}.pdf';
       String filePath = '${directory!.path}/$fileName';
 
       // Download the file with binary response
@@ -170,7 +171,7 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
         }
 
         // Share option
-        await Share.shareXFiles([XFile(filePath)], text: 'Payment Receipt');
+        // await Share.shareXFiles([XFile(filePath)], text: 'Payment Receipt');
       } else {
         Fluttertoast.showToast(
           msg: "Downloaded file is empty or corrupted",
@@ -188,6 +189,20 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
     }
   }
 
+  Future<void> _loadPdf(String url) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final filePath = '${dir.path}/result_preview.pdf';
+      final file = File(filePath);
+      if (!await file.exists()) {
+        await Dio().download(url, filePath);
+      }
+      setState(() => _localPdfPath = filePath);
+    } catch (e) {
+      if (kDebugMode) print('PDF load error: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -201,6 +216,9 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
         testID: testId.toString(),
         attemptID: atemptId.toString(),
       );
+    });
+    ever(controller.resultLink, (url) {
+      if (url.isNotEmpty) _loadPdf(url);
     });
   }
 
@@ -234,19 +252,21 @@ class _ViewResultScreenState extends State<ViewResultScreen> {
       ),
       backgroundColor: AppColors.backgroundColor,
 
-      body: Obx(
-        () =>
-            controller.isLoading.value
-                ? Center(child: CircularProgressIndicator())
-                : PDF(fitEachPage: true).fromUrl(
-                  controller.resultLink.value,
-                  placeholder:
-                      (progress) => Center(
-                        child: CircularProgressIndicator(value: progress),
-                      ),
-                  errorWidget: (error) => Center(child: Text(error.toString())),
-                ),
-      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (_localPdfPath == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return PDFView(
+          filePath: _localPdfPath!,
+          enableSwipe: true,
+          swipeHorizontal: false,
+          autoSpacing: true,
+          fitEachPage: true,
+        );
+      }),
 
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
